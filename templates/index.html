@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Alzor Couture — Elegance, Reimagined</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}?v=38"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/search.css') }}?v=1"
+    >
+
+    <style>
+        /* =====================================================
+           ALZOR HOMEPAGE HERO — CINEMATIC MOTION
+        ===================================================== */
+        .hero{
+            isolation:isolate;
+            perspective:1200px;
+            background:#f8f6f1;
+        }
+
+        .hero-image{
+            transform:translate3d(calc(var(--hero-mx, 0) * 10px), calc(var(--hero-my, 0) * 8px), 0) scale(1.04);
+            transform-origin:center center;
+            animation:alzorHeroImageDrift 13s ease-in-out infinite alternate;
+            will-change:transform;
+        }
+
+        @keyframes alzorHeroImageDrift{
+            0%{filter:saturate(.98);}
+            100%{filter:saturate(1.04);}
+        }
+
+        .hero-overlay{
+            z-index:1;
+            background:
+                linear-gradient(90deg,
+                    rgba(248,246,241,.96) 0%,
+                    rgba(248,246,241,.78) 26%,
+                    rgba(248,246,241,.22) 56%,
+                    rgba(248,246,241,.04) 78%,
+                    rgba(248,246,241,0) 100%);
+        }
+
+        .hero-motion-grid{
+            position:absolute;
+            inset:-12%;
+            z-index:2;
+            pointer-events:none;
+            opacity:.42;
+            background-image:
+                linear-gradient(rgba(173,138,81,.055) 1px,transparent 1px),
+                linear-gradient(90deg,rgba(173,138,81,.055) 1px,transparent 1px);
+            background-size:54px 54px;
+            transform:perspective(850px) rotateX(58deg) translateY(8%);
+            transform-origin:center bottom;
+            animation:alzorGridFloat 16s linear infinite;
+            mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.9) 22%, rgba(0,0,0,.65) 66%, transparent 100%);
+            -webkit-mask-image:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.9) 22%, rgba(0,0,0,.65) 66%, transparent 100%);
+        }
+
+        @keyframes alzorGridFloat{
+            0%{background-position:0 0;opacity:.25;}
+            50%{background-position:27px 31px;opacity:.46;}
+            100%{background-position:54px 62px;opacity:.25;}
+        }
+
+        .hero-orbit{
+            position:absolute;
+            right:9%;
+            top:52%;
+            width:285px;
+            height:285px;
+            z-index:2;
+            pointer-events:none;
+            transform:translateY(-50%) rotate(16deg);
+            border:1px solid rgba(173,138,81,.23);
+            border-radius:50%;
+            box-shadow:0 0 0 22px rgba(173,138,81,.025), 0 0 0 46px rgba(173,138,81,.018);
+            animation:alzorOrbitSpin 22s linear infinite;
+        }
+
+        .hero-orbit::before,
+        .hero-orbit::after{
+            content:"";
+            position:absolute;
+            inset:30px;
+            border:1px solid rgba(173,138,81,.13);
+            border-radius:50%;
+        }
+
+        .hero-orbit::after{
+            inset:76px;
+            border-color:rgba(173,138,81,.18);
+        }
+
+        .hero-orbit-dot{
+            position:absolute;
+            top:50%;
+            left:50%;
+            width:8px;
+            height:8px;
+            margin:-4px;
+            border-radius:50%;
+            background:#ad8a51;
+            box-shadow:0 0 0 7px rgba(173,138,81,.08), 0 0 18px rgba(173,138,81,.25);
+            transform:translateX(142px);
+        }
+
+        @keyframes alzorOrbitSpin{
+            from{transform:translateY(-50%) rotate(16deg);}
+            to{transform:translateY(-50%) rotate(376deg);}
+        }
+
+        .hero-line{
+            position:absolute;
+            z-index:3;
+            pointer-events:none;
+            background:linear-gradient(90deg, transparent, rgba(173,138,81,.62), transparent);
+            opacity:.6;
+        }
+
+        .hero-line-horizontal{
+            left:8%;
+            right:8%;
+            bottom:28%;
+            height:1px;
+            transform:scaleX(.2);
+            transform-origin:center;
+            animation:alzorLineSweep 7s ease-in-out infinite;
+        }
+
+        @keyframes alzorLineSweep{
+            0%,100%{transform:scaleX(.15);opacity:.18;}
+            50%{transform:scaleX(1);opacity:.72;}
+        }
+
+        .hero-line-vertical{
+            top:15%;
+            bottom:13%;
+            right:14%;
+            width:1px;
+            background:linear-gradient(180deg, transparent, rgba(173,138,81,.46), transparent);
+            transform:scaleY(.18);
+            transform-origin:center;
+            animation:alzorVerticalLine 8s ease-in-out infinite;
+        }
+
+        @keyframes alzorVerticalLine{
+            0%,100%{transform:scaleY(.15);opacity:.1;}
+            50%{transform:scaleY(1);opacity:.58;}
+        }
+
+        .hero-particle{
+            position:absolute;
+            z-index:3;
+            width:4px;
+            height:4px;
+            border-radius:50%;
+            background:rgba(173,138,81,.56);
+            box-shadow:0 0 14px rgba(173,138,81,.18);
+            pointer-events:none;
+        }
+        .hero-particle-1{left:48%;top:23%;animation:alzorParticle1 6s ease-in-out infinite;}
+        .hero-particle-2{left:61%;top:70%;width:3px;height:3px;animation:alzorParticle2 7s ease-in-out infinite;}
+        .hero-particle-3{left:77%;top:26%;width:2px;height:2px;animation:alzorParticle3 5.5s ease-in-out infinite;}
+        .hero-particle-4{left:71%;top:61%;width:2px;height:2px;animation:alzorParticle4 8s ease-in-out infinite;}
+        @keyframes alzorParticle1{50%{transform:translate(14px,-18px);opacity:1;}100%{transform:translate(-4px,5px);opacity:.35;}}
+        @keyframes alzorParticle2{50%{transform:translate(-12px,15px);opacity:.35;}100%{transform:translate(6px,-3px);opacity:1;}}
+        @keyframes alzorParticle3{50%{transform:translate(12px,12px);opacity:.25;}100%{transform:translate(-3px,-7px);opacity:1;}}
+        @keyframes alzorParticle4{50%{transform:translate(-10px,-8px);opacity:1;}100%{transform:translate(4px,3px);opacity:.25;}}
+
+        .hero-vertical-wordmark{
+            position:absolute;
+            right:2.5%;
+            top:50%;
+            z-index:3;
+            transform:translateY(-50%) rotate(90deg);
+            transform-origin:center;
+            color:rgba(24,24,24,.32);
+            font-size:8px;
+            font-weight:400;
+            letter-spacing:5px;
+            white-space:nowrap;
+            pointer-events:none;
+        }
+
+        .hero-look{
+            position:absolute;
+            top:20%;
+            right:12%;
+            z-index:4;
+            color:rgba(69,65,60,.7);
+            font-size:8px;
+            font-weight:400;
+            letter-spacing:3px;
+            pointer-events:none;
+            animation:alzorLookFloat 4s ease-in-out infinite;
+        }
+        @keyframes alzorLookFloat{50%{transform:translateY(-4px);opacity:.95;}100%{transform:translateY(0);opacity:.72;}}
+
+        .hero-content{
+            z-index:5;
+        }
+
+        .hero-eyebrow{
+            opacity:0;
+            transform:translateY(16px);
+            animation:alzorReveal .75s cubic-bezier(.22,.61,.36,1) .15s forwards;
+        }
+
+        .hero-title-motion{
+            margin-bottom:28px;
+            overflow:hidden;
+        }
+
+        .hero-title-motion span{
+            display:block;
+            opacity:0;
+            transform:translateY(70px);
+            animation:alzorTitleReveal 1.05s cubic-bezier(.22,.61,.36,1) forwards;
+            will-change:transform,opacity;
+        }
+        .hero-title-motion span:nth-child(1){animation-delay:.24s;}
+        .hero-title-motion span:nth-child(2){animation-delay:.38s;}
+
+        @keyframes alzorReveal{
+            to{opacity:1;transform:translateY(0);}
+        }
+        @keyframes alzorTitleReveal{
+            to{opacity:1;transform:translateY(0);}
+        }
+
+        .hero-text-motion{
+            opacity:0;
+            transform:translateY(18px);
+            animation:alzorReveal .8s cubic-bezier(.22,.61,.36,1) .62s forwards;
+        }
+
+        .hero-cta-motion{
+            opacity:0;
+            transform:translateY(18px);
+            animation:alzorReveal .8s cubic-bezier(.22,.61,.36,1) .78s forwards;
+        }
+
+        .hero-microcopy{
+            position:absolute;
+            left:9vw;
+            bottom:8%;
+            z-index:5;
+            display:flex;
+            align-items:center;
+            gap:12px;
+            color:rgba(69,65,60,.58);
+            font-size:8px;
+            font-weight:400;
+            letter-spacing:2.8px;
+            opacity:0;
+            animation:alzorReveal .8s ease 1.05s forwards;
+        }
+
+        .hero-microcopy::before{
+            content:"";
+            width:30px;
+            height:1px;
+            background:rgba(173,138,81,.65);
+        }
+
+        .hero-scroll{
+            position:absolute;
+            right:9vw;
+            bottom:6%;
+            z-index:5;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:9px;
+            color:rgba(69,65,60,.64);
+            font-size:7px;
+            font-weight:400;
+            letter-spacing:3px;
+            opacity:0;
+            animation:alzorReveal .8s ease 1.15s forwards;
+        }
+
+        .hero-scroll::after{
+            content:"";
+            width:1px;
+            height:54px;
+            background:linear-gradient(180deg, rgba(173,138,81,.8), transparent);
+            animation:alzorScrollPulse 2.1s ease-in-out infinite;
+        }
+        @keyframes alzorScrollPulse{
+            0%,100%{transform:scaleY(.55);transform-origin:top;opacity:.35;}
+            50%{transform:scaleY(1);opacity:1;}
+        }
+
+        @media (max-width: 900px){
+            .hero-orbit{right:-8%;width:235px;height:235px;opacity:.68;}
+            .hero-look{right:12%;}
+            .hero-vertical-wordmark{display:none;}
+        }
+
+        @media (max-width: 700px){
+            .hero-image{transform:scale(1.06);}
+            .hero-motion-grid{opacity:.24;background-size:42px 42px;}
+            .hero-orbit{right:-18%;top:34%;width:190px;height:190px;opacity:.42;}
+            .hero-look{top:18%;right:9%;font-size:7px;}
+            .hero-line-vertical{right:8%;top:18%;bottom:25%;}
+            .hero-line-horizontal{left:8%;right:8%;bottom:24%;}
+            .hero-microcopy{left:7vw;bottom:7%;font-size:7px;}
+            .hero-scroll{right:7vw;bottom:5%;font-size:6px;}
+            .hero-scroll::after{height:38px;}
+        }
+
+        @media (prefers-reduced-motion: reduce){
+            .hero-image,.hero-motion-grid,.hero-orbit,.hero-line-horizontal,.hero-line-vertical,.hero-particle,.hero-look,.hero-eyebrow,.hero-title-motion span,.hero-text-motion,.hero-cta-motion,.hero-microcopy,.hero-scroll{animation:none!important;transform:none!important;opacity:1!important;}
+        }
+    </style>
+
+</head>
+
+<body>
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="site-header">
+    <div class="header-inner">
+
+        <a href="{{ url_for('home') }}" class="brand">
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Alzor Couture"
+            >
+        </a>
+
+        <nav class="main-nav">
+
+            <a
+                href="{{ url_for('home') }}"
+                class="nav-link active"
+            >
+                HOME
+            </a>
+
+            <a
+                href="{{ url_for('new_arrivals') }}"
+                class="nav-link"
+            >
+                NEW ARRIVALS
+            </a>
+
+            <a
+                href="{{ url_for('dresses') }}"
+                class="nav-link"
+            >
+                DRESSES
+            </a>
+
+            <a
+                href="{{ url_for('co_ord_sets') }}"
+                class="nav-link"
+            >
+                CO-ORD SETS
+            </a>
+
+        </nav>
+
+        
+        <div class="header-actions">
+
+            <!-- SEARCH -->
+            <button
+                type="button"
+                class="header-action search-button alzor-icon-button"
+                id="alzorSearchButton"
+                aria-label="Open search"
+                aria-controls="alzorSearchOverlay"
+            >
+                <svg
+                    class="alzor-header-icon alzor-search-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <circle cx="13.5" cy="13.5" r="8.2"></circle>
+                    <path d="M19.5 19.5 L27 27"></path>
+                </svg>
+            </button>
+
+            <!-- WISHLIST -->
+            <a
+                href="{{ url_for('wishlist') }}"
+                class="header-action wishlist-button alzor-icon-button"
+                aria-label="Wishlist"
+                title="Wishlist"
+            >
+                <svg
+                    class="alzor-header-icon alzor-heart-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M16 26.4
+                           C14.9 25.4 7 18.6 5.2 14
+                           C3.8 10.4 5.3 6.4 9.1 5.3
+                           C11.8 4.5 14.5 5.8 16 8.1
+                           C17.5 5.8 20.2 4.5 22.9 5.3
+                           C26.7 6.4 28.2 10.4 26.8 14
+                           C25 18.6 17.1 25.4 16 26.4 Z"
+                    ></path>
+                </svg>
+            </a>
+
+            <!-- SHOPPING BAG -->
+            <a
+                href="{{ url_for('cart') }}"
+                class="header-action bag-button alzor-icon-button"
+                aria-label="Shopping Bag"
+            >
+                <svg
+                    class="alzor-header-icon alzor-bag-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <path d="M8.2 10.8 H23.8 L22.7 27 H9.3 Z"></path>
+                    <path d="M12 11 V8.9 A4 4 0 0 1 20 8.9 V11"></path>
+                </svg>
+
+                <span class="cart-count">
+                    {{ cart_count }}
+                </span>
+            </a>
+
+        </div>
+
+    </div>
+</header>
+
+
+<!-- =====================================================
+     ALZOR SEARCH OVERLAY
+===================================================== -->
+
+<div
+    class="alzor-search-overlay"
+    id="alzorSearchOverlay"
+    aria-hidden="true"
+>
+    <div
+        class="alzor-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="alzorSearchTitle"
+    >
+        <div class="alzor-search-top">
+
+            <span
+                class="alzor-search-mark"
+                id="alzorSearchTitle"
+            >
+                SEARCH ALZOR
+            </span>
+
+            <form
+                class="alzor-search-form"
+                id="alzorSearchForm"
+                autocomplete="off"
+            >
+                <span
+                    class="alzor-search-icon"
+                    aria-hidden="true"
+                ></span>
+
+                <input
+                    type="search"
+                    class="alzor-search-input"
+                    id="alzorSearchInput"
+                    placeholder="Search dresses, co-ord sets..."
+                    aria-label="Search Alzor Couture"
+                    spellcheck="false"
+                >
+            </form>
+
+            <button
+                type="button"
+                class="alzor-search-close"
+                id="alzorSearchClose"
+                aria-label="Close search"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="alzor-search-body">
+
+            <p
+                class="alzor-search-status"
+                id="alzorSearchStatus"
+            >
+                Search the Alzor collection
+            </p>
+
+            <div
+                class="alzor-search-results"
+                id="alzorSearchResults"
+            >
+                <div
+                    class="alzor-search-empty"
+                    style="grid-column: 1 / -1;"
+                >
+                    <p>ALZOR COUTURE</p>
+                    <h3>Find your piece</h3>
+                    <p>
+                        Search by product name, category, colour,
+                        fabric or design detail.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<main>
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
+<section class="hero" id="alzorHero">
+
+    <img
+        src="{{ url_for('static', filename='images/hero.png') }}"
+        class="hero-image"
+        alt="Alzor Couture"
+    >
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-motion-grid" aria-hidden="true"></div>
+    <div class="hero-orbit" aria-hidden="true"><span class="hero-orbit-dot"></span></div>
+    <div class="hero-line hero-line-horizontal" aria-hidden="true"></div>
+    <div class="hero-line hero-line-vertical" aria-hidden="true"></div>
+
+    <span class="hero-particle hero-particle-1" aria-hidden="true"></span>
+    <span class="hero-particle hero-particle-2" aria-hidden="true"></span>
+    <span class="hero-particle hero-particle-3" aria-hidden="true"></span>
+    <span class="hero-particle hero-particle-4" aria-hidden="true"></span>
+
+    <span class="hero-vertical-wordmark" aria-hidden="true">ALZOR COUTURE · ALZOR COUTURE ·</span>
+    <span class="hero-look" aria-hidden="true">LOOK 01 · SIGNATURE</span>
+
+    <div class="hero-content">
+
+        <p class="hero-eyebrow">
+            ALZOR COUTURE
+        </p>
+
+        <h1 class="hero-title-motion">
+            <span>MADE TO BE</span>
+            <span>REMEMBERED.</span>
+        </h1>
+
+        <p class="hero-text hero-text-motion">
+            Contemporary silhouettes, thoughtfully designed
+            for unforgettable moments.
+        </p>
+
+        <a
+            href="{{ url_for('new_arrivals') }}"
+            class="primary-button hero-cta-motion"
+        >
+            EXPLORE COLLECTION
+            <span>→</span>
+        </a>
+
+    </div>
+
+    <div class="hero-microcopy" aria-hidden="true">
+        THE SIGNATURE COLLECTION
+    </div>
+
+    <div class="hero-scroll" aria-hidden="true">
+        DISCOVER
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NEW ARRIVALS
+===================================================== -->
+
+<section
+    class="new-arrivals"
+    id="new-arrivals"
+>
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            THE LATEST
+        </p>
+
+        <h2>
+            New Arrivals
+        </h2>
+
+        <p>
+            Discover the newest pieces from Alzor Couture.
+        </p>
+
+    </div>
+
+
+    <div class="product-grid">
+
+        {% for product in products %}
+
+        <article class="product-card">
+
+            <a
+                href="{{ url_for('product', slug=product.slug) }}"
+                class="product-card-link"
+            >
+
+                <div class="product-card-image">
+
+                <img
+                    src="{{ url_for(
+                        'static',
+                        filename='images/' ~ product.images[0]
+                    ) }}"
+                    alt="{{ product.name }}"
+                >
+
+                <span class="new-label">
+                    NEW
+                </span>
+
+            </div>
+
+
+            <div class="product-card-info">
+
+                <p class="product-card-category">
+                    {{ product.category }}
+                </p>
+
+                <h3>
+                    {{ product.name }}
+                </h3>
+
+                <p class="product-card-price">
+
+    {% if product.original_price is defined and product.original_price is not none %}
+
+        <span class="price-original">
+            ₹{{ "{:,}".format(product.original_price) }}
+        </span>
+
+        <span class="price-current">
+            ₹{{ "{:,}".format(product.price) }}
+        </span>
+
+    {% elif product.price is not none %}
+
+        <span class="price-current">
+            ₹{{ "{:,}".format(product.price) }}
+        </span>
+
+    {% else %}
+
+        <span class="price-request">
+            PRICE ON REQUEST
+        </span>
+
+    {% endif %}
+
+</p>
+
+            </div>
+
+            </a>
+
+
+</article>
+
+        {% endfor %}
+
+    </div>
+
+
+    <div class="explore-wrapper">
+
+        <a
+            href="{{ url_for('new_arrivals') }}"
+            class="outline-button"
+        >
+            EXPLORE NEW ARRIVALS
+            <span>→</span>
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SHOP BY CATEGORY
+===================================================== -->
+
+<section
+    class="categories"
+    id="categories"
+>
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            EXPLORE
+        </p>
+
+        <h2>
+            Shop by Category
+        </h2>
+
+    </div>
+
+
+    <div class="category-grid">
+
+        <!-- DRESSES -->
+
+        <a
+            href="{{ url_for('dresses') }}"
+            class="category-card"
+        >
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/gd1.jpeg'
+                ) }}"
+                alt="Alzor Couture Dresses"
+            >
+
+            <div class="category-content">
+
+                <span>
+                    EXPLORE
+                </span>
+
+                <h3>
+                    DRESSES
+                </h3>
+
+            </div>
+
+        </a>
+
+
+        <!-- CO-ORD SETS -->
+
+        <a
+            href="{{ url_for('co_ord_sets') }}"
+            class="category-card"
+        >
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/coord-set.jpg'
+                ) }}"
+                alt="Alzor Couture Co-Ord Sets"
+            >
+
+            <div class="category-content">
+
+                <span>
+                    EXPLORE
+                </span>
+
+                <h3>
+                    CO-ORD SETS
+                </h3>
+
+            </div>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     FOLLOW ALZOR
+===================================================== -->
+
+<section class="instagram-section">
+
+    <div class="section-heading">
+
+        <p class="eyebrow">
+            @ALZORCOUTURE
+        </p>
+
+        <h2>
+            Follow Alzor
+        </h2>
+
+        <p>
+            Discover the world of Alzor Couture.
+        </p>
+
+    </div>
+
+
+    <div class="instagram-grid">
+
+        {% for post in instagram_posts %}
+
+        <a
+            href="{{ post.url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="instagram-card"
+        >
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/' ~ post.image
+                ) }}"
+                alt="Alzor Couture Instagram Post"
+            >
+
+            <div class="instagram-hover">
+
+                <svg
+                    class="instagram-logo"
+                    viewBox="0 0 24 24"
+                >
+
+                    <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="5"
+                    ></rect>
+
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="4"
+                    ></circle>
+
+                    <circle
+                        cx="17.5"
+                        cy="6.5"
+                        r="1"
+                        class="instagram-dot"
+                    ></circle>
+
+                </svg>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NEWSLETTER
+===================================================== -->
+
+<section class="newsletter">
+
+    <div class="newsletter-content">
+
+        <p class="eyebrow">
+            JOIN ALZOR WORLD
+        </p>
+
+        <h2>
+            Stay in the know.
+        </h2>
+
+        <p>
+            Be the first to discover new collections,
+            launches and stories from Alzor Couture.
+        </p>
+
+        <form class="newsletter-form">
+
+            <input
+                type="email"
+                placeholder="Your email address"
+                required
+            >
+
+            <button type="submit">
+                JOIN
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="site-footer">
+
+    <div class="footer-inner">
+
+        <div class="footer-brand">
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/logo.png'
+                ) }}"
+                alt="Alzor Couture"
+            >
+
+            <p>
+                Elegance, reimagined.
+            </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="{{ url_for('home') }}">
+                HOME
+            </a>
+
+            <a href="{{ url_for('new_arrivals') }}">
+                NEW ARRIVALS
+            </a>
+
+            <a href="{{ url_for('dresses') }}">
+                DRESSES
+            </a>
+
+            <a href="{{ url_for('co_ord_sets') }}">
+                CO-ORD SETS
+            </a>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<script
+    src="{{ url_for('static', filename='js/script.js') }}?v=37"
+></script>
+
+
+<script
+    src="{{ url_for('static', filename='js/search.js') }}?v=1"
+></script>
+
+
+<script>
+(function () {
+    const hero = document.getElementById("alzorHero");
+    if (!hero) return;
+
+    function setMotion(x, y) {
+        const rect = hero.getBoundingClientRect();
+        const mx = ((x - rect.left) / rect.width) - 0.5;
+        const my = ((y - rect.top) / rect.height) - 0.5;
+        hero.style.setProperty("--hero-mx", mx.toFixed(3));
+        hero.style.setProperty("--hero-my", my.toFixed(3));
+    }
+
+    hero.addEventListener("mousemove", function (event) {
+        setMotion(event.clientX, event.clientY);
+    });
+
+    hero.addEventListener("mouseleave", function () {
+        hero.style.setProperty("--hero-mx", "0");
+        hero.style.setProperty("--hero-my", "0");
+    });
+})();
+</script>
+
+</body>
+</html>
+<!-- =====================================================
+     ALZOR COUTURE OPENING ANIMATION
+===================================================== -->
+
+<body>
+   <!-- =====================================================
+     ALZOR COUTURE — SIGNATURE INTRO
+===================================================== -->
+
+<div class="alzor-intro" id="alzorIntro">
+
+    <div class="alzor-signature-wrap">
+
+        <svg
+            class="alzor-signature-svg"
+            viewBox="0 0 520 190"
+            aria-label="Alzor Couture"
+        >
+
+            <!-- subtle lead-in stroke -->
+            <path
+                class="signature-stroke stroke-lead"
+                pathLength="1"
+                d="
+                    M 18 150
+                    C 28 145, 34 138, 40 130
+                "
+            />
+
+            <!-- A -->
+            <path
+                class="signature-stroke stroke-a"
+                pathLength="1"
+                d="
+                    M 42 153
+                    C 49 127, 59 82, 72 48
+                    C 77 34, 83 31, 88 49
+                    C 96 77, 101 113, 108 150
+                "
+            />
+
+            <path
+                class="signature-stroke stroke-a-cross"
+                pathLength="1"
+                d="
+                    M 57 112
+                    C 69 108, 82 106, 96 108
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-1"
+                pathLength="1"
+                d="
+                    M 105 149
+                    C 116 157, 122 157, 130 149
+                "
+            />
+
+            <!-- L -->
+            <path
+                class="signature-stroke stroke-l"
+                pathLength="1"
+                d="
+                    M 131 62
+                    C 128 88, 124 119, 126 145
+                    C 128 160, 147 161, 165 151
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-2"
+                pathLength="1"
+                d="
+                    M 158 151
+                    C 171 158, 181 157, 190 149
+                "
+            />
+
+            <!-- Z -->
+            <path
+                class="signature-stroke stroke-z"
+                pathLength="1"
+                d="
+                    M 182 70
+                    C 205 64, 229 64, 250 69
+                    C 234 91, 207 122, 181 151
+                    C 206 158, 232 158, 257 150
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-3"
+                pathLength="1"
+                d="
+                    M 248 149
+                    C 261 158, 272 157, 281 147
+                "
+            />
+
+            <!-- O -->
+            <path
+                class="signature-stroke stroke-o"
+                pathLength="1"
+                d="
+                    M 286 105
+                    C 292 77, 319 63, 340 75
+                    C 359 86, 357 123, 339 143
+                    C 321 162, 295 157, 287 137
+                    C 280 123, 282 112, 286 105
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-4"
+                pathLength="1"
+                d="
+                    M 338 142
+                    C 351 155, 362 156, 373 146
+                "
+            />
+
+            <!-- R -->
+            <path
+                class="signature-stroke stroke-r"
+                pathLength="1"
+                d="
+                    M 372 151
+                    C 377 125, 378 92, 376 67
+                    C 397 60, 423 63, 432 79
+                    C 442 97, 425 111, 397 111
+                    C 416 115, 435 132, 450 153
+                "
+            />
+
+            <!-- final flourish -->
+            <path
+                class="signature-stroke stroke-flourish"
+                pathLength="1"
+                d="
+                    M 448 153
+                    C 464 165, 481 161, 493 148
+                    C 486 160, 475 171, 457 173
+                "
+            />
+
+        </svg>
+
+
+        <div class="alzor-couture-word">
+            COUTURE
+        </div>
+
+        <div class="alzor-intro-line"></div>
+
+    </div>
+
+</div>
+<style>
+
+/* =====================================================
+   ALZOR SIGNATURE INTRO
+===================================================== */
+
+.alzor-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #fffdf9 0%,
+            #f8f6f1 58%,
+            #f2efe8 100%
+        );
+
+    overflow: hidden;
+    pointer-events: none;
+
+    animation:
+        alzorIntroExit
+        1.1s
+        cubic-bezier(.77,0,.18,1)
+        4.5s
+        forwards;
+}
+
+
+/* =====================================================
+   SIGNATURE WRAPPER
+===================================================== */
+
+.alzor-signature-wrap {
+    position: relative;
+
+    width: min(620px, 88vw);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    transform:
+        translateY(-5px);
+}
+
+
+/* =====================================================
+   SVG
+===================================================== */
+
+.alzor-signature-svg {
+    width: 100%;
+    height: auto;
+
+    overflow: visible;
+}
+
+
+/* =====================================================
+   HANDWRITING STROKES
+===================================================== */
+
+.signature-stroke {
+
+    fill: none;
+
+    stroke: #b28b4d;
+
+    stroke-width: 2.05;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+
+    animation:
+        signatureWrite
+        .65s
+        cubic-bezier(.65,.05,.36,1)
+        forwards;
+}
+
+
+/* =====================================================
+   DRAWING ORDER
+===================================================== */
+
+.stroke-lead {
+    animation-delay: .10s;
+}
+
+.stroke-a {
+    animation-delay: .25s;
+}
+
+.stroke-a-cross {
+    animation-delay: .52s;
+}
+
+.stroke-connect-1 {
+    animation-delay: .63s;
+}
+
+.stroke-l {
+    animation-delay: .72s;
+}
+
+.stroke-connect-2 {
+    animation-delay: 1.02s;
+}
+
+.stroke-z {
+    animation-delay: 1.10s;
+}
+
+.stroke-connect-3 {
+    animation-delay: 1.48s;
+}
+
+.stroke-o {
+    animation-delay: 1.56s;
+}
+
+.stroke-connect-4 {
+    animation-delay: 1.91s;
+}
+
+.stroke-r {
+    animation-delay: 1.99s;
+}
+
+.stroke-flourish {
+    animation-delay: 2.36s;
+}
+
+
+/* =====================================================
+   GOLD WRITING
+===================================================== */
+
+@keyframes signatureWrite {
+
+    0% {
+        stroke-dashoffset: 1;
+    }
+
+    100% {
+        stroke-dashoffset: 0;
+    }
+
+}
+
+
+/* =====================================================
+   COUTURE
+===================================================== */
+
+.alzor-couture-word {
+
+    margin-top: -15px;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 11px;
+
+    font-weight: 400;
+
+    letter-spacing: 9px;
+
+    color: #a7834a;
+
+    opacity: 0;
+
+    transform:
+        translateY(8px);
+
+    animation:
+        coutureAppear
+        .9s
+        ease
+        2.75s
+        forwards;
+}
+
+
+@keyframes coutureAppear {
+
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* =====================================================
+   GOLD UNDERLINE
+===================================================== */
+
+.alzor-intro-line {
+
+    width: 0;
+    height: 1px;
+
+    margin-top: 19px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ad8a51 20%,
+            #d8bd87 50%,
+            #ad8a51 80%,
+            transparent
+        );
+
+    animation:
+        introLine
+        1s
+        cubic-bezier(.77,0,.18,1)
+        3.05s
+        forwards;
+}
+
+
+@keyframes introLine {
+
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+
+    100% {
+        width: 145px;
+        opacity: 1;
+    }
+
+}
+
+
+/* =====================================================
+   GOLD SHIMMER
+===================================================== */
+
+.alzor-signature-wrap::after {
+
+    content: "";
+
+    position: absolute;
+
+    top: 33%;
+    left: -20%;
+
+    width: 80px;
+    height: 55px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.75),
+            transparent
+        );
+
+    filter: blur(9px);
+
+    transform: skewX(-20deg);
+
+    opacity: 0;
+
+    animation:
+        signatureShine
+        1.1s
+        ease
+        2.85s
+        forwards;
+
+}
+
+
+@keyframes signatureShine {
+
+    0% {
+        left: -20%;
+        opacity: 0;
+    }
+
+    20% {
+        opacity: .8;
+    }
+
+    100% {
+        left: 115%;
+        opacity: 0;
+    }
+
+}
+
+
+/* =====================================================
+   EXIT
+===================================================== */
+
+@keyframes alzorIntroExit {
+
+    0% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    78% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .alzor-signature-wrap {
+        width: 91vw;
+    }
+
+    .alzor-signature-svg {
+        transform: scale(1.04);
+    }
+
+    .alzor-couture-word {
+        margin-top: -9px;
+        font-size: 9px;
+        letter-spacing: 6px;
+    }
+
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .alzor-intro,
+    .signature-stroke,
+    .alzor-couture-word,
+    .alzor-intro-line,
+    .alzor-signature-wrap::after {
+
+        animation: none !important;
+    }
+
+    .alzor-intro {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+}
+                            
+</style>

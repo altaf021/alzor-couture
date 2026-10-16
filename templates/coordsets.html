@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Explore refined two-piece silhouettes from Alzor Couture."
+    >
+
+    <title>Co-Ord Sets — Alzor Couture</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}?v=38"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/search.css') }}?v=4"
+    >
+
+    <style>
+        /* CO-ORD SETS MOTION */
+
+        .collection-hero-motion {
+            position: relative;
+            min-height: 390px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            isolation: isolate;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(244,241,234,.84),
+                    rgba(255,255,255,.72) 48%,
+                    rgba(239,236,229,.52)
+                );
+        }
+
+        .coord-grid {
+            position: absolute;
+            inset: -20%;
+            z-index: 1;
+            opacity: .55;
+
+            background-image:
+                linear-gradient(
+                    rgba(173,138,81,.075) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(173,138,81,.075) 1px,
+                    transparent 1px
+                );
+
+            background-size: 58px 58px;
+
+            transform:
+                perspective(700px)
+                rotateX(58deg)
+                scale(1.25);
+
+            transform-origin: center bottom;
+
+            animation: coordGridMove 16s linear infinite;
+
+            pointer-events: none;
+        }
+
+        .coord-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 480px;
+            height: 220px;
+
+            border:
+                1px solid
+                rgba(173,138,81,.18);
+
+            transform:
+                translate(-50%,-50%)
+                rotate(12deg);
+
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .coord-frame::before,
+        .coord-frame::after {
+            content: "";
+            position: absolute;
+            inset: 18px;
+
+            border:
+                1px solid
+                rgba(173,138,81,.09);
+        }
+
+        .coord-frame::after {
+            inset: 38px 64px;
+            border-color: rgba(173,138,81,.13);
+        }
+
+        .coord-frame-1 {
+            animation:
+                coordFrameOne
+                18s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-frame-2 {
+            width: 390px;
+            height: 175px;
+
+            transform:
+                translate(-50%,-50%)
+                rotate(-17deg);
+
+            border-color:
+                rgba(173,138,81,.12);
+
+            animation:
+                coordFrameTwo
+                14s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-frame-3 {
+            width: 300px;
+            height: 135px;
+
+            transform:
+                translate(-50%,-50%)
+                rotate(28deg);
+
+            border-color:
+                rgba(173,138,81,.08);
+
+            animation:
+                coordFrameThree
+                11s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-line {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+
+            width: 760px;
+            height: 1px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(173,138,81,.34) 35%,
+                    rgba(173,138,81,.72) 50%,
+                    rgba(173,138,81,.34) 65%,
+                    transparent
+                );
+
+            transform-origin: center;
+
+            z-index: 4;
+            pointer-events: none;
+            opacity: .68;
+        }
+
+        .coord-line-1 {
+            transform:
+                translate(-50%,-50%)
+                rotate(28deg);
+
+            animation:
+                coordLineOne
+                9s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-line-2 {
+            transform:
+                translate(-50%,-50%)
+                rotate(-28deg);
+
+            opacity: .38;
+
+            animation:
+                coordLineTwo
+                12s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-point {
+            position: absolute;
+
+            width: 5px;
+            height: 5px;
+
+            border:
+                1px solid
+                rgba(173,138,81,.58);
+
+            background:
+                rgba(255,255,255,.5);
+
+            transform: rotate(45deg);
+
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        .coord-point-1 {
+            top: 25%;
+            left: 24%;
+            animation:
+                coordPointOne
+                5.5s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-point-2 {
+            top: 71%;
+            left: 29%;
+            animation:
+                coordPointTwo
+                7s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-point-3 {
+            top: 31%;
+            left: 77%;
+            animation:
+                coordPointThree
+                6.5s
+                ease-in-out
+                infinite;
+        }
+
+        .coord-point-4 {
+            top: 70%;
+            left: 73%;
+            animation:
+                coordPointFour
+                8s
+                ease-in-out
+                infinite;
+        }
+
+        .collection-hero-coord
+        .collection-hero-content {
+            position: relative;
+            z-index: 20;
+            width: min(950px,92%);
+            margin: 0 auto;
+            text-align: center;
+
+            animation:
+                coordTextReveal
+                1.15s
+                cubic-bezier(.22,.61,.36,1)
+                both;
+        }
+
+        .collection-hero-coord
+        .eyebrow {
+            position: relative;
+            z-index: 20;
+            margin-bottom: 20px;
+        }
+
+        .collection-hero-coord h1 {
+            position: relative;
+            z-index: 20;
+
+            margin: 0;
+
+            font-family:
+                Georgia,
+                "Times New Roman",
+                serif;
+
+            font-size:
+                clamp(58px,7vw,90px);
+
+            line-height: 1;
+            font-weight: 400;
+
+            letter-spacing: -3px;
+
+            color: #171717;
+
+            text-shadow:
+                0 4px 25px
+                rgba(248,246,241,.95),
+                0 0 18px
+                rgba(255,255,255,.55);
+        }
+
+        .collection-hero-coord
+        p:last-child {
+            position: relative;
+            z-index: 20;
+
+            margin-top: 22px;
+        }
+
+        @keyframes coordGridMove {
+            from {
+                background-position:
+                    0 0,
+                    0 0;
+
+                transform:
+                    perspective(700px)
+                    rotateX(58deg)
+                    scale(1.25)
+                    translate3d(0,0,0);
+            }
+
+            to {
+                background-position:
+                    58px 116px,
+                    116px 58px;
+
+                transform:
+                    perspective(700px)
+                    rotateX(58deg)
+                    scale(1.25)
+                    translate3d(0,22px,0);
+            }
+        }
+
+        @keyframes coordFrameOne {
+            0%,100% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(12deg)
+                    scale(1);
+
+                opacity: .68;
+            }
+
+            50% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(-5deg)
+                    scale(1.045);
+
+                opacity: 1;
+            }
+        }
+
+        @keyframes coordFrameTwo {
+            0%,100% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(-17deg)
+                    scale(1);
+
+                opacity: .56;
+            }
+
+            50% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(8deg)
+                    scale(.965);
+
+                opacity: .85;
+            }
+        }
+
+        @keyframes coordFrameThree {
+            0%,100% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(28deg)
+                    scale(1);
+
+                opacity: .4;
+            }
+
+            50% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(-2deg)
+                    scale(1.065);
+
+                opacity: .68;
+            }
+        }
+
+        @keyframes coordLineOne {
+            0%,100% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(28deg)
+                    scaleX(.86);
+
+                opacity: .36;
+            }
+
+            50% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(33deg)
+                    scaleX(1.05);
+
+                opacity: .82;
+            }
+        }
+
+        @keyframes coordLineTwo {
+            0%,100% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(-28deg)
+                    scaleX(.78);
+
+                opacity: .18;
+            }
+
+            50% {
+                transform:
+                    translate(-50%,-50%)
+                    rotate(-22deg)
+                    scaleX(1.08);
+
+                opacity: .54;
+            }
+        }
+
+        @keyframes coordPointOne {
+            0%,100% {
+                transform:
+                    rotate(45deg)
+                    translate(0,0);
+
+                opacity: .22;
+            }
+
+            50% {
+                transform:
+                    rotate(45deg)
+                    translate(10px,-9px);
+
+                opacity: .9;
+            }
+        }
+
+        @keyframes coordPointTwo {
+            0%,100% {
+                transform:
+                    rotate(45deg)
+                    translate(0,0);
+
+                opacity: .18;
+            }
+
+            50% {
+                transform:
+                    rotate(45deg)
+                    translate(-8px,12px);
+
+                opacity: .72;
+            }
+        }
+
+        @keyframes coordPointThree {
+            0%,100% {
+                transform:
+                    rotate(45deg)
+                    translate(0,0);
+
+                opacity: .14;
+            }
+
+            50% {
+                transform:
+                    rotate(45deg)
+                    translate(-11px,-8px);
+
+                opacity: .72;
+            }
+        }
+
+        @keyframes coordPointFour {
+            0%,100% {
+                transform:
+                    rotate(45deg)
+                    translate(0,0);
+
+                opacity: .15;
+            }
+
+            50% {
+                transform:
+                    rotate(45deg)
+                    translate(9px,11px);
+
+                opacity: .68;
+            }
+        }
+
+        @keyframes coordTextReveal {
+            from {
+                opacity: 0;
+                transform: translateY(13px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            .coord-grid,
+            .coord-frame,
+            .coord-line,
+            .coord-point,
+            .collection-hero-coord
+            .collection-hero-content {
+                animation: none !important;
+            }
+        }
+
+        @media(max-width:900px) {
+            .collection-hero-coord {
+                min-height: 355px;
+            }
+
+            .coord-frame-1 {
+                width: 700px;
+                height: 205px;
+            }
+
+            .coord-frame-2 {
+                width: 565px;
+                height: 165px;
+            }
+
+            .coord-frame-3 {
+                width: 435px;
+                height: 125px;
+            }
+
+            .coord-line {
+                width: 680px;
+            }
+        }
+
+        @media(max-width:700px) {
+            .collection-hero-coord {
+                min-height: 325px;
+            }
+
+            .collection-hero-coord h1 {
+                font-size: 52px;
+                letter-spacing: -2px;
+            }
+
+            .coord-grid {
+                background-size: 44px 44px;
+            }
+
+            .coord-frame-1 {
+                width: 550px;
+                height: 175px;
+            }
+
+            .coord-frame-2 {
+                width: 440px;
+                height: 135px;
+            }
+
+            .coord-frame-3 {
+                width: 340px;
+                height: 105px;
+            }
+
+            .coord-line {
+                width: 560px;
+            }
+        }
+
+        @media(max-width:430px) {
+            .collection-hero-coord {
+                min-height: 300px;
+            }
+
+            .collection-hero-coord h1 {
+                font-size: 47px;
+            }
+
+            .coord-frame-1 {
+                width: 470px;
+                height: 150px;
+            }
+
+            .coord-frame-2 {
+                width: 365px;
+                height: 118px;
+            }
+
+            .coord-frame-3 {
+                width: 285px;
+                height: 90px;
+            }
+
+            .coord-line {
+                width: 470px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <!-- LOGO -->
+
+        <a
+            href="{{ url_for('home') }}"
+            class="brand"
+            aria-label="Alzor Couture Home"
+        >
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Alzor Couture"
+            >
+        </a>
+
+        <!-- NAVIGATION -->
+
+        <nav
+            class="main-nav"
+            aria-label="Main navigation"
+        >
+
+            <a
+                href="{{ url_for('home') }}"
+                class="nav-link"
+            >
+                HOME
+            </a>
+
+            <a
+                href="{{ url_for('new_arrivals') }}"
+                class="nav-link"
+            >
+                NEW ARRIVALS
+            </a>
+
+            <a
+                href="{{ url_for('dresses') }}"
+                class="nav-link"
+            >
+                DRESSES
+            </a>
+
+            <a
+                href="{{ url_for('co_ord_sets') }}"
+                class="nav-link active"
+                aria-current="page"
+            >
+                CO-ORD SETS
+            </a>
+
+        </nav>
+
+        <!-- HEADER ACTIONS -->
+
+        <div class="header-actions">
+
+            <!-- SEARCH -->
+
+            <button
+                type="button"
+                class="header-action search-button alzor-icon-button"
+                id="alzorSearchButton"
+                aria-label="Open search"
+                aria-controls="alzorSearchOverlay"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-search-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <circle
+                        cx="13.5"
+                        cy="13.5"
+                        r="8.2"
+                    ></circle>
+
+                    <path
+                        d="M19.5 19.5 L27 27"
+                    ></path>
+
+                </svg>
+
+            </button>
+
+            <!-- WISHLIST -->
+
+            <a
+                href="{{ url_for('wishlist') }}"
+                class="header-action wishlist-button alzor-icon-button"
+                aria-label="Wishlist"
+                title="Wishlist"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-heart-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="
+                            M16 26.4
+                            C14.9 25.4 7 18.6 5.2 14
+                            C3.8 10.4 5.3 6.4 9.1 5.3
+                            C11.8 4.5 14.5 5.8 16 8.1
+                            C17.5 5.8 20.2 4.5 22.9 5.3
+                            C26.7 6.4 28.2 10.4 26.8 14
+                            C25 18.6 17.1 25.4 16 26.4 Z
+                        "
+                    ></path>
+
+                </svg>
+
+            </a>
+
+            <!-- SHOPPING BAG -->
+
+            <a
+                href="{{ url_for('cart') }}"
+                class="header-action bag-button alzor-icon-button"
+                aria-label="Shopping Bag"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-bag-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M8.2 10.8 H23.8 L22.7 27 H9.3 Z"
+                    ></path>
+
+                    <path
+                        d="M12 11 V8.9 A4 4 0 0 1 20 8.9 V11"
+                    ></path>
+
+                </svg>
+
+                <span class="cart-count">
+                    {{ cart_count }}
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+<!-- SEARCH OVERLAY -->
+
+<div
+    class="alzor-search-overlay"
+    id="alzorSearchOverlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="alzor-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="alzorSearchTitle"
+    >
+
+        <div class="alzor-search-top">
+
+            <span
+                class="alzor-search-mark"
+                id="alzorSearchTitle"
+            >
+                SEARCH ALZOR
+            </span>
+
+            <form
+                class="alzor-search-form"
+                id="alzorSearchForm"
+                autocomplete="off"
+            >
+
+                <span
+                    class="alzor-search-icon"
+                    aria-hidden="true"
+                ></span>
+
+                <input
+                    type="search"
+                    class="alzor-search-input"
+                    id="alzorSearchInput"
+                    placeholder="Search dresses, co-ord sets..."
+                    aria-label="Search Alzor Couture"
+                    spellcheck="false"
+                >
+
+            </form>
+
+            <button
+                type="button"
+                class="alzor-search-close"
+                id="alzorSearchClose"
+                aria-label="Close search"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="alzor-search-body">
+
+            <p
+                class="alzor-search-status"
+                id="alzorSearchStatus"
+            >
+                Search the Alzor collection
+            </p>
+
+            <div
+                class="alzor-search-results"
+                id="alzorSearchResults"
+            >
+
+                <div
+                    class="alzor-search-empty"
+                    style="grid-column: 1 / -1;"
+                >
+
+                    <p>ALZOR COUTURE</p>
+
+                    <h3>
+                        Find your piece
+                    </h3>
+
+                    <p>
+                        Search by product name,
+                        category, colour, fabric
+                        or design detail.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MAIN -->
+
+<main>
+
+    <section
+        class="collection-hero collection-hero-motion collection-hero-coord"
+        aria-labelledby="coord-sets-title"
+    >
+
+        <div
+            class="coord-grid"
+            aria-hidden="true"
+        ></div>
+
+        <div
+            class="coord-frame coord-frame-1"
+            aria-hidden="true"
+        ></div>
+
+        <div
+            class="coord-frame coord-frame-2"
+            aria-hidden="true"
+        ></div>
+
+        <div
+            class="coord-frame coord-frame-3"
+            aria-hidden="true"
+        ></div>
+
+        <div
+            class="coord-line coord-line-1"
+            aria-hidden="true"
+        ></div>
+
+        <div
+            class="coord-line coord-line-2"
+            aria-hidden="true"
+        ></div>
+
+        <span
+            class="coord-point coord-point-1"
+            aria-hidden="true"
+        ></span>
+
+        <span
+            class="coord-point coord-point-2"
+            aria-hidden="true"
+        ></span>
+
+        <span
+            class="coord-point coord-point-3"
+            aria-hidden="true"
+        ></span>
+
+        <span
+            class="coord-point coord-point-4"
+            aria-hidden="true"
+        ></span>
+
+        <div class="collection-hero-content">
+
+            <p class="eyebrow">
+                ALZOR COUTURE
+            </p>
+
+            <h1 id="coord-sets-title">
+                Co-Ord Sets
+            </h1>
+
+            <p>
+                Refined two-piece silhouettes
+                designed to make every moment memorable.
+            </p>
+
+        </div>
+
+    </section>
+
+    <!-- COLLECTION -->
+
+    <section class="collection-section">
+
+        <div class="collection-topline">
+
+            <span>
+                CO-ORD SETS
+            </span>
+
+            <span>
+                {{ products|length }} PIECES
+            </span>
+
+        </div>
+
+        <div class="collection-grid">
+
+            {% for product in products %}
+
+            <article class="arrival-card">
+
+                <a
+                    href="{{ url_for('product', slug=product.slug) }}"
+                    class="arrival-image-link"
+                    aria-label="View {{ product.name }}"
+                >
+
+                    <div class="arrival-image">
+
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='images/' ~ product.images[0]
+                            ) }}"
+                            alt="{{ product.name }}"
+                            loading="lazy"
+                        >
+
+                        {% if product.slug == 'pastel-edge-set'
+                              or product.slug == 'shadow-blossom-ensemble' %}
+
+                        <span class="new-label">
+                            NEW
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+                <div class="product-card-info">
+
+                    <p class="product-card-category">
+                        {{ product.category }}
+                    </p>
+
+                    <h3>
+                        {{ product.name }}
+                    </h3>
+
+                    <p class="product-card-price">
+
+                        {% if product.original_price is defined
+                              and product.original_price is not none
+                              and product.price is not none %}
+
+                            <span class="price-original">
+                                ₹{{ "{:,}".format(product.original_price) }}
+                            </span>
+
+                            <span class="price-current">
+                                ₹{{ "{:,}".format(product.price) }}
+                            </span>
+
+                        {% elif product.price is not none %}
+
+                            <span class="price-current">
+                                ₹{{ "{:,}".format(product.price) }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="price-request">
+                                PRICE ON REQUEST
+                            </span>
+
+                        {% endif %}
+
+                    </p>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="collection-statement">
+
+            <p class="eyebrow">
+                THE ALZOR SIGNATURE
+            </p>
+
+            <h2>
+                Designed to be remembered.
+            </h2>
+
+            <p>
+                Discover contemporary co-ord sets created
+                with a balance of structure, softness
+                and effortless elegance.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+
+<footer class="site-footer">
+
+    <div class="footer-inner">
+
+        <div class="footer-brand">
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/logo.png'
+                ) }}"
+                alt="Alzor Couture"
+            >
+
+            <p>
+                Elegance, reimagined.
+            </p>
+
+        </div>
+
+        <div class="footer-links">
+
+            <a href="{{ url_for('home') }}">
+                HOME
+            </a>
+
+            <a href="{{ url_for('new_arrivals') }}">
+                NEW ARRIVALS
+            </a>
+
+            <a href="{{ url_for('dresses') }}">
+                DRESSES
+            </a>
+
+            <a href="{{ url_for('co_ord_sets') }}">
+                CO-ORD SETS
+            </a>
+
+        </div>
+
+        <div class="footer-bottom">
+            © 2026 ALZOR COUTURE.
+            ALL RIGHTS RESERVED.
+        </div>
+
+    </div>
+
+</footer>
+
+<script
+    src="{{ url_for('static', filename='js/script.js') }}?v=37"
+></script>
+
+<script
+    src="{{ url_for('static', filename='js/search.js') }}?v=2"
+></script>
+
+</body>
+</html>

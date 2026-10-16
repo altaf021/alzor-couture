@@ -1,0 +1,727 @@
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for
+
+app = Flask(__name__)
+app.secret_key = "alzor-couture-secret-key"
+
+
+# =========================================================
+# CO-ORD SET PRODUCTS
+# =========================================================
+
+PRODUCTS = [
+
+    {
+        "name": "Denim Éclat Set",
+        "slug": "denim-eclat-set",
+        "category": "CO-ORD SET",
+        "price": 6999,
+        "original_price": 8399,
+        "images": [
+            "denim-1.JPG",
+            "denim-2.JPG",
+            "denim-3.JPG",
+            "denim-4.JPG",
+            "denim-5.JPG"
+        ],
+        "description":
+            "A refined denim co-ord designed with a contemporary couture sensibility.",
+        "details": [
+            "Premium denim fabric",
+            "Relaxed yet structured silhouette",
+            "Two-piece co-ord set",
+            "Designed for elevated everyday dressing"
+        ],
+        "care":
+            "Dry clean recommended."
+    },
+
+    {
+        "name": "Scarlet MUSE Set (Black)",
+        "slug": "scarlet-muse-set-black",
+        "category": "CO-ORD SET",
+        "price": 7499,
+        "original_price": 8999,
+        "images": [
+            "SMB.png",
+            "SMB-1.png",
+            "SMB-2.png",
+            "SMB-3.png",
+            "SMB-4.png"
+        ],
+        "description":
+            "A sophisticated black co-ord set created for a bold yet elegant statement.",
+        "details": [
+            "Premium fabric",
+            "Contemporary silhouette",
+            "Two-piece set",
+            "Elegant statement design"
+        ],
+        "care":
+            "Dry clean recommended."
+    },
+
+    {
+        "name": "Monochrome Fleur Set",
+        "slug": "monochrome-fleur-set",
+        "category": "CO-ORD SET",
+        "price": 4999,
+        "original_price": 5999,
+        "images": [
+            "MFS.jpg",
+            "MFS-2.jpg",
+            "MFS-3.jpg",
+            "MFS-4.jpg",
+            "MFS-5.jpg"
+        ],
+        "description":
+            "A graceful monochrome co-ord combining floral elegance with a clean contemporary aesthetic.",
+        "details": [
+            "Cotton fabric",
+            "Floral-inspired detailing",
+            "Two-piece co-ord set",
+            "Comfortable and versatile silhouette"
+        ],
+        "care":
+            "Gentle wash or dry clean recommended."
+    },
+
+    {
+        "name": "Alzor Golden Veil Set",
+        "slug": "alzor-golden-veil-set",
+        "category": "CO-ORD SET",
+        "price": 5999,
+        "original_price": 7199,
+        "images": [
+            "AGVS.png",
+            "AGVS-2.png",
+            "AGVS-3.png",
+            "AGVS-4.png",
+            "AGVS-5.png"
+        ],
+        "description":
+            "A luminous co-ord set crafted to capture the understated elegance of golden tones.",
+        "details": [
+            "Banana crepe fabric",
+            "Soft flowing silhouette",
+            "Two-piece co-ord set",
+            "Elegant occasion-ready design"
+        ],
+        "care":
+            "Dry clean recommended."
+    },
+
+    {
+        "name": "Alzor Eclipse Ensemble",
+        "slug": "alzor-eclipse-ensemble",
+        "category": "CO-ORD SET",
+        "price": 7499,
+        "original_price": 8999,
+        "images": [
+            "AEE-1.png",
+            "AEE-2.png",
+            "AEE-3.png",
+            "AEE-4.png",
+            "AEE-5.png"
+        ],
+        "description":
+            "A striking monochrome ensemble defined by sharp contrast, refined tailoring and contemporary elegance.",
+        "details": [
+            "Black and white co-ord set",
+            "Contemporary tailored silhouette",
+            "Floral shoulder detailing",
+            "Button-front design",
+            "Statement sleeve detailing"
+        ],
+        "care":
+            "Dry clean recommended."
+    },
+
+    {
+        "name": "Pastel Edge Set",
+        "slug": "pastel-edge-set",
+        "category": "CO-ORD SET",
+        "price": 6499,
+        "original_price": 7799,
+        "images": [
+            "white.jpg",
+            "white-2.jpeg",
+            "white-3.jpeg",
+            "white-4.jpeg"
+        ],
+        "description":
+            "A refined pastel co-ord set with a soft contemporary edge, designed for effortless elegance.",
+        "details": [
+            "Two-piece co-ord set",
+            "Soft pastel aesthetic",
+            "Contemporary silhouette",
+            "Elegant everyday statement"
+        ],
+        "care":
+            "Gentle wash or dry clean recommended."
+    },
+
+    {
+        "name": "Shadow Blossom Ensemble",
+        "slug": "shadow-blossom-ensemble",
+        "category": "CO-ORD SET",
+        "price": 7999,
+        "original_price": 9599,
+        "images": [
+            "SBE.png",
+            "SBE-2.png",
+            "SBE-3.png",
+            "SBE-4.png",
+            "SBE-5.png"
+        ],
+        "description":
+            "A sophisticated floral co-ord ensemble designed with a refined contemporary silhouette.",
+        "details": [
+            "Black co-ord set",
+            "Floral sheer overlay",
+            "Contemporary silhouette",
+            "Elegant statement design"
+        ],
+        "care":
+            "Dry clean recommended."
+    }
+]
+
+
+# =========================================================
+# DRESSES
+# =========================================================
+
+DRESSES = [
+
+    {
+        "name": "Teal Fairy Dress",
+        "slug": "teal-fairy-dress",
+        "category": "DRESS",
+        "price": 5999,
+        "original_price": 7199,
+        "images": [
+            "gd1.jpeg",
+            "gd2.jpeg",
+            "gd3.jpeg",
+            "gd4.jpeg",
+            "gd5.jpeg"
+        ],
+        "description":
+            "A graceful teal dress designed with delicate floral detailing and a soft feminine silhouette.",
+        "details": [
+            "Teal dress",
+            "Floral neckline detailing",
+            "Button-front design",
+            "Matching waist belt",
+            "Soft flared silhouette"
+        ],
+        "care":
+            "Gentle wash or dry clean recommended."
+    }
+]
+
+
+# =========================================================
+# INSTAGRAM
+# =========================================================
+
+INSTAGRAM_POSTS = [
+
+    {
+        "image": "insta-1.jpeg",
+        "url": "https://www.instagram.com/p/DYjBcjSD0VV/"
+    },
+
+    {
+        "image": "insta-2.jpeg",
+        "url": "https://www.instagram.com/p/DYJfSCRD4_x/"
+    },
+
+    {
+        "image": "insta-3.jpeg",
+        "url": "https://www.instagram.com/p/DXivl08D7lP/"
+    },
+
+    {
+        "image": "insta-4.jpeg",
+        "url": "https://www.instagram.com/p/DW-m9WID2QF/"
+    },
+
+    {
+        "image": "insta-5.jpeg",
+        "url": "https://www.instagram.com/p/DYTl-rxDwm0/"
+    }
+]
+
+
+# =========================================================
+# ALL PRODUCTS
+# =========================================================
+
+def get_all_products():
+    return PRODUCTS + DRESSES
+
+
+# =========================================================
+# FIND PRODUCT
+# =========================================================
+
+def find_product(slug):
+    return next(
+        (
+            product
+            for product in get_all_products()
+            if product["slug"] == slug
+        ),
+        None
+    )
+
+
+# =========================================================
+# CART HELPERS
+# =========================================================
+
+def get_cart_count():
+    cart = session.get("cart", [])
+    total_quantity = 0
+
+    for item in cart:
+        try:
+            total_quantity += int(item.get("quantity", 1))
+        except (TypeError, ValueError):
+            total_quantity += 1
+
+    return total_quantity
+
+
+def get_cart_subtotal():
+    cart = session.get("cart", [])
+    subtotal = 0
+
+    for item in cart:
+        product = find_product(item.get("slug"))
+
+        # Products without a price cannot contribute to a numeric subtotal.
+        if product is None or product.get("price") is None:
+            continue
+
+        try:
+            quantity = int(item.get("quantity", 1))
+        except (TypeError, ValueError):
+            quantity = 1
+
+        if quantity < 1:
+            quantity = 1
+
+        subtotal += product["price"] * quantity
+
+    return subtotal
+
+
+# =========================================================
+# GLOBAL CART COUNT
+# =========================================================
+
+@app.context_processor
+def inject_cart_count():
+    return {
+        "cart_count": get_cart_count()
+    }
+
+
+# =========================================================
+# HOME
+# =========================================================
+
+@app.route("/")
+def home():
+    return render_template(
+        "index.html",
+        products=PRODUCTS,
+        instagram_posts=INSTAGRAM_POSTS
+    )
+
+
+# =========================================================
+# NEW ARRIVALS
+# =========================================================
+
+@app.route("/new-arrivals")
+def new_arrivals():
+    new_arrival_products = PRODUCTS + DRESSES
+
+    return render_template(
+        "newarrival.html",
+        products=new_arrival_products
+    )
+
+
+# =========================================================
+# DRESSES
+# =========================================================
+
+@app.route("/dresses")
+def dresses():
+    return render_template(
+        "dresses.html",
+        dresses=DRESSES
+    )
+
+
+# =========================================================
+# CO-ORD SETS
+# =========================================================
+
+@app.route("/co-ord-sets")
+def co_ord_sets():
+    co_ord_products = [
+        product
+        for product in PRODUCTS
+        if product["category"] == "CO-ORD SET"
+    ]
+
+    return render_template(
+        "coordsets.html",
+        products=co_ord_products
+    )
+
+
+# =========================================================
+# SEARCH
+# =========================================================
+
+@app.route("/search")
+def search_page():
+    query = request.args.get("q", "").strip()
+
+    return render_template(
+        "search.html",
+        query=query
+    )
+
+
+@app.route("/api/search")
+def api_search():
+    query = request.args.get("q", "").strip()
+
+    if not query:
+        return jsonify({
+            "query": "",
+            "results": []
+        })
+
+    # Search across product name, category, description, details and care text.
+    query_lower = query.casefold()
+    query_words = [word for word in query_lower.split() if word]
+    results = []
+
+    for product in get_all_products():
+        searchable_parts = [
+            product.get("name", ""),
+            product.get("category", ""),
+            product.get("description", ""),
+            product.get("care", ""),
+            " ".join(product.get("details", []))
+        ]
+
+        searchable_text = " ".join(searchable_parts).casefold()
+        name_lower = product.get("name", "").casefold()
+
+        score = 0
+
+        if query_lower in name_lower:
+            score += 100
+        if name_lower.startswith(query_lower):
+            score += 40
+        if query_lower in product.get("category", "").casefold():
+            score += 25
+        if query_lower in searchable_text:
+            score += 10
+
+        # Reward results containing all individual search words.
+        score += sum(5 for word in query_words if word in searchable_text)
+
+        if score > 0:
+            results.append({
+                "name": product.get("name"),
+                "slug": product.get("slug"),
+                "category": product.get("category"),
+                "image": url_for("static", filename="images/" + product["images"][0]),
+                "price": product.get("price"),
+                "original_price": product.get("original_price"),
+                "score": score
+            })
+
+    results.sort(key=lambda item: (-item["score"], item["name"].casefold()))
+
+    for item in results:
+        item.pop("score", None)
+
+    return jsonify({
+        "query": query,
+        "results": results[:24]
+    })
+
+
+# =========================================================
+# PRODUCT PAGE
+# =========================================================
+
+@app.route("/product/<slug>")
+def product(slug):
+    selected_product = find_product(slug)
+
+    if selected_product is None:
+        return "Product not found", 404
+
+    return render_template(
+        "product.html",
+        product=selected_product
+    )
+
+
+# =========================================================
+# CART PAGE
+# =========================================================
+
+@app.route("/cart")
+def cart():
+    stored_cart = session.get("cart", [])
+    cart_items = []
+    subtotal = 0
+
+    for item in stored_cart:
+        product = find_product(item.get("slug"))
+
+        if product is None:
+            continue
+
+        try:
+            quantity = int(item.get("quantity", 1))
+        except (TypeError, ValueError):
+            quantity = 1
+
+        if quantity < 1:
+            quantity = 1
+
+        price = product.get("price")
+
+        if price is None:
+            item_total = None
+        else:
+            item_total = price * quantity
+            subtotal += item_total
+
+        cart_items.append({
+            "slug": product["slug"],
+            "name": product["name"],
+            "category": product["category"],
+            "price": product.get("price"),
+            "original_price": product.get("original_price"),
+            "image": product["images"][0],
+            "size": item.get("size", "S"),
+            "quantity": quantity,
+            "total": item_total
+        })
+
+    return render_template(
+        "cart.html",
+        cart_items=cart_items,
+        subtotal=subtotal
+    )
+
+
+# =========================================================
+# ADD TO CART
+# =========================================================
+
+@app.route("/add-to-cart", methods=["POST"])
+def add_to_cart():
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        slug = data.get("slug")
+        size = data.get("size")
+    else:
+        slug = request.form.get("slug")
+        size = request.form.get("size")
+
+    product = find_product(slug)
+
+    if product is None:
+        if request.is_json:
+            return jsonify({
+                "success": False,
+                "message": "Product not found."
+            }), 404
+
+        return "Product not found", 404
+
+    if size not in ["S", "M", "L"]:
+        if request.is_json:
+            return jsonify({
+                "success": False,
+                "message": "Please select S, M or L."
+            }), 400
+
+        return "Invalid size", 400
+
+    cart = session.get("cart", [])
+    existing_item = None
+
+    for item in cart:
+        if (
+            item.get("slug") == slug
+            and item.get("size") == size
+        ):
+            existing_item = item
+            break
+
+    if existing_item:
+        try:
+            current_quantity = int(existing_item.get("quantity", 1))
+        except (TypeError, ValueError):
+            current_quantity = 1
+
+        existing_item["quantity"] = min(current_quantity + 1, 20)
+
+    else:
+        cart.append({
+            "slug": slug,
+            "size": size,
+            "quantity": 1
+        })
+
+    session["cart"] = cart
+    session.modified = True
+
+    total_quantity = get_cart_count()
+
+    if request.is_json:
+        return jsonify({
+            "success": True,
+            "message": f"{product['name']} added to your bag.",
+            "cart_count": total_quantity
+        })
+
+    return redirect(url_for("cart"))
+
+
+# =========================================================
+# UPDATE CART QUANTITY
+# =========================================================
+
+@app.route("/update-cart", methods=["POST"])
+def update_cart():
+    data = request.get_json(silent=True) or {}
+
+    slug = data.get("slug")
+    size = data.get("size")
+
+    try:
+        quantity = int(data.get("quantity", 1))
+    except (TypeError, ValueError):
+        quantity = 1
+
+    if quantity < 1:
+        quantity = 1
+
+    if quantity > 20:
+        quantity = 20
+
+    cart = session.get("cart", [])
+    item_found = False
+
+    for item in cart:
+        if (
+            item.get("slug") == slug
+            and item.get("size") == size
+        ):
+            item["quantity"] = quantity
+            item_found = True
+            break
+
+    if not item_found:
+        return jsonify({
+            "success": False,
+            "message": "Cart item not found."
+        }), 404
+
+    session["cart"] = cart
+    session.modified = True
+
+    product = find_product(slug)
+    price = product.get("price") if product else None
+
+    if price is None:
+        item_total = None
+    else:
+        item_total = price * quantity
+
+    return jsonify({
+        "success": True,
+        "quantity": quantity,
+        "item_total": item_total,
+        "subtotal": get_cart_subtotal(),
+        "cart_count": get_cart_count()
+    })
+
+
+# =========================================================
+# REMOVE FROM CART
+# =========================================================
+
+@app.route("/remove-from-cart", methods=["POST"])
+def remove_from_cart():
+    data = request.get_json(silent=True) or {}
+
+    slug = data.get("slug")
+    size = data.get("size")
+
+    cart = session.get("cart", [])
+
+    new_cart = [
+        item
+        for item in cart
+        if not (
+            item.get("slug") == slug
+            and item.get("size") == size
+        )
+    ]
+
+    session["cart"] = new_cart
+    session.modified = True
+
+    return jsonify({
+        "success": True,
+        "subtotal": get_cart_subtotal(),
+        "cart_count": get_cart_count()
+    })
+
+
+# =========================================================
+# CLEAR CART
+# =========================================================
+
+@app.route("/clear-cart", methods=["POST"])
+def clear_cart():
+    session["cart"] = []
+    session.modified = True
+
+    return jsonify({
+        "success": True,
+        "subtotal": 0,
+        "cart_count": 0
+    })
+
+
+# =========================================================
+# RUN
+# =========================================================
+
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True,
+        use_reloader=False
+    )

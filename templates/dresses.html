@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Explore feminine silhouettes from Alzor Couture."
+    >
+
+    <title>Dresses — Alzor Couture</title>
+
+
+    <!-- =====================================================
+         MAIN ALZOR STYLESHEET
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}?v=38"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/search.css') }}?v=1"
+    >
+
+
+    <!-- =====================================================
+         NEW ARRIVALS MOTION GRAPHICS
+    ====================================================== -->
+
+    <style>
+/* DRESSES MOTION — soft botanical / petal-light */
+.collection-hero-motion{position:relative;min-height:390px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at center,rgba(255,255,255,.92) 0%,rgba(244,241,234,.58) 48%,rgba(248,246,241,0) 82%)}
+.dress-light-veil{position:absolute;top:50%;left:50%;width:640px;height:250px;transform:translate(-50%,-50%) rotate(-10deg);border-radius:50%;background:radial-gradient(ellipse,rgba(173,138,81,.10),rgba(255,255,255,.25) 42%,transparent 74%);filter:blur(8px);z-index:1;animation:dressVeil 7s ease-in-out infinite;pointer-events:none}
+.dress-petal{position:absolute;top:50%;left:50%;width:520px;height:165px;border:1px solid rgba(173,138,81,.16);border-radius:52% 48% 60% 40%;transform:translate(-50%,-50%) rotate(0deg);z-index:3;pointer-events:none}
+.dress-petal::after{content:"";position:absolute;inset:16px 44px;border-top:1px solid rgba(173,138,81,.13);border-bottom:1px solid rgba(173,138,81,.08);border-radius:50%}
+.dress-petal-1{animation:dressPetalOne 15s ease-in-out infinite}
+.dress-petal-2{width:430px;height:140px;border-color:rgba(173,138,81,.12);animation:dressPetalTwo 12s ease-in-out infinite}
+.dress-petal-3{width:340px;height:112px;border-color:rgba(173,138,81,.09);animation:dressPetalThree 10s ease-in-out infinite}
+.dress-particle{position:absolute;width:4px;height:4px;border-radius:50%;background:rgba(173,138,81,.45);box-shadow:0 0 14px rgba(173,138,81,.18);z-index:5;pointer-events:none}
+.dress-particle-1{top:27%;left:23%;animation:dressFloatOne 6.5s ease-in-out infinite}.dress-particle-2{top:64%;left:28%;animation:dressFloatTwo 8s ease-in-out infinite}.dress-particle-3{top:31%;left:77%;width:3px;height:3px;animation:dressFloatThree 7s ease-in-out infinite}.dress-particle-4{top:68%;left:73%;width:3px;height:3px;animation:dressFloatFour 9s ease-in-out infinite}.dress-particle-5{top:49%;left:17%;width:2px;height:2px;animation:dressFloatFive 8.5s ease-in-out infinite}.dress-particle-6{top:45%;left:83%;width:2px;height:2px;animation:dressFloatSix 7.5s ease-in-out infinite}
+.collection-hero-dresses .collection-hero-content{position:relative;z-index:20;width:min(950px,92%);margin:0 auto;text-align:center;animation:dressTextReveal 1.2s cubic-bezier(.22,.61,.36,1) both}
+.collection-hero-dresses .eyebrow{position:relative;z-index:20;margin-bottom:20px}.collection-hero-dresses h1{position:relative;z-index:20;margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(58px,7vw,90px);line-height:1;font-weight:400;letter-spacing:-3px;color:#171717;text-shadow:0 4px 25px rgba(248,246,241,.95),0 0 18px rgba(255,255,255,.62)}.collection-hero-dresses p:last-child{position:relative;z-index:20;margin-top:22px}
+@keyframes dressVeil{0%,100%{opacity:.45;transform:translate(-50%,-50%) rotate(-10deg) scale(.94)}50%{opacity:.95;transform:translate(-50%,-50%) rotate(5deg) scale(1.08)}}@keyframes dressPetalOne{0%{transform:translate(-50%,-50%) rotate(-22deg) scale(.98)}50%{transform:translate(-50%,-50%) rotate(17deg) scale(1.05)}100%{transform:translate(-50%,-50%) rotate(338deg) scale(.98)}}@keyframes dressPetalTwo{0%{transform:translate(-50%,-50%) rotate(25deg)}50%{transform:translate(-50%,-50%) rotate(-9deg) scale(.96)}100%{transform:translate(-50%,-50%) rotate(-335deg)}}@keyframes dressPetalThree{0%{transform:translate(-50%,-50%) rotate(-32deg)}50%{transform:translate(-50%,-50%) rotate(12deg) scale(1.06)}100%{transform:translate(-50%,-50%) rotate(328deg)}}@keyframes dressFloatOne{0%,100%{transform:translate(0,0);opacity:.15}50%{transform:translate(19px,-17px);opacity:.72}}@keyframes dressFloatTwo{0%,100%{transform:translate(0,0);opacity:.12}50%{transform:translate(-15px,18px);opacity:.62}}@keyframes dressFloatThree{0%,100%{transform:translate(0,0);opacity:.10}50%{transform:translate(-14px,-15px);opacity:.62}}@keyframes dressFloatFour{0%,100%{transform:translate(0,0);opacity:.10}50%{transform:translate(12px,16px);opacity:.56}}@keyframes dressFloatFive{0%,100%{transform:translate(0,0);opacity:.08}50%{transform:translate(15px,11px);opacity:.48}}@keyframes dressFloatSix{0%,100%{transform:translate(0,0);opacity:.08}50%{transform:translate(-13px,-12px);opacity:.52}}@keyframes dressTextReveal{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.dress-light-veil,.dress-petal,.dress-particle,.collection-hero-dresses .collection-hero-content{animation:none!important}}
+@media(max-width:900px){.collection-hero-dresses{min-height:355px}.dress-petal-1{width:720px;height:220px}.dress-petal-2{width:600px;height:185px}.dress-petal-3{width:470px;height:145px}}
+@media(max-width:700px){.collection-hero-dresses{min-height:325px}.collection-hero-dresses h1{font-size:52px;letter-spacing:-2px}.dress-petal-1{width:560px;height:175px}.dress-petal-2{width:450px;height:140px}.dress-petal-3{width:350px;height:110px}.dress-light-veil{width:260px;height:140px}}
+@media(max-width:430px){.collection-hero-dresses{min-height:300px}.collection-hero-dresses h1{font-size:47px}.dress-petal-1{width:465px;height:145px}.dress-petal-2{width:360px;height:115px}.dress-petal-3{width:275px;height:90px}}
+    </style>
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+
+        <!-- LOGO -->
+
+        <a
+            href="{{ url_for('home') }}"
+            class="brand"
+            aria-label="Alzor Couture Home"
+        >
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/logo.png'
+                ) }}"
+                alt="Alzor Couture"
+            >
+
+        </a>
+
+
+        <!-- NAVIGATION -->
+
+        <nav
+            class="main-nav"
+            aria-label="Main navigation"
+        >
+
+            <a href="{{ url_for('home') }}" class="nav-link"
+            >
+                HOME
+            </a>
+
+
+            <a href="{{ url_for('new_arrivals') }}" class="nav-link"
+                aria-current="page"
+            >
+                NEW ARRIVALS
+            </a>
+
+
+            <a href="{{ url_for('dresses') }}" class="nav-link active"
+            >
+                DRESSES
+            </a>
+
+
+            <a href="{{ url_for('co_ord_sets') }}" class="nav-link"
+            >
+                CO-ORD SETS
+            </a>
+
+        </nav>
+
+
+        <!-- HEADER ACTIONS -->
+
+        
+        <div class="header-actions">
+
+            <!-- SEARCH -->
+            <button
+                type="button"
+                class="header-action search-button alzor-icon-button"
+                id="alzorSearchButton"
+                aria-label="Open search"
+                aria-controls="alzorSearchOverlay"
+            >
+                <svg
+                    class="alzor-header-icon alzor-search-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <circle cx="13.5" cy="13.5" r="8.2"></circle>
+                    <path d="M19.5 19.5 L27 27"></path>
+                </svg>
+            </button>
+
+            <!-- WISHLIST -->
+            <a
+                href="{{ url_for('wishlist') }}"
+                class="header-action wishlist-button alzor-icon-button"
+                aria-label="Wishlist"
+                title="Wishlist"
+            >
+                <svg
+                    class="alzor-header-icon alzor-heart-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M16 26.4
+                           C14.9 25.4 7 18.6 5.2 14
+                           C3.8 10.4 5.3 6.4 9.1 5.3
+                           C11.8 4.5 14.5 5.8 16 8.1
+                           C17.5 5.8 20.2 4.5 22.9 5.3
+                           C26.7 6.4 28.2 10.4 26.8 14
+                           C25 18.6 17.1 25.4 16 26.4 Z"
+                    ></path>
+                </svg>
+            </a>
+
+            <!-- SHOPPING BAG -->
+            <a
+                href="{{ url_for('cart') }}"
+                class="header-action bag-button alzor-icon-button"
+                aria-label="Shopping Bag"
+            >
+                <svg
+                    class="alzor-header-icon alzor-bag-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+                    <path d="M8.2 10.8 H23.8 L22.7 27 H9.3 Z"></path>
+                    <path d="M12 11 V8.9 A4 4 0 0 1 20 8.9 V11"></path>
+                </svg>
+
+                <span class="cart-count">
+                    {{ cart_count }}
+                </span>
+            </a>
+
+        </div>
+
+    </div>
+</header>
+
+
+<!-- =====================================================
+     ALZOR SEARCH OVERLAY
+===================================================== -->
+
+<div
+    class="alzor-search-overlay"
+    id="alzorSearchOverlay"
+    aria-hidden="true"
+>
+    <div
+        class="alzor-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="alzorSearchTitle"
+    >
+        <div class="alzor-search-top">
+
+            <span
+                class="alzor-search-mark"
+                id="alzorSearchTitle"
+            >
+                SEARCH ALZOR
+            </span>
+
+            <form
+                class="alzor-search-form"
+                id="alzorSearchForm"
+                autocomplete="off"
+            >
+                <span
+                    class="alzor-search-icon"
+                    aria-hidden="true"
+                ></span>
+
+                <input
+                    type="search"
+                    class="alzor-search-input"
+                    id="alzorSearchInput"
+                    placeholder="Search dresses, co-ord sets..."
+                    aria-label="Search Alzor Couture"
+                    spellcheck="false"
+                >
+            </form>
+
+            <button
+                type="button"
+                class="alzor-search-close"
+                id="alzorSearchClose"
+                aria-label="Close search"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <div class="alzor-search-body">
+
+            <p
+                class="alzor-search-status"
+                id="alzorSearchStatus"
+            >
+                Search the Alzor collection
+            </p>
+
+            <div
+                class="alzor-search-results"
+                id="alzorSearchResults"
+            >
+                <div
+                    class="alzor-search-empty"
+                    style="grid-column: 1 / -1;"
+                >
+                    <p>ALZOR COUTURE</p>
+                    <h3>Find your piece</h3>
+                    <p>
+                        Search by product name, category, colour,
+                        fabric or design detail.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main>
+
+
+    <!-- =================================================
+         NEW ARRIVALS HERO
+    ================================================== -->
+
+    
+<section
+    class="collection-hero collection-hero-motion collection-hero-dresses"
+    aria-labelledby="dresses-title"
+>
+    <div class="dress-light-veil" aria-hidden="true"></div>
+    <div class="dress-petal dress-petal-1" aria-hidden="true"></div>
+    <div class="dress-petal dress-petal-2" aria-hidden="true"></div>
+    <div class="dress-petal dress-petal-3" aria-hidden="true"></div>
+
+    <span class="dress-particle dress-particle-1" aria-hidden="true"></span>
+    <span class="dress-particle dress-particle-2" aria-hidden="true"></span>
+    <span class="dress-particle dress-particle-3" aria-hidden="true"></span>
+    <span class="dress-particle dress-particle-4" aria-hidden="true"></span>
+    <span class="dress-particle dress-particle-5" aria-hidden="true"></span>
+    <span class="dress-particle dress-particle-6" aria-hidden="true"></span>
+
+    <div class="collection-hero-content">
+        <p class="eyebrow">ALZOR COUTURE</p>
+        <h1 id="dresses-title">Dresses</h1>
+        <p>Feminine silhouettes designed with effortless elegance.</p>
+    </div>
+</section>
+
+
+
+
+    <!-- DRESSES COLLECTION -->
+<section class="collection-section">
+
+    <div class="collection-topline">
+        <span>DRESSES</span>
+        <span>{{ dresses|length }} PIECES</span>
+    </div>
+
+    {% if dresses %}
+    <div class="collection-grid">
+        {% for product in dresses %}
+        <article class="arrival-card">
+            <a
+                href="{{ url_for('product', slug=product.slug) }}"
+                class="arrival-image-link"
+                aria-label="View {{ product.name }}"
+            >
+                <div class="arrival-image">
+                    <img
+                        src="{{ url_for('static', filename='images/' ~ product.images[0]) }}"
+                        alt="{{ product.name }}"
+                        loading="lazy"
+                    >
+                    <span class="new-label">NEW</span>
+                </div>
+            </a>
+
+
+<div class="product-card-info">
+                <p class="product-card-category">{{ product.category }}</p>
+                <h3>{{ product.name }}</h3>
+
+                <p class="product-card-price">
+                    {% if product.original_price is defined and product.original_price is not none and product.price is not none %}
+                        <span class="price-original">₹{{ "{:,}".format(product.original_price) }}</span>
+                        <span class="price-current">₹{{ "{:,}".format(product.price) }}</span>
+                    {% elif product.price is not none %}
+                        <span class="price-current">₹{{ "{:,}".format(product.price) }}</span>
+                    {% else %}
+                        <span class="price-request">PRICE ON REQUEST</span>
+                    {% endif %}
+                </p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-collection">
+        <p class="eyebrow">ALZOR COUTURE</p>
+        <h2>New dresses are coming.</h2>
+        <p>The next collection is being prepared.</p>
+    </div>
+    {% endif %}
+
+</section>
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="site-footer">
+
+
+    <div class="footer-inner">
+
+
+        <!-- FOOTER BRAND -->
+
+        <div class="footer-brand">
+
+
+            <img
+                src="{{ url_for(
+                    'static',
+                    filename='images/logo.png'
+                ) }}"
+                alt="Alzor Couture"
+            >
+
+
+            <p>
+                Elegance, reimagined.
+            </p>
+
+
+        </div>
+
+
+
+        <!-- FOOTER LINKS -->
+
+        <div class="footer-links">
+
+
+            <a href="{{ url_for('home') }}">
+                HOME
+            </a>
+
+
+            <a href="{{ url_for('new_arrivals') }}">
+                NEW ARRIVALS
+            </a>
+
+
+            <a href="{{ url_for('dresses') }}">
+                DRESSES
+            </a>
+
+
+            <a href="{{ url_for('co_ord_sets') }}">
+                CO-ORD SETS
+            </a>
+
+
+        </div>
+
+
+
+        <!-- COPYRIGHT -->
+
+        <div class="footer-bottom">
+
+            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
+
+        </div>
+
+
+    </div>
+
+</footer>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
+<script
+    src="{{ url_for('static', filename='js/script.js') }}?v=37"
+></script>
+
+
+
+<script
+    src="{{ url_for('static', filename='js/search.js') }}?v=1"
+></script>
+
+</body>
+
+</html>

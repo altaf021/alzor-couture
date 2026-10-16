@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Your selected Alzor Couture pieces."
+    >
+
+    <title>Shopping Bag — Alzor Couture</title>
+
+    <!-- Main site styling -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}?v=100"
+    >
+
+    <!-- Cart styling -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/cart.css') }}?v=100"
+    >
+
+</head>
+
+
+<body class="cart-page">
+
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="site-header cart-site-header">
+
+    <div class="header-inner">
+
+
+        <!-- LOGO -->
+
+        <a
+            href="{{ url_for('home') }}"
+            class="brand cart-brand"
+            aria-label="Alzor Couture Home"
+        >
+
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Alzor Couture"
+            >
+
+        </a>
+
+
+        <!-- NAVIGATION -->
+
+        <nav
+            class="main-nav"
+            aria-label="Main navigation"
+        >
+
+            <a
+                href="{{ url_for('home') }}"
+                class="nav-link"
+            >
+                HOME
+            </a>
+
+            <a
+                href="{{ url_for('new_arrivals') }}"
+                class="nav-link"
+            >
+                NEW ARRIVALS
+            </a>
+
+            <a
+                href="{{ url_for('dresses') }}"
+                class="nav-link"
+            >
+                DRESSES
+            </a>
+
+            <a
+                href="{{ url_for('co_ord_sets') }}"
+                class="nav-link"
+            >
+                CO-ORD SETS
+            </a>
+
+        </nav>
+
+
+        <!-- HEADER ACTIONS -->
+
+        <div class="header-actions">
+
+
+            <!-- SEARCH -->
+
+            <button
+                type="button"
+                class="header-action search-button alzor-icon-button"
+                id="alzorSearchButton"
+                aria-label="Open search"
+                aria-controls="alzorSearchOverlay"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-search-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <circle
+                        cx="13.5"
+                        cy="13.5"
+                        r="8.2"
+                    ></circle>
+
+                    <path
+                        d="M19.5 19.5 L27 27"
+                    ></path>
+
+                </svg>
+
+            </button>
+
+
+            <!-- WISHLIST -->
+
+            <a
+                href="{{ url_for('wishlist') }}"
+                class="header-action wishlist-button alzor-icon-button"
+                aria-label="Wishlist"
+                title="Wishlist"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-heart-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M16 26.4
+                           C14.9 25.4 7 18.6 5.2 14
+                           C3.8 10.4 5.3 6.4 9.1 5.3
+                           C11.8 4.5 14.5 5.8 16 8.1
+                           C17.5 5.8 20.2 4.5 22.9 5.3
+                           C26.7 6.4 28.2 10.4 26.8 14
+                           C25 18.6 17.1 25.4 16 26.4 Z"
+                    ></path>
+
+                </svg>
+
+            </a>
+
+
+            <!-- SHOPPING BAG -->
+
+            <a
+                href="{{ url_for('cart') }}"
+                class="header-action bag-button alzor-icon-button"
+                aria-label="Shopping Bag"
+                title="Shopping Bag"
+            >
+
+                <svg
+                    class="alzor-header-icon alzor-bag-header-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M8.2 10.8 H23.8 L22.7 27 H9.3 Z"
+                    ></path>
+
+                    <path
+                        d="M12 11 V8.9 A4 4 0 0 1 20 8.9 V11"
+                    ></path>
+
+                </svg>
+
+                <span class="cart-count">
+                    {{ cart_count }}
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- =========================================================
+     SEARCH OVERLAY
+========================================================= -->
+
+<div
+    class="alzor-search-overlay"
+    id="alzorSearchOverlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="alzor-search-backdrop"
+        data-search-close
+    ></div>
+
+
+    <div
+        class="alzor-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="alzorSearchTitle"
+    >
+
+        <div class="alzor-search-top">
+
+
+            <div class="alzor-search-heading">
+
+                <span
+                    class="alzor-search-mark"
+                    id="alzorSearchTitle"
+                >
+                    ALZOR COUTURE
+                </span>
+
+                <span class="alzor-search-small-title">
+                    SEARCH
+                </span>
+
+            </div>
+
+
+            <form
+                class="alzor-search-form"
+                id="alzorSearchForm"
+                autocomplete="off"
+            >
+
+                <svg
+                    class="alzor-search-input-icon"
+                    viewBox="0 0 32 32"
+                    aria-hidden="true"
+                >
+
+                    <circle
+                        cx="13.5"
+                        cy="13.5"
+                        r="8.2"
+                    ></circle>
+
+                    <path
+                        d="M19.5 19.5 L27 27"
+                    ></path>
+
+                </svg>
+
+
+                <input
+                    type="search"
+                    class="alzor-search-input"
+                    id="alzorSearchInput"
+                    placeholder="Search dresses, co-ord sets..."
+                    aria-label="Search Alzor Couture"
+                    spellcheck="false"
+                >
+
+            </form>
+
+
+            <button
+                type="button"
+                class="alzor-search-close"
+                id="alzorSearchClose"
+                aria-label="Close search"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="alzor-search-body">
+
+            <p
+                class="alzor-search-status"
+                id="alzorSearchStatus"
+            >
+                Search the Alzor collection
+            </p>
+
+
+            <div
+                class="alzor-search-results"
+                id="alzorSearchResults"
+            >
+
+                <div class="alzor-search-empty">
+
+                    <p>
+                        ALZOR COUTURE
+                    </p>
+
+                    <h3>
+                        Find your piece
+                    </h3>
+
+                    <p>
+                        Search by product name, category,
+                        colour, fabric or design detail.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     CART HERO
+========================================================= -->
+
+<main>
+
+
+<section class="cart-hero">
+
+
+    <!-- Architectural background -->
+
+    <div
+        class="cart-architecture"
+        aria-hidden="true"
+    >
+
+        <span class="cart-line cart-line-one"></span>
+        <span class="cart-line cart-line-two"></span>
+        <span class="cart-line cart-line-three"></span>
+
+        <span class="cart-orbit cart-orbit-one"></span>
+        <span class="cart-orbit cart-orbit-two"></span>
+        <span class="cart-orbit cart-orbit-three"></span>
+
+        <span class="cart-glow"></span>
+
+        <span class="cart-particle cart-particle-one"></span>
+        <span class="cart-particle cart-particle-two"></span>
+        <span class="cart-particle cart-particle-three"></span>
+        <span class="cart-particle cart-particle-four"></span>
+
+    </div>
+
+
+    <!-- Very subtle A watermark.
+         This is NOT the actual logo image,
+         so it can never become a giant uncontrolled image. -->
+
+    <div
+        class="cart-watermark"
+        aria-hidden="true"
+    >
+        A
+    </div>
+
+
+    <div class="cart-hero-content">
+
+        <p class="cart-eyebrow">
+            ALZOR COUTURE · YOUR SELECTION
+        </p>
+
+        <h1>
+            Shopping Bag
+        </h1>
+
+        <span class="cart-title-line"></span>
+
+        <p class="cart-hero-subtitle">
+            Pieces chosen to become part of your wardrobe.
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================================
+     CART CONTENT
+========================================================= -->
+
+<section class="cart-section">
+
+
+    <div class="cart-section-heading">
+
+        <div>
+
+            <p class="cart-section-eyebrow">
+                YOUR BAG
+            </p>
+
+            <h2>
+                Selected Pieces
+            </h2>
+
+        </div>
+
+
+        {% if cart_items %}
+
+        <button
+            type="button"
+            class="clear-cart-button"
+            id="clearCartButton"
+        >
+            CLEAR BAG
+        </button>
+
+        {% endif %}
+
+    </div>
+
+
+
+    {% if cart_items %}
+
+    <div class="cart-layout">
+
+
+        <!-- =================================================
+             ITEMS
+        ================================================== -->
+
+        <div class="cart-items-column">
+
+
+            {% for item in cart_items %}
+
+            <article
+                class="cart-item"
+                data-cart-item
+                data-slug="{{ item.slug }}"
+                data-size="{{ item.size }}"
+            >
+
+
+                <!-- PRODUCT IMAGE -->
+
+                <a
+                    href="{{ url_for('product', slug=item.slug) }}"
+                    class="cart-item-image-link"
+                >
+
+                    <div class="cart-item-image">
+
+                        <img
+                            src="{{ url_for('static', filename='images/' ~ item.image) }}"
+                            alt="{{ item.name }}"
+                            loading="lazy"
+                        >
+
+
+                        {% if item.original_price %}
+
+                        <span class="cart-discount-badge">
+                            20% OFF
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </a>
+
+
+
+                <!-- PRODUCT DETAILS -->
+
+                <div class="cart-item-details">
+
+
+                    <p class="cart-item-category">
+                        {{ item.category }}
+                    </p>
+
+
+                    <h3 class="cart-item-name">
+                        {{ item.name }}
+                    </h3>
+
+
+                    <div class="cart-item-size">
+                        SIZE
+                        <strong>{{ item.size }}</strong>
+                    </div>
+
+
+                    <div class="cart-item-price">
+
+                        {% if item.original_price %}
+
+                        <span class="cart-original-price">
+                            ₹{{ "{:,}".format(item.original_price) }}
+                        </span>
+
+                        {% endif %}
+
+                        <span class="cart-current-price">
+                            ₹{{ "{:,}".format(item.price) }}
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="cart-remove-button"
+                        data-action="remove"
+                    >
+                        REMOVE
+                    </button>
+
+                </div>
+
+
+
+                <!-- QUANTITY -->
+
+                <div class="cart-item-quantity-wrap">
+
+                    <span class="quantity-label">
+                        QUANTITY
+                    </span>
+
+                    <div class="quantity-control">
+
+                        <button
+                            type="button"
+                            class="quantity-button"
+                            data-action="decrease"
+                            aria-label="Decrease quantity"
+                        >
+                            −
+                        </button>
+
+                        <span class="quantity-value">
+                            {{ item.quantity }}
+                        </span>
+
+                        <button
+                            type="button"
+                            class="quantity-button"
+                            data-action="increase"
+                            aria-label="Increase quantity"
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- TOTAL -->
+
+                <div class="cart-item-total-wrap">
+
+                    <span class="item-total-label">
+                        TOTAL
+                    </span>
+
+                    <strong class="cart-item-total">
+                        {% if item.total is not none %}
+                            ₹{{ "{:,}".format(item.total) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+
+            <!-- CONTINUE SHOPPING -->
+
+            <div class="continue-shopping-wrap">
+
+                <a
+                    href="{{ url_for('new_arrivals') }}"
+                    class="continue-shopping"
+                >
+
+                    <span class="continue-arrow">
+                        ←
+                    </span>
+
+                    CONTINUE SHOPPING
+
+                </a>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             SUMMARY
+        ================================================== -->
+
+        <aside class="cart-summary">
+
+
+            <div class="summary-top">
+
+                <p class="summary-eyebrow">
+                    ALZOR COUTURE
+                </p>
+
+                <h2>
+                    Order Summary
+                </h2>
+
+            </div>
+
+
+            <div class="summary-divider"></div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Items
+                </span>
+
+                <strong id="summaryItemCount">
+                    {{ cart_count }}
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong id="summarySubtotal">
+                    ₹{{ "{:,}".format(subtotal) }}
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Shipping
+                </span>
+
+                <strong class="free-shipping">
+                    FREE
+                </strong>
+
+            </div>
+
+
+            <div class="summary-divider"></div>
+
+
+            <div class="summary-total-row">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="summaryTotal">
+                    ₹{{ "{:,}".format(subtotal) }}
+                </strong>
+
+            </div>
+
+
+            <div class="shipping-note">
+
+                <span class="shipping-note-icon">
+                    ✦
+                </span>
+
+                <span>
+                    Complimentary shipping on your Alzor order.
+                </span>
+
+            </div>
+
+
+            <a
+                href="/checkout"
+                class="checkout-button"
+                id="checkoutButton"
+            >
+
+                <span>
+                    PROCEED TO CHECKOUT
+                </span>
+
+                <span class="checkout-arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <!-- TRUST -->
+
+            <div class="cart-trust">
+
+
+                <div class="cart-trust-item">
+
+                    <span class="trust-check">
+                        ✓
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Secure Checkout
+                        </strong>
+
+                        <span>
+                            Your checkout information is protected.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cart-trust-item">
+
+                    <span class="trust-check">
+                        ✓
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Safe Payment
+                        </strong>
+
+                        <span>
+                            Secure payment processing at checkout.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="cart-trust-item">
+
+                    <span class="trust-check">
+                        ✓
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Order Tracking
+                        </strong>
+
+                        <span>
+                            Track your order after it is placed.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </aside>
+
+    </div>
+
+
+    {% else %}
+
+
+    <!-- =================================================
+         EMPTY BAG
+    ================================================== -->
+
+    <div class="empty-cart">
+
+
+        <div class="empty-cart-graphic">
+
+            <span class="empty-orbit empty-orbit-one"></span>
+            <span class="empty-orbit empty-orbit-two"></span>
+
+            <div class="empty-bag-icon">
+
+                <span class="empty-bag-handle"></span>
+                <span class="empty-bag-body"></span>
+
+            </div>
+
+        </div>
+
+
+        <p class="empty-cart-eyebrow">
+            ALZOR COUTURE
+        </p>
+
+
+        <h2>
+            Your shopping bag is empty.
+        </h2>
+
+
+        <p>
+            Discover pieces designed to become part of your wardrobe.
+        </p>
+
+
+        <a
+            href="{{ url_for('new_arrivals') }}"
+            class="empty-cart-button"
+        >
+            EXPLORE THE COLLECTION
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+</main>
+
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer class="site-footer cart-footer">
+
+    <div class="footer-inner">
+
+
+        <div class="footer-brand">
+
+            <img
+                src="{{ url_for('static', filename='images/logo.png') }}"
+                alt="Alzor Couture"
+            >
+
+            <p>
+                Elegance, reimagined.
+            </p>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="{{ url_for('home') }}">
+                HOME
+            </a>
+
+            <a href="{{ url_for('new_arrivals') }}">
+                NEW ARRIVALS
+            </a>
+
+            <a href="{{ url_for('dresses') }}">
+                DRESSES
+            </a>
+
+            <a href="{{ url_for('co_ord_sets') }}">
+                CO-ORD SETS
+            </a>
+
+        </div>
+
+
+        <div class="footer-bottom">
+            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
+        </div>
+
+    </div>
+
+</footer>
+
+
+
+<!-- Search functionality -->
+
+<script
+    src="{{ url_for('static', filename='js/search.js') }}?v=100"
+></script>
+
+
+<!-- Cart functionality -->
+
+<script
+    src="{{ url_for('static', filename='js/cart.js') }}?v=100"
+></script>
+
+
+</body>
+</html>

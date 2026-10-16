@@ -1,0 +1,507 @@
+
+/* =========================================================
+   ALZOR COUTURE — HEADER SEARCH OVERLAY
+========================================================= */
+
+body.alzor-search-open {
+    overflow: hidden;
+}
+
+.alzor-search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 92px 20px 40px;
+    background: rgba(24, 24, 24, 0.26);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity .28s ease,
+        visibility .28s ease;
+}
+
+.alzor-search-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.alzor-search-panel {
+    width: min(1180px, 96vw);
+    max-height: calc(100vh - 132px);
+    overflow: hidden;
+    background: rgba(248, 246, 241, 0.98);
+    border: 1px solid rgba(223, 219, 211, .95);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, .16);
+    transform: translateY(-14px);
+    transition: transform .34s cubic-bezier(.22, .61, .36, 1);
+}
+
+.alzor-search-overlay.is-open .alzor-search-panel {
+    transform: translateY(0);
+}
+
+.alzor-search-top {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--line, #dfdbd3);
+}
+
+.alzor-search-mark {
+    flex: 0 0 auto;
+    color: var(--gold, #ad8a51);
+    font-size: 8px;
+    letter-spacing: 3px;
+    font-weight: 400;
+}
+
+.alzor-search-form {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.alzor-search-icon {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    position: relative;
+    color: var(--black, #181818);
+}
+
+.alzor-search-icon::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 1px;
+    background: currentColor;
+    right: -5px;
+    bottom: -2px;
+    transform: rotate(45deg);
+}
+
+.alzor-search-input {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--black, #181818);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 400;
+    letter-spacing: -.7px;
+}
+
+.alzor-search-input::placeholder {
+    color: #aaa39a;
+}
+
+.alzor-search-close {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(24,24,24,.16);
+    background: transparent;
+    color: var(--black, #181818);
+    font-size: 20px;
+    line-height: 1;
+    transition:
+        background .22s ease,
+        color .22s ease,
+        transform .22s ease;
+}
+
+.alzor-search-close:hover {
+    background: var(--black, #181818);
+    color: #fff;
+    transform: rotate(90deg);
+}
+
+.alzor-search-body {
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
+    padding: 28px 24px 30px;
+}
+
+.alzor-search-status {
+    min-height: 18px;
+    margin-bottom: 20px;
+    color: var(--muted, #8b857c);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.alzor-search-results {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.alzor-search-result {
+    display: block;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: alzorSearchResultIn .36s ease forwards;
+}
+
+@keyframes alzorSearchResultIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alzor-search-result-image {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: #ece8e1;
+}
+
+.alzor-search-result-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .55s ease;
+}
+
+.alzor-search-result:hover .alzor-search-result-image img {
+    transform: scale(1.025);
+}
+
+.alzor-search-result-info {
+    padding-top: 14px;
+}
+
+.alzor-search-result-category {
+    margin: 0 0 7px;
+    color: var(--gold, #ad8a51);
+    font-size: 8px;
+    letter-spacing: 2.4px;
+}
+
+.alzor-search-result-name {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    line-height: 1.18;
+    font-weight: 400;
+}
+
+.alzor-search-result-price {
+    margin-top: 9px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11px;
+}
+
+.alzor-search-original {
+    color: #9a958e;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+}
+
+.alzor-search-current {
+    color: #3f3b36;
+    font-weight: 500;
+}
+
+.alzor-search-empty {
+    padding: 44px 0 55px;
+    text-align: center;
+}
+
+.alzor-search-empty p:first-child {
+    margin: 0 0 12px;
+    color: var(--gold, #ad8a51);
+    font-size: 8px;
+    letter-spacing: 3px;
+}
+
+.alzor-search-empty h3 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: 400;
+}
+
+.alzor-search-empty p:last-child {
+    margin: 12px auto 0;
+    max-width: 420px;
+    color: var(--muted, #8b857c);
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+    .alzor-search-results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .alzor-search-overlay {
+        padding: 70px 12px 14px;
+    }
+
+    .alzor-search-panel {
+        width: 100%;
+        max-height: calc(100vh - 84px);
+    }
+
+    .alzor-search-top {
+        gap: 12px;
+        padding: 18px 16px 14px;
+    }
+
+    .alzor-search-mark {
+        display: none;
+    }
+
+    .alzor-search-body {
+        padding: 20px 16px 24px;
+        max-height: calc(100vh - 158px);
+    }
+
+    .alzor-search-results {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 12px;
+    }
+
+    .alzor-search-result-name {
+        font-size: 16px;
+    }
+
+    .alzor-search-close {
+        width: 34px;
+        height: 34px;
+    }
+}
+
+@media (max-width: 430px) {
+    .alzor-search-overlay {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .alzor-search-results {
+        grid-template-columns: 1fr;
+    }
+
+    .alzor-search-input {
+        font-size: 21px;
+    }
+}
+
+
+/* =========================================================
+   ALZOR COUTURE — REFINED HEADER ICON SYSTEM
+========================================================= */
+
+.alzor-icon-button {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--black, #181818);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.alzor-header-icon {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.15;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform-origin: center;
+    transition:
+        color .28s ease,
+        transform .28s cubic-bezier(.22, .61, .36, 1),
+        stroke-width .28s ease;
+}
+
+.alzor-search-header-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.alzor-heart-header-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.alzor-bag-header-icon {
+    width: 21px;
+    height: 21px;
+}
+
+/* Fine gold hover ring */
+.alzor-icon-button::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(173, 138, 81, 0);
+    border-radius: 50%;
+    transform: scale(.74);
+    opacity: 0;
+    transition:
+        opacity .28s ease,
+        transform .32s cubic-bezier(.22, .61, .36, 1),
+        border-color .28s ease;
+    pointer-events: none;
+}
+
+/* Search */
+.search-button:hover .alzor-search-header-icon {
+    color: var(--gold, #ad8a51);
+    transform: translate(-.5px, -.5px) scale(1.06);
+    stroke-width: 1.25;
+}
+
+.search-button:hover::before {
+    border-color: rgba(173, 138, 81, .22);
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Heart */
+.wishlist-button:hover .alzor-heart-header-icon {
+    color: var(--gold, #ad8a51);
+    transform: translateY(-.5px) scale(1.055);
+    stroke-width: 1.25;
+}
+
+.wishlist-button:hover::before {
+    border-color: rgba(173, 138, 81, .22);
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Bag */
+.bag-button:hover .alzor-bag-header-icon {
+    color: var(--gold, #ad8a51);
+    transform: translateY(-1px) scale(1.045);
+    stroke-width: 1.2;
+}
+
+.bag-button:hover::before {
+    border-color: rgba(173, 138, 81, .22);
+    opacity: 1;
+    transform: scale(1);
+}
+
+.alzor-icon-button:focus-visible {
+    outline: none;
+}
+
+.alzor-icon-button:focus-visible::before {
+    border-color: rgba(173, 138, 81, .45);
+    opacity: 1;
+    transform: scale(1);
+}
+
+.alzor-icon-button:active .alzor-header-icon {
+    transform: scale(.94);
+}
+
+.alzor-icon-button .cart-count {
+    z-index: 3;
+    top: -5px;
+    right: -4px;
+    width: 15px;
+    height: 15px;
+    background: var(--gold, #ad8a51);
+    color: var(--black, #181818);
+    border: 1px solid rgba(255,255,255,.7);
+    font-size: 7px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+/* Remove old text-symbol spacing if inherited */
+.wishlist-button {
+    font-size: 0 !important;
+    line-height: 0;
+}
+
+@media (max-width: 700px) {
+    .alzor-icon-button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .alzor-header-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .alzor-heart-header-icon {
+        width: 21px;
+        height: 21px;
+    }
+
+    .alzor-bag-header-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .alzor-icon-button .cart-count {
+        top: -4px;
+        right: -5px;
+    }
+}
+
+
+/* =========================================================
+   WISHLIST HEADER ICON — FORCE VISIBLE
+========================================================= */
+.wishlist-button {
+    color: #252525 !important;
+    text-decoration: none !important;
+}
+
+.wishlist-button .alzor-heart-header-icon {
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.15 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.wishlist-button .alzor-heart-header-icon path {
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.15 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
