@@ -7,6 +7,8 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 import razorpay
+import psycopg
+from psycopg.types.json import Jsonb
 
 load_dotenv()
 
@@ -308,72 +310,113 @@ INSTAGRAM_POSTS = [
 
 
 # =========================================================
-# ORDER FILE
+# POSTGRESQL ORDER STORAGE
 # =========================================================
 
-ORDERS_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "orders.json"
-)
-
-PENDING_PAYMENTS_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "pending_payments.json"
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 
 
-def ensure_orders_file():
-    if not os.path.exists(ORDERS_FILE):
-        with open(ORDERS_FILE, "w", encoding="utf-8") as file:
-            json.dump([], file, indent=4)
+def get_database_url():
+    """Return a normalized PostgreSQL URL, or raise a clear configuration error."""
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL is not configured in the Render environment.")
+    # Some providers still supply the legacy postgres:// scheme.
+    if DATABASE_URL.startswith("postgres://"):
+        return "postgresql://" + DATABASE_URL[len("postgres://"):]
+    return DATABASE_URL
 
 
-def load_orders():
-    ensure_orders_file()
-
-    try:
-        with open(ORDERS_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
-
-            if isinstance(data, list):
-                return data
-
-            return []
-
-    except (json.JSONDecodeError, OSError):
-        return []
+def get_db_connection():
+    """Open a short-lived PostgreSQL connection."""
+    return psycopg.connect(get_database_url(), connect_timeout=8, autocommit=False)
 
 
-def save_orders(orders):
-    with open(ORDERS_FILE, "w", encoding="utf-8") as file:
-        json.dump(
-            orders,
-            file,
-            indent=4,
-            ensure_ascii=False
+def ensure_database_schema(conn):
+    """Create the small storage tables if this is the first app run."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS alzor_orders (
+            order_number TEXT PRIMARY KEY,
+            razorpay_payment_id TEXT UNIQUE NOT NULL,
+            order_data JSONB NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS alzor_pending_payments (
+            razorpay_order_id TEXT PRIMARY KEY,
+            payment_data JSONB NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+    """)
+
+
+def save_pending_payment(razorpay_order_id, pending):
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        conn.execute(
+            """INSERT INTO alzor_pending_payments (razorpay_order_id, payment_data)
+               VALUES (%s, %s)
+               ON CONFLICT (razorpay_order_id) DO UPDATE SET payment_data = EXCLUDED.payment_data""",
+            (razorpay_order_id, Jsonb(pending)),
         )
 
 
-
-def load_pending_payments():
-    """Load server-side pending checkout snapshots."""
-    if not os.path.exists(PENDING_PAYMENTS_FILE):
-        return {}
-    try:
-        with open(PENDING_PAYMENTS_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
-        return data if isinstance(data, dict) else {}
-    except (OSError, json.JSONDecodeError):
-        app.logger.exception("Could not read pending_payments.json")
-        return {}
+def load_pending_payment(razorpay_order_id):
+    if not razorpay_order_id:
+        return None
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        row = conn.execute(
+            "SELECT payment_data FROM alzor_pending_payments WHERE razorpay_order_id = %s",
+            (razorpay_order_id,),
+        ).fetchone()
+        return row[0] if row else None
 
 
-def save_pending_payments(pending_payments):
-    """Persist pending checkout snapshots on the server, not in the browser cookie."""
-    temporary_file = PENDING_PAYMENTS_FILE + ".tmp"
-    with open(temporary_file, "w", encoding="utf-8") as file:
-        json.dump(pending_payments, file, indent=4, ensure_ascii=False)
-    os.replace(temporary_file, PENDING_PAYMENTS_FILE)
+def delete_pending_payment(razorpay_order_id):
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        conn.execute(
+            "DELETE FROM alzor_pending_payments WHERE razorpay_order_id = %s",
+            (razorpay_order_id,),
+        )
+
+
+def find_order_by_payment_id(payment_id):
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        row = conn.execute(
+            "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = %s",
+            (payment_id,),
+        ).fetchone()
+        return row[0] if row else None
+
+
+def save_order(order):
+    """Save a confirmed order once; payment ID uniqueness prevents duplicates."""
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        conn.execute(
+            """INSERT INTO alzor_orders (order_number, razorpay_payment_id, order_data)
+               VALUES (%s, %s, %s)
+               ON CONFLICT (razorpay_payment_id) DO NOTHING""",
+            (order["order_number"], order["razorpay_payment_id"], Jsonb(order)),
+        )
+        row = conn.execute(
+            "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = %s",
+            (order["razorpay_payment_id"],),
+        ).fetchone()
+        return row[0] if row else order
+
+
+def find_order_by_number(order_number):
+    with get_db_connection() as conn:
+        ensure_database_schema(conn)
+        row = conn.execute(
+            "SELECT order_data FROM alzor_orders WHERE order_number = %s",
+            (order_number,),
+        ).fetchone()
+        return row[0] if row else None
 
 
 # =========================================================
@@ -1171,9 +1214,8 @@ def create_razorpay_order():
             "message": "Razorpay could not start the payment. Please check your Test Mode keys and try again."
         }), 502
 
-    # Store customer/order details on the server rather than in the browser session cookie.
-    pending_payments = load_pending_payments()
-    pending_payments[razorpay_order["id"]] = {
+    # Store customer/order details in PostgreSQL, not in the browser cookie or local files.
+    pending = {
         "razorpay_order_id": razorpay_order["id"],
         "customer": {
             "first_name": str(data.get("first_name", "")).strip(),
@@ -1191,7 +1233,14 @@ def create_razorpay_order():
         "total": total,
         "amount_paise": amount_paise
     }
-    save_pending_payments(pending_payments)
+    try:
+        save_pending_payment(razorpay_order["id"], pending)
+    except Exception:
+        app.logger.exception("Could not save pending payment to PostgreSQL")
+        return jsonify({
+            "success": False,
+            "message": "We couldn't securely save your checkout. Please try again; no payment has been started yet."
+        }), 503
 
     return jsonify({
         "success": True,
@@ -1223,8 +1272,14 @@ def verify_razorpay_payment():
     razorpay_payment_id = str(data.get("razorpay_payment_id", "")).strip()
     razorpay_signature = str(data.get("razorpay_signature", "")).strip()
 
-    pending_payments = load_pending_payments()
-    pending = pending_payments.get(razorpay_order_id) if razorpay_order_id else None
+    try:
+        pending = load_pending_payment(razorpay_order_id)
+    except Exception:
+        app.logger.exception("Could not load pending payment from PostgreSQL")
+        return jsonify({
+            "success": False,
+            "message": "Order storage is temporarily unavailable. Please contact support before trying to pay again."
+        }), 503
     if not pending:
         return jsonify({
             "success": False,
@@ -1284,18 +1339,20 @@ def verify_razorpay_payment():
         }), 400
 
     # Prevent accidental duplicate order creation from a repeated verification request.
-    orders = load_orders()
-    existing = next(
-        (
-            order for order in orders
-            if order.get("razorpay_payment_id") == razorpay_payment_id
-        ),
-        None
-    )
+    try:
+        existing = find_order_by_payment_id(razorpay_payment_id)
+    except Exception:
+        app.logger.exception("Could not check existing order in PostgreSQL")
+        return jsonify({
+            "success": False,
+            "message": "Order storage is temporarily unavailable. Please contact support before trying to pay again."
+        }), 503
     if existing:
         session["last_order_number"] = existing["order_number"]
-        pending_payments.pop(razorpay_order_id, None)
-        save_pending_payments(pending_payments)
+        try:
+            delete_pending_payment(razorpay_order_id)
+        except Exception:
+            app.logger.exception("Could not remove completed pending payment")
         return jsonify({
             "success": True,
             "message": "Payment verified.",
@@ -1321,13 +1378,22 @@ def verify_razorpay_payment():
         "total": pending["total"]
     }
 
-    orders.append(order)
-    save_orders(orders)
+    try:
+        saved_order = save_order(order)
+    except Exception:
+        app.logger.exception("Could not save confirmed order to PostgreSQL")
+        return jsonify({
+            "success": False,
+            "message": "Payment was verified, but order storage is temporarily unavailable. Do not pay again; please contact support with your Razorpay payment ID."
+        }), 503
 
+    order_number = saved_order["order_number"]
     session["cart"] = []
     session["last_order_number"] = order_number
-    pending_payments.pop(razorpay_order_id, None)
-    save_pending_payments(pending_payments)
+    try:
+        delete_pending_payment(razorpay_order_id)
+    except Exception:
+        app.logger.exception("Could not remove completed pending payment")
     session.modified = True
 
     return jsonify({
@@ -1349,18 +1415,11 @@ def verify_razorpay_payment():
 )
 def order_confirmation(order_number):
 
-    orders = load_orders()
-
-    selected_order = next(
-        (
-            order
-            for order in orders
-            if order.get(
-                "order_number"
-            ) == order_number
-        ),
-        None
-    )
+    try:
+        selected_order = find_order_by_number(order_number)
+    except Exception:
+        app.logger.exception("Could not load order confirmation from PostgreSQL")
+        return "Order storage is temporarily unavailable. Please try again shortly.", 503
 
     if selected_order is None:
         return "Order not found", 404
@@ -1376,8 +1435,6 @@ def order_confirmation(order_number):
 # =========================================================
 
 if __name__ == "__main__":
-
-    ensure_orders_file()
 
     app.run(
         host="0.0.0.0",
