@@ -20,7 +20,26 @@ load_dotenv()
 AVAILABLE_SIZES = ["S", "M", "L", "XL", "XXL"]
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY") or "local-development-only-change-me"
+
+# Production must always use a strong secret configured in the environment.
+# The fallback is allowed only for local development without DATABASE_URL.
+_configured_secret = os.getenv("FLASK_SECRET_KEY", "").strip()
+if not _configured_secret:
+    if os.getenv("DATABASE_URL", "").strip():
+        raise RuntimeError(
+            "FLASK_SECRET_KEY must be configured in the production environment."
+        )
+    _configured_secret = "local-development-only-change-me"
+app.secret_key = _configured_secret
+
+# Avoid caching private order-confirmation details in shared browsers/proxies.
+@app.after_request
+def add_private_page_headers(response):
+    if request.endpoint == "order_confirmation":
+        response.headers["Cache-Control"] = "no-store, private, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Vary"] = "Cookie"
+    return response
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "").strip()
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "").strip()
@@ -1269,7 +1288,7 @@ def verify_razorpay_payment():
 
     data = request.get_json(silent=True) or {}
     razorpay_order_id = str(data.get("razorpay_order_id", "")).strip()
-    razorpay_payment_id = str(data.get("razorpay_payment_id", "")).strip()
+    razorpay_payment_id = str(data.get("razorpay_payment_id", "")).strip() 
     razorpay_signature = str(data.get("razorpay_signature", "")).strip()
 
     try:
@@ -1318,6 +1337,9 @@ def verify_razorpay_payment():
 
         if int(payment.get("amount", 0)) != int(pending.get("amount_paise", -1)):
             raise ValueError("Payment amount mismatch")
+
+        if str(payment.get("currency", "")).upper() != "INR":
+            raise ValueError("Payment currency mismatch")
 
         if payment.get("status") == "authorized":
             payment = client.payment.capture(
@@ -1424,6 +1446,11 @@ def order_confirmation(order_number):
     if selected_order is None:
         return "Order not found", 404
 
+    # An order number is an identifier, not proof of ownership.
+    # Only the browser session that completed payment can view its confirmation.
+    if session.get("last_order_number") != order_number:
+        return "Order not found", 404
+
     return render_template(
         "order_confirmation.html",
         order=selected_order
@@ -1438,7 +1465,7 @@ if __name__ == "__main__":
 
     app.run(
         host="0.0.0.0",
-        port=5000,
-        debug=True,
+        port=int(os.getenv("PORT", "5000")),
+        debug=os.getenv("FLASK_DEBUG", "").strip().lower() == "true",
         use_reloader=False
     )
