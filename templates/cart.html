@@ -481,10 +481,10 @@
                         >
 
 
-                        {% if item.original_price %}
+                        {% if item.original_price and item.price and item.original_price > item.price %}
 
                         <span class="cart-discount-badge">
-                            20% OFF
+                            {{ ((1 - item.price / item.original_price) * 100) | round | int }}% OFF
                         </span>
 
                         {% endif %}
@@ -722,7 +722,7 @@
 
 
             <a
-                href="/checkout"
+                href="{{ url_for('checkout') }}"
                 class="checkout-button"
                 id="checkoutButton"
             >

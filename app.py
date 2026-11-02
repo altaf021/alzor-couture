@@ -466,10 +466,13 @@ def find_product(slug):
 # =========================================================
 
 def get_cart_count():
+    """Count only items whose product slug is still valid."""
     cart = session.get("cart", [])
     total_quantity = 0
 
     for item in cart:
+        if find_product(item.get("slug")) is None:
+            continue
         try:
             total_quantity += int(item.get("quantity", 1))
         except (TypeError, ValueError):
@@ -1116,23 +1119,32 @@ def checkout():
 # GENERATE ORDER NUMBER
 # =========================================================
 
-def generate_order_number():
-
-    date_part = datetime.now().strftime(
-        "%Y%m%d"
-    )
-
-    random_part = "".join(
-        random.choices(
-            string.ascii_uppercase
-            + string.digits,
-            k=4
+def generate_order_number(retries=8):
+    """Generate a unique order number; retries on the rare chance of a collision."""
+    date_part = datetime.now().strftime("%Y%m%d")
+    for _ in range(retries):
+        random_part = "".join(
+            random.choices(
+                string.ascii_uppercase + string.digits,
+                k=6
+            )
         )
-    )
-
-    return (
-        f"ALZ-{date_part}-{random_part}"
-    )
+        candidate = f"ALZ-{date_part}-{random_part}"
+        # Only check DB uniqueness if a DATABASE_URL is configured.
+        if not DATABASE_URL:
+            return candidate
+        try:
+            with get_db_connection() as conn:
+                row = conn.execute(
+                    "SELECT 1 FROM alzor_orders WHERE order_number = %s",
+                    (candidate,),
+                ).fetchone()
+                if row is None:
+                    return candidate
+        except Exception:
+            return candidate
+    # Fallback: add microseconds to guarantee uniqueness
+    return f"ALZ-{date_part}-{datetime.now().strftime('%f')[:6]}"
 
 
 # =========================================================
@@ -1162,6 +1174,22 @@ def create_razorpay_order():
                 "success": False,
                 "message": f"Please enter your {field.replace('_', ' ')}."
             }), 400
+
+    # Basic format validation for phone and pincode
+    import re
+    phone_val = str(data.get("phone", "")).strip()
+    if not re.fullmatch(r"[\d\s\+\-\(\)]{7,15}", phone_val):
+        return jsonify({
+            "success": False,
+            "message": "Please enter a valid phone number."
+        }), 400
+
+    pincode_val = str(data.get("pincode", "")).strip()
+    if not re.fullmatch(r"\d{6}", pincode_val):
+        return jsonify({
+            "success": False,
+            "message": "Please enter a valid 6-digit pincode."
+        }), 400
 
     client = get_razorpay_client()
     if client is None:
