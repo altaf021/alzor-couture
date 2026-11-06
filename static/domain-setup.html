@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alzor Couture — Store Delivery & Domain Connection Guide</title>
+    <style>
+        :root {
+            --gold: #ad8a51;
+            --dark: #141210;
+            --cream: #fbfaf7;
+            --line: rgba(173, 138, 81, 0.28);
+            --text: #3f3b36;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            line-height: 1.65;
+            padding: 36px 18px 60px;
+        }
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid var(--line);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .header {
+            background: var(--dark);
+            color: #ffffff;
+            padding: 34px 28px;
+            text-align: center;
+            border-bottom: 2px solid var(--gold);
+        }
+        .header h1 {
+            font-family: Georgia, serif;
+            font-size: 26px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .header p {
+            font-size: 11px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .content {
+            padding: 32px 30px;
+        }
+        .banner {
+            background: #f7f4ee;
+            border-left: 4px solid var(--gold);
+            padding: 18px 20px;
+            margin-bottom: 28px;
+        }
+        .banner h3 {
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+        .banner p {
+            font-size: 14px;
+            color: #555049;
+            margin-bottom: 10px;
+        }
+        .live-btn {
+            display: inline-block;
+            background: var(--dark);
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            border: 1px solid var(--gold);
+        }
+        .live-btn:hover {
+            background: var(--gold);
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            color: var(--dark);
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 6px;
+            margin-bottom: 14px;
+        }
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        .steps li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 36px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--dark);
+            color: var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .dns-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            font-size: 13px;
+        }
+        .dns-table th, .dns-table td {
+            border: 1px solid #e0dacf;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        .dns-table th {
+            background: #fbfaf7;
+            color: var(--dark);
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .code-tag {
+            background: #f0ece3;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            color: #181818;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .feature-card {
+            background: #fbfaf7;
+            padding: 12px 16px;
+            border: 1px solid rgba(0,0,0,0.06);
+            font-size: 13px;
+        }
+        .feature-card strong {
+            display: block;
+            color: var(--dark);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .footer {
+            background: #fbfaf7;
+            padding: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #8c857b;
+            border-top: 1px solid var(--line);
+        }
+        @media (max-width: 600px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .content { padding: 22px 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>ALZOR COUTURE</h1>
+        <p>Delivery Status &amp; Domain Connection Guide</p>
+    </div>
+
+    <div class="content">
+        <div class="banner">
+            <h3>Website is Live for Delivery</h3>
+            <p>Your complete store is live and running. You can open and test it immediately in Google Chrome:</p>
+            <a href="https://alzor-couture.onrender.com" target="_blank" class="live-btn">Open Live Store &rarr;</a>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Why does alzorcouture.in show an error in Chrome?</h2>
+            <p style="font-size: 14px; color: #555049;">
+                The domain <strong>alzorcouture.in</strong> was purchased, but its DNS records have not yet been linked to the hosting server. A domain name needs two simple DNS records to route visitors to your live website.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Quick 3-Minute Fix to Connect alzorcouture.in</h2>
+            <ol class="steps">
+                <li>
+                    <strong>Add the custom domain in Render:</strong><br>
+                    Log in to <a href="https://dashboard.render.com" target="_blank" style="color:var(--gold);font-weight:600;">dashboard.render.com</a> &rarr; Select <strong>alzor-couture</strong> &rarr; <strong>Settings</strong> &rarr; scroll to <strong>Custom Domains</strong> &rarr; Add <span class="code-tag">alzorcouture.in</span> and <span class="code-tag">www.alzorcouture.in</span>.
+                </li>
+                <li>
+                    <strong>Add DNS records in your Domain Registrar (GoDaddy, Hostinger, Namecheap, etc.):</strong><br>
+                    Open your domain DNS Manager and add these 2 records:
+                    <table class="dns-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Host / Name</th>
+                                <th>Points to / Value</th>
+                                <th>TTL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>A</strong></td>
+                                <td><span class="code-tag">@</span> (or blank)</td>
+                                <td><span class="code-tag">216.24.57.1</span></td>
+                                <td>Automatic</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CNAME</strong></td>
+                                <td><span class="code-tag">www</span></td>
+                                <td><span class="code-tag">alzor-couture.onrender.com</span></td>
+                                <td>Automatic</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </li>
+                <li>
+                    <strong>Automatic SSL Activation:</strong><br>
+                    Within 5 to 15 minutes of DNS propagation, Render will automatically issue a free Let's Encrypt SSL certificate and <strong>https://alzorcouture.in</strong> will open securely in Chrome.
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Razorpay Live Mode Configuration</h2>
+            <p style="font-size: 14px; color: #555049; margin-bottom: 10px;">
+                In your Render Dashboard &rarr; <strong>Environment</strong> tab, configure your live credentials:
+            </p>
+            <ul style="padding-left: 20px; font-size: 13.5px; color: #555049;">
+                <li><span class="code-tag">RAZORPAY_KEY_ID</span> = Your live key from Razorpay Dashboard (starts with <span class="code-tag">rzp_live_...</span>)</li>
+                <li><span class="code-tag">RAZORPAY_KEY_SECRET</span> = Your confidential live key secret</li>
+                <li><span class="code-tag">SITE_URL</span> = <span class="code-tag">https://alzorcouture.in</span></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Features Tested &amp; Delivered</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <strong>Cart Toast Notification</strong>
+                    Displays product image, size, View Bag, and auto-dismisses smoothly.
+                </div>
+                <div class="feature-card">
+                    <strong>Live Order Tracking</strong>
+                    Dedicated customer tracking portal at /track-order.
+                </div>
+                <div class="feature-card">
+                    <strong>Luxury Client Policies</strong>
+                    Shipping, Returns &amp; Exchanges, Privacy, and Terms of Service.
+                </div>
+                <div class="feature-card">
+                    <strong>Search &amp; Wishlist</strong>
+                    Instant real-time search and localStorage saved pieces.
+                </div>
+                <div class="feature-card">
+                    <strong>Dual-Engine Database</strong>
+                    Automatic PostgreSQL on Render with local SQLite fallback.
+                </div>
+                <div class="feature-card">
+                    <strong>WhatsApp Concierge</strong>
+                    Direct one-click support linked to +91 8527144345.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 ALZOR COUTURE &bull; alzorcouture.in &bull; All Rights Reserved
+    </div>
+</div>
+
+</body>
+</html>
