@@ -3,8 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>{{ product.name }} — Alzor Couture</title>
+    <meta name="description" content="{{ product.description }}">
+    <link rel="canonical" href="{{ site_url }}/product/{{ product.slug }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="product">
+    <meta property="og:title" content="{{ product.name }} — Alzor Couture">
+    <meta property="og:description" content="{{ product.description }}">
+    <meta property="og:url" content="{{ site_url }}/product/{{ product.slug }}">
+    <meta property="og:image" content="{{ site_url }}/static/images/{{ product.images[0] }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ product.name }} — Alzor Couture">
+    <meta name="twitter:description" content="{{ product.description }}">
+    <meta name="twitter:image" content="{{ site_url }}/static/images/{{ product.images[0] }}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": {{ product.name|tojson }},
+      "image": [
+        "{{ site_url }}/static/images/{{ product.images[0] }}"
+      ],
+      "description": {{ product.description|tojson }},
+      "brand": {
+        "@type": "Brand",
+        "name": "Alzor Couture"
+      },
+      "category": {{ product.category|tojson }},
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ site_url }}/product/{{ product.slug }}",
+        "priceCurrency": "INR",
+        "price": "{{ product.price }}",
+        "availability": "https://schema.org/InStock",
+        "itemCondition": "https://schema.org/NewCondition"
+      }
+    }
+    </script>
 
     <link
         rel="stylesheet"
@@ -14,6 +52,11 @@
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/search.css') }}?v=4"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/cart-toast.css') }}?v=1"
     >
 
     <style>
@@ -421,6 +464,29 @@
                 flex-basis: 40px;
             }
         }
+
+        .size-section.size-highlight {
+            animation: alzorSizeAttention 0.6s ease;
+        }
+
+        .size-section.size-highlight .size-options {
+            outline: 1.5px solid rgba(173, 138, 81, 0.75);
+            outline-offset: 4px;
+        }
+
+        @keyframes alzorSizeAttention {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(2px); }
+        }
+
+        .add-bag-button:disabled,
+        .buy-now-button:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
     </style>
 </head>
 
@@ -824,10 +890,17 @@
             <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
             <a href="{{ url_for('dresses') }}">DRESSES</a>
             <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
         </div>
 
         <div class="footer-bottom">
-            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
         </div>
 
     </div>
@@ -875,22 +948,48 @@
     /* =====================================================
        ADD TO BAG
     ===================================================== */
+    let isAddingToCart = false;
+
     async function addToCart() {
+        if (isAddingToCart) return;
+
+        const addBtn = document.querySelector(".add-bag-button");
         const selectedSize = document.querySelector(".size-option.selected");
         const message = document.getElementById("cartMessage");
 
         if (!selectedSize) {
-            message.textContent = "Please select a size first.";
+            if (window.AlzorToast) {
+                window.AlzorToast.warning("Please select a size before adding to your bag.");
+            }
+            if (message) {
+                message.textContent = "Please select a size first.";
+            }
+            const sizeSection = document.querySelector(".size-section");
+            if (sizeSection) {
+                sizeSection.classList.add("size-highlight");
+                setTimeout(function () {
+                    sizeSection.classList.remove("size-highlight");
+                }, 1200);
+            }
             return;
         }
 
-        message.textContent = "ADDING TO BAG…";
+        isAddingToCart = true;
+        if (addBtn) {
+            addBtn.disabled = true;
+            addBtn.textContent = "ADDING TO BAG…";
+        }
+        if (message) {
+            message.textContent = "ADDING TO BAG…";
+        }
 
         try {
             const response = await fetch("{{ url_for('add_to_cart') }}", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
                 },
                 body: JSON.stringify({
                     slug: document.body.dataset.productSlug,
@@ -901,17 +1000,49 @@
             const data = await response.json();
 
             if (!response.ok || !data.success) {
-                message.textContent = data.message || "Unable to add this piece.";
+                const errMsg = data.message || "Unable to add this piece.";
+                if (window.AlzorToast) {
+                    window.AlzorToast.error(errMsg);
+                }
+                if (message) {
+                    message.textContent = errMsg;
+                }
                 return;
             }
 
+            // Update badge counters everywhere
             document.querySelectorAll(".cart-count").forEach(function (count) {
                 count.textContent = data.cart_count;
             });
 
-            message.textContent = "ADDED TO YOUR BAG.";
+            // Display luxury toast notification
+            if (window.AlzorToast) {
+                window.AlzorToast.success(data);
+            }
+
+            if (message) {
+                message.textContent = "ADDED TO YOUR BAG.";
+            }
+
+            if (addBtn) {
+                addBtn.textContent = "ADDED TO BAG ✓";
+                setTimeout(function () {
+                    addBtn.textContent = "ADD TO BAG";
+                }, 1800);
+            }
         } catch (error) {
-            message.textContent = "Something went wrong. Please try again.";
+            const fallbackMsg = "Something went wrong. Please try again.";
+            if (window.AlzorToast) {
+                window.AlzorToast.error(fallbackMsg);
+            }
+            if (message) {
+                message.textContent = fallbackMsg;
+            }
+        } finally {
+            isAddingToCart = false;
+            if (addBtn) {
+                addBtn.disabled = false;
+            }
         }
     }
 
@@ -919,22 +1050,48 @@
     /* =====================================================
        BUY NOW
     ===================================================== */
+    let isBuyingNow = false;
+
     async function buyNow() {
+        if (isBuyingNow) return;
+
+        const buyBtn = document.querySelector(".buy-now-button");
         const selectedSize = document.querySelector(".size-option.selected");
         const message = document.getElementById("cartMessage");
 
         if (!selectedSize) {
-            message.textContent = "Please select a size first.";
+            if (window.AlzorToast) {
+                window.AlzorToast.warning("Please select a size first.");
+            }
+            if (message) {
+                message.textContent = "Please select a size first.";
+            }
+            const sizeSection = document.querySelector(".size-section");
+            if (sizeSection) {
+                sizeSection.classList.add("size-highlight");
+                setTimeout(function () {
+                    sizeSection.classList.remove("size-highlight");
+                }, 1200);
+            }
             return;
         }
 
-        message.textContent = "ADDING TO BAG…";
+        isBuyingNow = true;
+        if (buyBtn) {
+            buyBtn.disabled = true;
+            buyBtn.textContent = "PROCEEDING…";
+        }
+        if (message) {
+            message.textContent = "ADDING TO BAG…";
+        }
 
         try {
             const response = await fetch("{{ url_for('add_to_cart') }}", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Accept": "application/json"
                 },
                 body: JSON.stringify({
                     slug: document.body.dataset.productSlug,
@@ -945,17 +1102,40 @@
             const data = await response.json();
 
             if (!response.ok || !data.success) {
-                message.textContent = data.message || "Unable to proceed.";
+                const errMsg = data.message || "Unable to proceed.";
+                if (window.AlzorToast) {
+                    window.AlzorToast.error(errMsg);
+                }
+                if (message) {
+                    message.textContent = errMsg;
+                }
+                isBuyingNow = false;
+                if (buyBtn) {
+                    buyBtn.disabled = false;
+                    buyBtn.textContent = "BUY NOW";
+                }
                 return;
             }
 
-            window.location.href = "{{ url_for('cart') }}";
+            window.location.href = "{{ url_for('checkout') }}";
         } catch (error) {
-            message.textContent = "Something went wrong. Please try again.";
+            const fallbackMsg = "Something went wrong. Please try again.";
+            if (window.AlzorToast) {
+                window.AlzorToast.error(fallbackMsg);
+            }
+            if (message) {
+                message.textContent = fallbackMsg;
+            }
+            isBuyingNow = false;
+            if (buyBtn) {
+                buyBtn.disabled = false;
+                buyBtn.textContent = "BUY NOW";
+            }
         }
     }
 </script>
 
+<script src="{{ url_for('static', filename='js/cart-toast.js') }}?v=1"></script>
 <script src="{{ url_for('static', filename='js/search.js') }}?v=2"></script>
 <script src="{{ url_for('static', filename='js/script.js') }}?v=40"></script>
 

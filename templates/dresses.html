@@ -10,12 +10,20 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <meta
-        name="description"
-        content="Explore feminine silhouettes from Alzor Couture."
-    >
-
+    <meta name="description" content="Explore feminine designer silhouettes from Alzor Couture. Elegant contemporary dresses tailored with quiet luxury.">
     <title>Dresses — Alzor Couture</title>
+    <link rel="canonical" href="{{ site_url }}/dresses">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Dresses — Alzor Couture">
+    <meta property="og:description" content="Explore feminine designer silhouettes from Alzor Couture.">
+    <meta property="og:url" content="{{ site_url }}/dresses">
+    <meta property="og:image" content="{{ site_url }}/static/images/gd1.jpeg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Dresses — Alzor Couture">
+    <meta name="twitter:description" content="Explore feminine designer silhouettes from Alzor Couture.">
 
 
     <!-- =====================================================
@@ -42,7 +50,7 @@
 .collection-hero-motion{position:relative;min-height:390px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at center,rgba(255,255,255,.92) 0%,rgba(244,241,234,.58) 48%,rgba(248,246,241,0) 82%)}
 .dress-light-veil{position:absolute;top:50%;left:50%;width:640px;height:250px;transform:translate(-50%,-50%) rotate(-10deg);border-radius:50%;background:radial-gradient(ellipse,rgba(173,138,81,.10),rgba(255,255,255,.25) 42%,transparent 74%);filter:blur(8px);z-index:1;animation:dressVeil 7s ease-in-out infinite;pointer-events:none}
 .dress-petal{position:absolute;top:50%;left:50%;width:520px;height:165px;border:1px solid rgba(173,138,81,.16);border-radius:52% 48% 60% 40%;transform:translate(-50%,-50%) rotate(0deg);z-index:3;pointer-events:none}
-.dress-petal::after{content:"";position:absolute;inset:16px 44px;border-top:1px solid rgba(173,138,81,.13);border-bottom:1px solid rgba(173,138,81,.08);border-radius:50%}
+.dress-petal::after{content:"";position:absolute;inset:16px 44px;border-top:1px solid rgba(173,138,81,.13);border-bottom:1px solid rgba(173,138,81,.08);border-radius:50%; }
 .dress-petal-1{animation:dressPetalOne 15s ease-in-out infinite}
 .dress-petal-2{width:430px;height:140px;border-color:rgba(173,138,81,.12);animation:dressPetalTwo 12s ease-in-out infinite}
 .dress-petal-3{width:340px;height:112px;border-color:rgba(173,138,81,.09);animation:dressPetalThree 10s ease-in-out infinite}
@@ -103,15 +111,11 @@
             </a>
 
 
-            <a href="{{ url_for('new_arrivals') }}" class="nav-link"
-                aria-current="page"
-            >
+            <a href="{{ url_for('new_arrivals') }}" class="nav-link">
                 NEW ARRIVALS
             </a>
 
-
-            <a href="{{ url_for('dresses') }}" class="nav-link active"
-            >
+            <a href="{{ url_for('dresses') }}" class="nav-link active" aria-current="page">
                 DRESSES
             </a>
 
@@ -419,28 +423,17 @@
         <!-- FOOTER LINKS -->
 
         <div class="footer-links">
-
-
-            <a href="{{ url_for('home') }}">
-                HOME
-            </a>
-
-
-            <a href="{{ url_for('new_arrivals') }}">
-                NEW ARRIVALS
-            </a>
-
-
-            <a href="{{ url_for('dresses') }}">
-                DRESSES
-            </a>
-
-
-            <a href="{{ url_for('co_ord_sets') }}">
-                CO-ORD SETS
-            </a>
-
-
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
         </div>
 
 
@@ -448,9 +441,7 @@
         <!-- COPYRIGHT -->
 
         <div class="footer-bottom">
-
-            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
-
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
         </div>
 
 

@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout — ALZOR COUTURE</title>
+    <meta name="description" content="Complete your Alzor Couture order securely. Premium contemporary womenswear.">
+    <link rel="canonical" href="{{ site_url }}/checkout">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Checkout — ALZOR COUTURE">
+    <meta property="og:description" content="Complete your Alzor Couture order securely.">
+    <meta property="og:url" content="{{ site_url }}/checkout">
+    <meta property="og:image" content="{{ site_url }}/static/images/hero.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}?v=checkout-clean-3">
 </head>
 <body>
@@ -249,14 +259,22 @@
     </main>
 
     <footer class="checkout-footer">
-        <span>© 2026 ALZOR COUTURE</span>
+        <span>© 2026 ALZOR COUTURE (alzorcouture.in)</span>
         <span>•</span>
-        <span>MADE WITH INTENTION</span>
+        <a href="{{ url_for('shipping_policy') }}" target="_blank" style="color:inherit;text-decoration:underline;">Shipping</a>
+        <span>•</span>
+        <a href="{{ url_for('returns_exchange') }}" target="_blank" style="color:inherit;text-decoration:underline;">Returns</a>
+        <span>•</span>
+        <a href="{{ url_for('privacy_policy') }}" target="_blank" style="color:inherit;text-decoration:underline;">Privacy</a>
+        <span>•</span>
+        <a href="{{ url_for('terms_of_service') }}" target="_blank" style="color:inherit;text-decoration:underline;">Terms</a>
+        <span>•</span>
+        <span>100% SECURE RAZORPAY ENCRYPTED CHECKOUT</span>
     </footer>
 
 </div>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="{{ url_for('static', filename='js/checkout.js') }}?v=razorpay-test-1"></script>
+<script src="{{ url_for('static', filename='js/checkout.js') }}?v=alzor-checkout-2"></script>
 </body>
 </html>

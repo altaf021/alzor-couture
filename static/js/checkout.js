@@ -176,7 +176,7 @@
         try {
             const orderData = await postJSON("/create-razorpay-order", payload);
             if (!orderData.key_id || !orderData.razorpay_order_id) {
-                throw new Error("Razorpay did not return the required order details. Check your Test Mode keys.");
+                throw new Error("Razorpay did not return the required order details. Please verify your payment configuration.");
             }
 
             const options = {
@@ -184,7 +184,8 @@
                 amount: orderData.amount,
                 currency: orderData.currency || "INR",
                 name: orderData.brand || "ALZOR COUTURE",
-                description: "Alzor Couture order",
+                description: "Alzor Couture Order",
+                image: window.location.origin + "/static/images/logo.png",
                 order_id: orderData.razorpay_order_id,
                 prefill: orderData.customer || {},
                 theme: { color: "#ad8a51" },

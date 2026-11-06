@@ -1,14 +1,22 @@
-from flask import Flask, render_template, request, session, jsonify, redirect, url_for
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response
 import json
+import logging
 import os
 import random
+import sqlite3
 import string
+from contextlib import contextmanager
 from datetime import datetime
 
 from dotenv import load_dotenv
 import razorpay
-import psycopg
-from psycopg.types.json import Jsonb
+
+try:
+    import psycopg
+    from psycopg.types.json import Jsonb
+except ImportError:
+    psycopg = None
+    Jsonb = None
 
 load_dotenv()
 
@@ -18,23 +26,27 @@ load_dotenv()
 # =========================================================
 
 AVAILABLE_SIZES = ["S", "M", "L", "XL", "XXL"]
+SITE_URL = os.getenv("SITE_URL", "https://alzorcouture.in").strip().rstrip("/")
 
 app = Flask(__name__)
 
 # Production must always use a strong secret configured in the environment.
-# The fallback is allowed only for local development without DATABASE_URL.
 _configured_secret = os.getenv("FLASK_SECRET_KEY", "").strip()
 if not _configured_secret:
-    if os.getenv("DATABASE_URL", "").strip():
+    if os.getenv("DATABASE_URL", "").strip() and not os.getenv("FLASK_DEBUG", "").strip().lower() == "true":
         raise RuntimeError(
             "FLASK_SECRET_KEY must be configured in the production environment."
         )
-    _configured_secret = "local-development-only-change-me"
+    _configured_secret = "alzor-couture-dev-secret-key-change-in-production"
 app.secret_key = _configured_secret
 
-# Avoid caching private order-confirmation details in shared browsers/proxies.
+# Security and caching headers
 @app.after_request
-def add_private_page_headers(response):
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     if request.endpoint == "order_confirmation":
         response.headers["Cache-Control"] = "no-store, private, max-age=0"
         response.headers["Pragma"] = "no-cache"
@@ -43,6 +55,8 @@ def add_private_page_headers(response):
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "").strip()
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "").strip()
+RAZORPAY_IS_LIVE = RAZORPAY_KEY_ID.startswith("rzp_live_")
+RAZORPAY_IS_TEST = RAZORPAY_KEY_ID.startswith("rzp_test_")
 
 
 def get_razorpay_client():
@@ -329,113 +343,197 @@ INSTAGRAM_POSTS = [
 
 
 # =========================================================
-# POSTGRESQL ORDER STORAGE
+# DUAL DATABASE ORDER STORAGE (PostgreSQL / SQLite fallback)
 # =========================================================
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+USE_POSTGRES = bool(DATABASE_URL and psycopg is not None)
+SQLITE_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "orders.db")
 
 
 def get_database_url():
-    """Return a normalized PostgreSQL URL, or raise a clear configuration error."""
+    """Return a normalized PostgreSQL URL."""
     if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is not configured in the Render environment.")
-    # Some providers still supply the legacy postgres:// scheme.
+        return ""
     if DATABASE_URL.startswith("postgres://"):
         return "postgresql://" + DATABASE_URL[len("postgres://"):]
     return DATABASE_URL
 
 
-def get_db_connection():
-    """Open a short-lived PostgreSQL connection."""
-    return psycopg.connect(get_database_url(), connect_timeout=8, autocommit=False)
+def ensure_database_schema(conn, is_postgres=True):
+    """Create the storage tables if this is the first app run."""
+    if is_postgres:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_orders (
+                order_number TEXT PRIMARY KEY,
+                razorpay_payment_id TEXT UNIQUE NOT NULL,
+                order_data JSONB NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_pending_payments (
+                razorpay_order_id TEXT PRIMARY KEY,
+                payment_data JSONB NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+    else:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_orders (
+                order_number TEXT PRIMARY KEY,
+                razorpay_payment_id TEXT UNIQUE NOT NULL,
+                order_data TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_pending_payments (
+                razorpay_order_id TEXT PRIMARY KEY,
+                payment_data TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
 
 
-def ensure_database_schema(conn):
-    """Create the small storage tables if this is the first app run."""
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS alzor_orders (
-            order_number TEXT PRIMARY KEY,
-            razorpay_payment_id TEXT UNIQUE NOT NULL,
-            order_data JSONB NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS alzor_pending_payments (
-            razorpay_order_id TEXT PRIMARY KEY,
-            payment_data JSONB NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        )
-    """)
+@contextmanager
+def get_db_cursor():
+    """Context manager yielding (cursor, is_postgres). Handles commits/rollbacks."""
+    if USE_POSTGRES:
+        with psycopg.connect(get_database_url(), connect_timeout=8, autocommit=False) as conn:
+            ensure_database_schema(conn, is_postgres=True)
+            with conn.cursor() as cur:
+                yield cur, True
+            conn.commit()
+    else:
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        try:
+            ensure_database_schema(conn, is_postgres=False)
+            cur = conn.cursor()
+            yield cur, False
+            conn.commit()
+        finally:
+            conn.close()
 
 
 def save_pending_payment(razorpay_order_id, pending):
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        conn.execute(
-            """INSERT INTO alzor_pending_payments (razorpay_order_id, payment_data)
-               VALUES (%s, %s)
-               ON CONFLICT (razorpay_order_id) DO UPDATE SET payment_data = EXCLUDED.payment_data""",
-            (razorpay_order_id, Jsonb(pending)),
-        )
+    with get_db_cursor() as (cur, is_pg):
+        if is_pg:
+            cur.execute(
+                """INSERT INTO alzor_pending_payments (razorpay_order_id, payment_data)
+                   VALUES (%s, %s)
+                   ON CONFLICT (razorpay_order_id) DO UPDATE SET payment_data = EXCLUDED.payment_data""",
+                (razorpay_order_id, Jsonb(pending)),
+            )
+        else:
+            cur.execute(
+                """INSERT OR REPLACE INTO alzor_pending_payments (razorpay_order_id, payment_data)
+                   VALUES (?, ?)""",
+                (razorpay_order_id, json.dumps(pending, ensure_ascii=False)),
+            )
 
 
 def load_pending_payment(razorpay_order_id):
     if not razorpay_order_id:
         return None
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        row = conn.execute(
-            "SELECT payment_data FROM alzor_pending_payments WHERE razorpay_order_id = %s",
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT payment_data FROM alzor_pending_payments WHERE razorpay_order_id = {param_char}",
             (razorpay_order_id,),
-        ).fetchone()
-        return row[0] if row else None
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        data = row[0]
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except Exception:
+                return None
+        return data
 
 
 def delete_pending_payment(razorpay_order_id):
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        conn.execute(
-            "DELETE FROM alzor_pending_payments WHERE razorpay_order_id = %s",
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"DELETE FROM alzor_pending_payments WHERE razorpay_order_id = {param_char}",
             (razorpay_order_id,),
         )
 
 
 def find_order_by_payment_id(payment_id):
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        row = conn.execute(
-            "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = %s",
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = {param_char}",
             (payment_id,),
-        ).fetchone()
-        return row[0] if row else None
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        data = row[0]
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except Exception:
+                return None
+        return data
 
 
 def save_order(order):
     """Save a confirmed order once; payment ID uniqueness prevents duplicates."""
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        conn.execute(
-            """INSERT INTO alzor_orders (order_number, razorpay_payment_id, order_data)
-               VALUES (%s, %s, %s)
-               ON CONFLICT (razorpay_payment_id) DO NOTHING""",
-            (order["order_number"], order["razorpay_payment_id"], Jsonb(order)),
-        )
-        row = conn.execute(
-            "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = %s",
-            (order["razorpay_payment_id"],),
-        ).fetchone()
-        return row[0] if row else order
+    with get_db_cursor() as (cur, is_pg):
+        if is_pg:
+            cur.execute(
+                """INSERT INTO alzor_orders (order_number, razorpay_payment_id, order_data)
+                   VALUES (%s, %s, %s)
+                   ON CONFLICT (razorpay_payment_id) DO NOTHING""",
+                (order["order_number"], order["razorpay_payment_id"], Jsonb(order)),
+            )
+            cur.execute(
+                "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = %s",
+                (order["razorpay_payment_id"],),
+            )
+            row = cur.fetchone()
+            return row[0] if row else order
+        else:
+            cur.execute(
+                """INSERT OR IGNORE INTO alzor_orders (order_number, razorpay_payment_id, order_data)
+                   VALUES (?, ?, ?)""",
+                (order["order_number"], order["razorpay_payment_id"], json.dumps(order, ensure_ascii=False)),
+            )
+            cur.execute(
+                "SELECT order_data FROM alzor_orders WHERE razorpay_payment_id = ?",
+                (order["razorpay_payment_id"],),
+            )
+            row = cur.fetchone()
+            if row and isinstance(row[0], str):
+                try:
+                    return json.loads(row[0])
+                except Exception:
+                    return order
+            return row[0] if row else order
 
 
 def find_order_by_number(order_number):
-    with get_db_connection() as conn:
-        ensure_database_schema(conn)
-        row = conn.execute(
-            "SELECT order_data FROM alzor_orders WHERE order_number = %s",
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT order_data FROM alzor_orders WHERE order_number = {param_char}",
             (order_number,),
-        ).fetchone()
-        return row[0] if row else None
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        data = row[0]
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except Exception:
+                return None
+        return data
 
 
 # =========================================================
@@ -509,7 +607,13 @@ def get_cart_subtotal():
 def inject_global_values():
     return {
         "available_sizes": AVAILABLE_SIZES,
-        "cart_count": get_cart_count()
+        "cart_count": get_cart_count(),
+        "site_url": SITE_URL,
+        "domain": "alzorcouture.in",
+        "contact_email": "contact@alzorcouture.in",
+        "brand_name": "Alzor Couture",
+        "razorpay_is_live": RAZORPAY_IS_LIVE,
+        "razorpay_is_test": RAZORPAY_IS_TEST
     }
 
 
@@ -887,14 +991,27 @@ def add_to_cart():
     session.modified = True
 
     if request.is_json:
+        cart_subtotal = 0
+        for ci in cart:
+            p = find_product(ci.get("slug"))
+            if p and p.get("price") is not None:
+                try:
+                    q = int(ci.get("quantity", 1))
+                except (TypeError, ValueError):
+                    q = 1
+                cart_subtotal += p["price"] * q
+
+        product_image = product["images"][0] if product.get("images") else ""
 
         return jsonify({
             "success": True,
-            "message": (
-                f"{product['name']} "
-                "added to your bag."
-            ),
-            "cart_count": get_cart_count()
+            "message": f"{product['name']} (Size: {size}) added to your cart successfully.",
+            "product_name": product.get("name"),
+            "size": size,
+            "price": product.get("price"),
+            "image": product_image,
+            "cart_count": get_cart_count(),
+            "subtotal": cart_subtotal
         })
 
     return redirect(
@@ -1230,7 +1347,7 @@ def create_razorpay_order():
         app.logger.exception("Razorpay order creation failed")
         return jsonify({
             "success": False,
-            "message": "Razorpay could not start the payment. Please check your Test Mode keys and try again."
+            "message": "Razorpay could not start the payment. Please verify your payment credentials or try again later."
         }), 502
 
     # Store customer/order details in PostgreSQL, not in the browser cookie or local files.
@@ -1344,7 +1461,8 @@ def verify_razorpay_payment():
         if payment.get("status") == "authorized":
             payment = client.payment.capture(
                 razorpay_payment_id,
-                int(pending["amount_paise"])
+                int(pending["amount_paise"]),
+                {"currency": "INR"}
             )
 
         if payment.get("status") != "captured":
@@ -1357,7 +1475,7 @@ def verify_razorpay_payment():
         app.logger.exception("Razorpay payment verification failed")
         return jsonify({
             "success": False,
-            "message": "We could not verify the payment. If money was deducted, do not pay again yet—check your Razorpay Test Mode payment record."
+            "message": "We could not verify the payment. If money was deducted, do not pay again yet—please contact support at contact@alzorcouture.in with your payment ID."
         }), 400
 
     # Prevent accidental duplicate order creation from a repeated verification request.
@@ -1458,10 +1576,351 @@ def order_confirmation(order_number):
 
 
 # =========================================================
+# CLIENT CONCIERGE & POLICIES
+# =========================================================
+
+@app.route("/shipping-policy")
+def shipping_policy():
+    body = """
+    <div class="policy-section">
+        <h2>Complimentary Pan-India Delivery</h2>
+        <p>At Alzor Couture, every creation is handled with the utmost reverence. We provide complimentary insured standard shipping across India on all prepaid orders placed on alzorcouture.in.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Delivery Timelines</h2>
+        <p>Our pieces are crafted and inspected by master artisans before dispatch:</p>
+        <ul>
+            <li><strong>Delhi NCR:</strong> 2 to 4 business days.</li>
+            <li><strong>Metro Cities (Mumbai, Bengaluru, Kolkata, Chennai, Hyderabad, Pune):</strong> 3 to 5 business days.</li>
+            <li><strong>Rest of India:</strong> 5 to 8 business days.</li>
+            <li><strong>Custom Fits &amp; Bespoke Tailoring:</strong> 7 to 10 business days from size confirmation.</li>
+        </ul>
+    </div>
+
+    <div class="policy-section">
+        <h2>Courier Partners &amp; Real-Time Tracking</h2>
+        <p>We partner exclusively with India's premier express logistics carriers — Blue Dart, Delhivery, and DTDC. As soon as your order leaves our atelier, you will receive an SMS and email notification with your live consignment tracking ID.</p>
+        <p>You may also track your order status anytime on our <a href="/track-order" style="color:#ad8a51;font-weight:600;">Order Tracking Portal</a>.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Packaging &amp; Safe Transit</h2>
+        <p>All garments are enclosed in archival garment bags with bespoke gold-stamped luxury packaging designed to protect delicate embroidery and fine textiles from humidity and transit creases.</p>
+        <div class="policy-highlight-card">
+            <h4>Important Notice upon Delivery</h4>
+            <p>Please inspect the outer tamper-evident packaging before accepting delivery. If the seal appears compromised or damaged, please decline the parcel and notify us immediately via WhatsApp at +91 8527144345.</p>
+        </div>
+    </div>
+    """
+    return render_template(
+        "policy.html",
+        page_title="Shipping & Delivery Policy",
+        meta_description="Read Alzor Couture's pan-India complimentary shipping timelines, luxury packaging standards, and delivery policies.",
+        policy_heading="Shipping & Delivery",
+        policy_subtitle="Complimentary pan-India insured delivery & bespoke packaging.",
+        active_policy="shipping",
+        policy_body=body
+    )
+
+
+@app.route("/returns-exchange")
+def returns_exchange():
+    body = """
+    <div class="policy-section">
+        <h2>7-Day Exchange Window</h2>
+        <p>We take pride in the exceptional craftsmanship of every Alzor Couture silhouette. If you require a different size or wish to exchange for an alternative piece, we welcome exchanges within <strong>7 calendar days</strong> from the date of recorded delivery.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Garment Eligibility for Exchange</h2>
+        <p>To preserve hygiene and couture presentation, returned pieces must satisfy the following conditions:</p>
+        <ul>
+            <li>The piece must be completely unworn, unwashed, and free of perfumes, makeup marks, or alterations.</li>
+            <li>All original designer brand tags, security ribbons, and protective accessories must remain intact and attached.</li>
+            <li>The piece must be returned in its original Alzor Couture luxury packaging box.</li>
+        </ul>
+    </div>
+
+    <div class="policy-section">
+        <h2>Custom Fits &amp; Bespoke Creations</h2>
+        <p>Silhouettes tailored to individual custom measurements are created exclusively for your body contours. While custom pieces are non-refundable, our master tailors will gladly provide <strong>complimentary fit alterations</strong> to ensure perfection.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Damaged or Defective Deliveries</h2>
+        <p>Every piece undergoes dual quality audits prior to dispatch. In the rare event an item reaches you with transit damage or a manufacturing flaw, please notify us within <strong>48 hours of delivery</strong> with unboxing photographs or video at <a href="mailto:contact@alzorcouture.in" style="color:#ad8a51;font-weight:600;">contact@alzorcouture.in</a> or via WhatsApp at <strong>+91 8527144345</strong>.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Refund Processing</h2>
+        <p>Approved refunds are credited directly back to the original source of payment (via Razorpay Live) within <strong>5 to 7 business days</strong> following our atelier's quality inspection.</p>
+    </div>
+    """
+    return render_template(
+        "policy.html",
+        page_title="Returns & Exchange Policy",
+        meta_description="Alzor Couture 7-day exchange and refund policy. Learn about size exchanges, bespoke alterations, and returns.",
+        policy_heading="Returns & Exchanges",
+        policy_subtitle="Seamless 7-day exchanges for pristine, unworn couture.",
+        active_policy="returns",
+        policy_body=body
+    )
+
+
+@app.route("/privacy-policy")
+def privacy_policy():
+    body = """
+    <div class="policy-section">
+        <h2>Our Commitment to Privacy</h2>
+        <p>Alzor Couture ("alzorcouture.in", "we", "us", "our") values your trust and is committed to protecting your personal data and privacy in full compliance with the Information Technology Act, 2000, and the Digital Personal Data Protection laws of India.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Information We Collect</h2>
+        <p>When you browse, register, or complete a purchase on alzorcouture.in, we collect only the information necessary to fulfill your order:</p>
+        <ul>
+            <li><strong>Identity &amp; Contact:</strong> Full name, telephone number, and email address.</li>
+            <li><strong>Delivery Information:</strong> Street address, city, state, postal PIN code, and landmark.</li>
+            <li><strong>Transaction Records:</strong> Order items, selected sizes, order values, and Razorpay payment identifiers.</li>
+        </ul>
+    </div>
+
+    <div class="policy-section">
+        <h2>Payment Security via Razorpay</h2>
+        <p>All financial payments on alzorcouture.in are processed through <strong>Razorpay</strong>, India's leading PCI-DSS Level 1 certified payment gateway.</p>
+        <div class="policy-highlight-card">
+            <h4>100% Secure Payment Architecture</h4>
+            <p>Alzor Couture never captures, handles, or stores your credit/debit card numbers, CVVs, net banking credentials, or UPI PINs on our servers. All sensitive cardholder data is encrypted and processed directly through Razorpay's bank-grade encrypted channels.</p>
+        </div>
+    </div>
+
+    <div class="policy-section">
+        <h2>Data Usage &amp; Sharing</h2>
+        <p>Your personal information is used exclusively to process orders, provide delivery tracking, and offer concierge client care. We do not sell, rent, or monetize customer data to third-party advertisers under any circumstance.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Grievance Redressal</h2>
+        <p>For inquiries, data correction requests, or privacy concerns, please contact our designated Grievance Officer:</p>
+        <p><strong>Grievance Officer:</strong> Alzor Couture Atelier<br>
+        <strong>Email:</strong> <a href="mailto:contact@alzorcouture.in" style="color:#ad8a51;">contact@alzorcouture.in</a><br>
+        <strong>Address:</strong> New Delhi, India</p>
+    </div>
+    """
+    return render_template(
+        "policy.html",
+        page_title="Privacy Policy",
+        meta_description="Alzor Couture Privacy Policy. Learn how we safeguard your personal data and ensure 100% secure Razorpay transactions.",
+        policy_heading="Privacy Policy",
+        policy_subtitle="Committed to protecting your personal data, confidentiality, and payment security.",
+        active_policy="privacy",
+        policy_body=body
+    )
+
+
+@app.route("/terms-of-service")
+def terms_of_service():
+    body = """
+    <div class="policy-section">
+        <h2>Agreement to Terms</h2>
+        <p>By accessing or purchasing from <strong>alzorcouture.in</strong>, you agree to be bound by these Terms of Service and all applicable laws and regulations of India. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Product Information &amp; Craftsmanship</h2>
+        <p>We make every effort to display the colors, fabrics, and silhouettes of our garments with maximum fidelity. Handcrafted embroideries and bespoke dyes possess unique artistic characteristics that are the hallmark of luxury Indian couture.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Pricing &amp; Taxes</h2>
+        <p>All prices listed on alzorcouture.in are quoted in Indian Rupees (₹ INR) and are inclusive of all applicable Goods and Services Tax (GST). Prices are subject to change without prior notice, but orders already confirmed and paid will not be subject to price alterations.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Intellectual Property</h2>
+        <p>All designs, silhouette patterns, photographs, videography, brand logos, copy, and visual trademarks appearing on alzorcouture.in are the sole proprietary property of Alzor Couture. Unauthorized reproduction, imitation, commercial exploitation, or distribution is strictly prohibited.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Governing Law &amp; Jurisdiction</h2>
+        <p>These terms and any dispute arising out of or related to purchases on alzorcouture.in shall be governed by and construed in accordance with the laws of India, under the exclusive jurisdiction of the competent courts of New Delhi, India.</p>
+    </div>
+    """
+    return render_template(
+        "policy.html",
+        page_title="Terms of Service",
+        meta_description="Read the official Terms of Service governing purchases and access on Alzor Couture (alzorcouture.in).",
+        policy_heading="Terms of Service",
+        policy_subtitle="Terms and conditions governing use of alzorcouture.in and customer orders.",
+        active_policy="terms",
+        policy_body=body
+    )
+
+
+@app.route("/contact")
+def contact():
+    body = """
+    <div class="policy-section">
+        <h2>Atelier &amp; Client Concierge</h2>
+        <p>Our concierge team is at your disposal for bespoke sizing, custom fit queries, order status updates, and styling advice.</p>
+    </div>
+
+    <div class="policy-section">
+        <h2>Connect Directly</h2>
+        <div class="policy-contact-cta">
+            <a href="https://wa.me/918527144345?text=Hi%20Alzor%20Couture%2C%20I%20would%20like%20assistance%20with%20your%20collection." target="_blank" rel="noopener noreferrer" class="policy-whatsapp-btn">
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor"><path d="M16 3.5A12.4 12.4 0 0 0 5.2 21.9L3.8 27.8l6.1-1.6A12.4 12.4 0 1 0 16 3.5Zm0 2.4A10 10 0 0 1 24.1 22a9.9 9.9 0 0 1-8.1 4.1c-1.7 0-3.3-.4-4.7-1.2l-.5-.3-3.4.9.9-3.3-.3-.5A10 10 0 0 1 16 5.9Zm-4 4.1c-.3 0-.7.1-.9.4-.3.4-1.1 1.1-1.1 2.7 0 1.6 1.1 3.1 1.2 3.3.1.2 2.1 3.4 5.2 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.1-.1-.4-.2-.9-.4l-1.9-.9c-.4-.2-.7-.1-1 .2l-.7.9c-.2.2-.4.2-.8.1-.4-.2-1.5-.6-2.8-1.8-1-.9-1.7-2-1.9-2.4-.2-.4 0-.6.2-.8l.5-.6c.2-.2.2-.4.4-.7.1-.2.1-.5 0-.7l-.9-2.1c-.2-.5-.5-.8-.8-.8Z"/></svg>
+                CHAT ON WHATSAPP: 8527144345
+            </a>
+            <a href="mailto:contact@alzorcouture.in" class="policy-email-btn">
+                EMAIL: CONTACT@ALZORCOUTURE.IN
+            </a>
+        </div>
+    </div>
+
+    <div class="policy-section">
+        <h2>Hours of Service</h2>
+        <ul>
+            <li><strong>Concierge Hours:</strong> Monday through Saturday, 10:00 AM – 7:00 PM IST</li>
+            <li><strong>Online Store:</strong> Open 24/7 at <a href="https://alzorcouture.in" style="color:#ad8a51;">alzorcouture.in</a></li>
+            <li><strong>Response Commitment:</strong> Queries received outside concierge hours are attended to the next business morning.</li>
+            <li><strong>Atelier Location:</strong> New Delhi, India</li>
+        </ul>
+    </div>
+    """
+    return render_template(
+        "policy.html",
+        page_title="Contact & Concierge",
+        meta_description="Contact Alzor Couture atelier for bespoke fits, styling consultations, and WhatsApp concierge support.",
+        policy_heading="Client Concierge",
+        policy_subtitle="Personalized assistance, styling consultations, and order support.",
+        active_policy="contact",
+        policy_body=body
+    )
+
+
+# =========================================================
+# ORDER TRACKING
+# =========================================================
+
+@app.route("/track-order", methods=["GET", "POST"])
+def track_order():
+    error = None
+    order = None
+    order_number = ""
+    contact_info = ""
+
+    if request.method == "POST":
+        order_number = request.form.get("order_number", "").strip().upper()
+        contact_info = request.form.get("contact_info", "").strip().lower()
+
+        if not order_number or not contact_info:
+            error = "Please provide both your order number and contact information (phone or email)."
+        else:
+            try:
+                found = find_order_by_number(order_number)
+            except Exception:
+                app.logger.exception("Error looking up order for tracking")
+                found = None
+
+            if not found:
+                error = f"We could not find any order matching '{order_number}'. Please verify the order number from your confirmation email."
+            else:
+                cust_phone = (found.get("customer_phone") or "").strip().lower()
+                cust_email = (found.get("customer_email") or "").strip().lower()
+                clean_contact = contact_info.replace(" ", "").replace("-", "").replace("+91", "")
+                clean_phone = cust_phone.replace(" ", "").replace("-", "").replace("+91", "")
+
+                if contact_info == cust_email or (clean_contact and clean_contact in clean_phone) or (clean_phone and clean_phone in clean_contact):
+                    order = found
+                else:
+                    error = "The contact details entered do not match our records for this order."
+
+    return render_template(
+        "track_order.html",
+        order=order,
+        error=error,
+        order_number=order_number,
+        contact_info=contact_info,
+        active_policy="track"
+    )
+
+
+# =========================================================
+# SEO: ROBOTS.TXT & SITEMAP.XML
+# =========================================================
+
+@app.route("/robots.txt")
+def robots_txt():
+    content = f"""User-agent: *
+Allow: /
+Disallow: /order-confirmation/
+Disallow: /create-razorpay-order
+Disallow: /verify-razorpay-payment
+Disallow: /add-to-cart
+Disallow: /update-cart
+Disallow: /remove-from-cart
+Disallow: /clear-cart
+
+Sitemap: {SITE_URL}/sitemap.xml
+"""
+    return Response(content, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    pages = [
+        {"loc": f"{SITE_URL}/", "priority": "1.0", "changefreq": "daily"},
+        {"loc": f"{SITE_URL}/new-arrivals", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{SITE_URL}/co-ord-sets", "priority": "0.9", "changefreq": "weekly"},
+        {"loc": f"{SITE_URL}/dresses", "priority": "0.9", "changefreq": "weekly"},
+        {"loc": f"{SITE_URL}/wishlist", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/search", "priority": "0.5", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/shipping-policy", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/returns-exchange", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/privacy-policy", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/terms-of-service", "priority": "0.6", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/contact", "priority": "0.7", "changefreq": "monthly"},
+        {"loc": f"{SITE_URL}/track-order", "priority": "0.7", "changefreq": "monthly"},
+    ]
+    for p in get_all_products():
+        pages.append({
+            "loc": f"{SITE_URL}/product/{p['slug']}",
+            "priority": "0.8",
+            "changefreq": "weekly"
+        })
+    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
+    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for page in pages:
+        lines.append("  <url>")
+        lines.append(f"    <loc>{page['loc']}</loc>")
+        lines.append(f"    <priority>{page['priority']}</priority>")
+        lines.append(f"    <changefreq>{page['changefreq']}</changefreq>")
+        lines.append("  </url>")
+    lines.append("</urlset>")
+    return Response("\n".join(lines), mimetype="application/xml")
+
+
+# =========================================================
 # RUN
 # =========================================================
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    if RAZORPAY_IS_LIVE:
+        print(f"[ALZOR] Razorpay: LIVE MODE ACTIVE ({RAZORPAY_KEY_ID[:12]}...)")
+    elif RAZORPAY_IS_TEST:
+        print(f"[ALZOR WARNING] Razorpay: Running with TEST key ({RAZORPAY_KEY_ID[:12]}...). Switch to Live key in .env to accept real customer payments.")
+    else:
+        print("[ALZOR WARNING] Razorpay: No keys configured. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env.")
+
+    if USE_POSTGRES:
+        print("[ALZOR] Database: PostgreSQL connected.")
+    else:
+        print(f"[ALZOR] Database: Local SQLite storage active ({SQLITE_DB_PATH}).")
+
+    print(f"[ALZOR] Domain: {SITE_URL}")
 
     app.run(
         host="0.0.0.0",

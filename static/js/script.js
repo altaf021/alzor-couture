@@ -896,95 +896,26 @@ if (clearCartButton) {
 
 
 /* =========================================================
-   CHECKOUT
+   WISHLIST TOGGLE (INLINE)
 ========================================================= */
 
-const checkoutButton =
-    document.getElementById(
-        "checkoutButton"
-    );
-
-
-if (checkoutButton) {
-
-    checkoutButton.addEventListener(
-        "click",
-        () => {
-
-            alert(
-                "Checkout will be connected next."
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   WISHLIST
-========================================================= */
-
-const wishlistButtons =
+const inlineWishlistButtons =
     document.querySelectorAll(
-        ".wishlist-button"
+        "button.wishlist-button"
     );
 
-
-wishlistButtons.forEach(button => {
-
+inlineWishlistButtons.forEach(button => {
     button.addEventListener(
         "click",
         function () {
-
-            if (
-                this.textContent.trim() === "♡"
-            ) {
-
-                this.textContent =
-                    "♥";
-
+            if (this.textContent.trim() === "♡") {
+                this.textContent = "♥";
+            } else if (this.textContent.trim() === "♥") {
+                this.textContent = "♡";
             }
-            else {
-
-                this.textContent =
-                    "♡";
-
-            }
-
         }
     );
-
 });
-
-
-/* =========================================================
-   SEARCH
-========================================================= */
-
-<button
-    type="button"
-    class="header-action search-button alzor-icon-button"
-    id="alzorSearchButton"
-    aria-label="Open search"
-    aria-controls="alzorSearchOverlay"
->
-    <svg
-        class="alzor-header-icon alzor-search-header-icon"
-        viewBox="0 0 32 32"
-        aria-hidden="true"
-    >
-        <circle
-            cx="13.5"
-            cy="13.5"
-            r="8.2"
-        ></circle>
-
-        <path
-            d="M19.5 19.5 L27 27"
-        ></path>
-    </svg>
-</button>
 
 
 /* =========================================================

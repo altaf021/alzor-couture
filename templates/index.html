@@ -5,6 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Alzor Couture — Elegance, Reimagined</title>
+    <meta name="description" content="Discover refined contemporary luxury womenswear by Alzor Couture. Elegant co-ord sets, designer dresses, and elevated everyday dressing.">
+    <link rel="canonical" href="{{ site_url }}/">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Alzor Couture — Elegance, Reimagined">
+    <meta property="og:description" content="Discover refined contemporary luxury womenswear by Alzor Couture. Elegant co-ord sets and designer dresses.">
+    <meta property="og:url" content="{{ site_url }}/">
+    <meta property="og:image" content="{{ site_url }}/static/images/hero.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Alzor Couture — Elegance, Reimagined">
+    <meta name="twitter:description" content="Contemporary luxury womenswear by Alzor Couture.">
+    <meta name="twitter:image" content="{{ site_url }}/static/images/hero.png">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ClothingStore",
+      "name": "Alzor Couture",
+      "url": "{{ site_url }}",
+      "logo": "{{ site_url }}/static/images/logo.png",
+      "description": "Luxury contemporary womenswear, co-ord sets, and designer dresses.",
+      "telephone": "+91-8527144345",
+      "priceRange": "₹₹",
+      "sameAs": [
+        "https://www.instagram.com/alzorcouture"
+      ],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ site_url }}/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
 
     <link
         rel="stylesheet"
@@ -323,11 +359,551 @@
         @media (prefers-reduced-motion: reduce){
             .hero-image,.hero-motion-grid,.hero-orbit,.hero-line-horizontal,.hero-line-vertical,.hero-particle,.hero-look,.hero-eyebrow,.hero-title-motion span,.hero-text-motion,.hero-cta-motion,.hero-microcopy,.hero-scroll{animation:none!important;transform:none!important;opacity:1!important;}
         }
-    </style>
+    
+
+/* =====================================================
+   SIGNATURE OPENING ANIMATION
+===================================================== */
+/* =====================================================
+   ALZOR SIGNATURE INTRO
+===================================================== */
+
+.alzor-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #fffdf9 0%,
+            #f8f6f1 58%,
+            #f2efe8 100%
+        );
+
+    overflow: hidden;
+    pointer-events: none;
+
+    animation:
+        alzorIntroExit
+        1.1s
+        cubic-bezier(.77,0,.18,1)
+        4.5s
+        forwards;
+}
+
+
+/* =====================================================
+   SIGNATURE WRAPPER
+===================================================== */
+
+.alzor-signature-wrap {
+    position: relative;
+
+    width: min(620px, 88vw);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    transform:
+        translateY(-5px);
+}
+
+
+/* =====================================================
+   SVG
+===================================================== */
+
+.alzor-signature-svg {
+    width: 100%;
+    height: auto;
+
+    overflow: visible;
+}
+
+
+/* =====================================================
+   HANDWRITING STROKES
+===================================================== */
+
+.signature-stroke {
+
+    fill: none;
+
+    stroke: #b28b4d;
+
+    stroke-width: 2.05;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+
+    animation:
+        signatureWrite
+        .65s
+        cubic-bezier(.65,.05,.36,1)
+        forwards;
+}
+
+
+/* =====================================================
+   DRAWING ORDER
+===================================================== */
+
+.stroke-lead {
+    animation-delay: .10s;
+}
+
+.stroke-a {
+    animation-delay: .25s;
+}
+
+.stroke-a-cross {
+    animation-delay: .52s;
+}
+
+.stroke-connect-1 {
+    animation-delay: .63s;
+}
+
+.stroke-l {
+    animation-delay: .72s;
+}
+
+.stroke-connect-2 {
+    animation-delay: 1.02s;
+}
+
+.stroke-z {
+    animation-delay: 1.10s;
+}
+
+.stroke-connect-3 {
+    animation-delay: 1.48s;
+}
+
+.stroke-o {
+    animation-delay: 1.56s;
+}
+
+.stroke-connect-4 {
+    animation-delay: 1.91s;
+}
+
+.stroke-r {
+    animation-delay: 1.99s;
+}
+
+.stroke-flourish {
+    animation-delay: 2.36s;
+}
+
+
+/* =====================================================
+   GOLD WRITING
+===================================================== */
+
+@keyframes signatureWrite {
+
+    0% {
+        stroke-dashoffset: 1;
+    }
+
+    100% {
+        stroke-dashoffset: 0;
+    }
+
+}
+
+
+/* =====================================================
+   COUTURE
+===================================================== */
+
+.alzor-couture-word {
+
+    margin-top: -15px;
+
+    font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+    font-size: 11px;
+
+    font-weight: 400;
+
+    letter-spacing: 9px;
+
+    color: #a7834a;
+
+    opacity: 0;
+
+    transform:
+        translateY(8px);
+
+    animation:
+        coutureAppear
+        .9s
+        ease
+        2.75s
+        forwards;
+}
+
+
+@keyframes coutureAppear {
+
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* =====================================================
+   GOLD UNDERLINE
+===================================================== */
+
+.alzor-intro-line {
+
+    width: 0;
+    height: 1px;
+
+    margin-top: 19px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ad8a51 20%,
+            #d8bd87 50%,
+            #ad8a51 80%,
+            transparent
+        );
+
+    animation:
+        introLine
+        1s
+        cubic-bezier(.77,0,.18,1)
+        3.05s
+        forwards;
+}
+
+
+@keyframes introLine {
+
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+
+    100% {
+        width: 145px;
+        opacity: 1;
+    }
+
+}
+
+
+/* =====================================================
+   GOLD SHIMMER
+===================================================== */
+
+.alzor-signature-wrap::after {
+
+    content: "";
+
+    position: absolute;
+
+    top: 33%;
+    left: -20%;
+
+    width: 80px;
+    height: 55px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.75),
+            transparent
+        );
+
+    filter: blur(9px);
+
+    transform: skewX(-20deg);
+
+    opacity: 0;
+
+    animation:
+        signatureShine
+        1.1s
+        ease
+        2.85s
+        forwards;
+
+}
+
+
+@keyframes signatureShine {
+
+    0% {
+        left: -20%;
+        opacity: 0;
+    }
+
+    20% {
+        opacity: .8;
+    }
+
+    100% {
+        left: 115%;
+        opacity: 0;
+    }
+
+}
+
+
+/* =====================================================
+   EXIT
+===================================================== */
+
+@keyframes alzorIntroExit {
+
+    0% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    78% {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    100% {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .alzor-signature-wrap {
+        width: 91vw;
+    }
+
+    .alzor-signature-svg {
+        transform: scale(1.04);
+    }
+
+    .alzor-couture-word {
+        margin-top: -9px;
+        font-size: 9px;
+        letter-spacing: 6px;
+    }
+
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .alzor-intro,
+    .signature-stroke,
+    .alzor-couture-word,
+    .alzor-intro-line,
+    .alzor-signature-wrap::after {
+
+        animation: none !important;
+    }
+
+    .alzor-intro {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+}
+</style>
 
 </head>
 
 <body>
+
+<div class="alzor-intro" id="alzorIntro">
+
+    <div class="alzor-signature-wrap">
+
+        <svg
+            class="alzor-signature-svg"
+            viewBox="0 0 520 190"
+            aria-label="Alzor Couture"
+        >
+
+            <!-- subtle lead-in stroke -->
+            <path
+                class="signature-stroke stroke-lead"
+                pathLength="1"
+                d="
+                    M 18 150
+                    C 28 145, 34 138, 40 130
+                "
+            />
+
+            <!-- A -->
+            <path
+                class="signature-stroke stroke-a"
+                pathLength="1"
+                d="
+                    M 42 153
+                    C 49 127, 59 82, 72 48
+                    C 77 34, 83 31, 88 49
+                    C 96 77, 101 113, 108 150
+                "
+            />
+
+            <path
+                class="signature-stroke stroke-a-cross"
+                pathLength="1"
+                d="
+                    M 57 112
+                    C 69 108, 82 106, 96 108
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-1"
+                pathLength="1"
+                d="
+                    M 105 149
+                    C 116 157, 122 157, 130 149
+                "
+            />
+
+            <!-- L -->
+            <path
+                class="signature-stroke stroke-l"
+                pathLength="1"
+                d="
+                    M 131 62
+                    C 128 88, 124 119, 126 145
+                    C 128 160, 147 161, 165 151
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-2"
+                pathLength="1"
+                d="
+                    M 158 151
+                    C 171 158, 181 157, 190 149
+                "
+            />
+
+            <!-- Z -->
+            <path
+                class="signature-stroke stroke-z"
+                pathLength="1"
+                d="
+                    M 182 70
+                    C 205 64, 229 64, 250 69
+                    C 234 91, 207 122, 181 151
+                    C 206 158, 232 158, 257 150
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-3"
+                pathLength="1"
+                d="
+                    M 248 149
+                    C 261 158, 272 157, 281 147
+                "
+            />
+
+            <!-- O -->
+            <path
+                class="signature-stroke stroke-o"
+                pathLength="1"
+                d="
+                    M 286 105
+                    C 292 77, 319 63, 340 75
+                    C 359 86, 357 123, 339 143
+                    C 321 162, 295 157, 287 137
+                    C 280 123, 282 112, 286 105
+                "
+            />
+
+            <!-- connection -->
+            <path
+                class="signature-stroke stroke-connect-4"
+                pathLength="1"
+                d="
+                    M 338 142
+                    C 351 155, 362 156, 373 146
+                "
+            />
+
+            <!-- R -->
+            <path
+                class="signature-stroke stroke-r"
+                pathLength="1"
+                d="
+                    M 372 151
+                    C 377 125, 378 92, 376 67
+                    C 397 60, 423 63, 432 79
+                    C 442 97, 425 111, 397 111
+                    C 416 115, 435 132, 450 153
+                "
+            />
+
+            <!-- final flourish -->
+            <path
+                class="signature-stroke stroke-flourish"
+                pathLength="1"
+                d="
+                    M 448 153
+                    C 464 165, 481 161, 493 148
+                    C 486 160, 475 171, 457 173
+                "
+            />
+
+        </svg>
+
+
+        <div class="alzor-couture-word">
+            COUTURE
+        </div>
+
+        <div class="alzor-intro-line"></div>
+
+    </div>
+
+
 
 <!-- =====================================================
      HEADER
@@ -957,30 +1533,21 @@
 
 
         <div class="footer-links">
-
-            <a href="{{ url_for('home') }}">
-                HOME
-            </a>
-
-            <a href="{{ url_for('new_arrivals') }}">
-                NEW ARRIVALS
-            </a>
-
-            <a href="{{ url_for('dresses') }}">
-                DRESSES
-            </a>
-
-            <a href="{{ url_for('co_ord_sets') }}">
-                CO-ORD SETS
-            </a>
-
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
         </div>
 
-
         <div class="footer-bottom">
-
-            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
-
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
         </div>
 
     </div>
@@ -1021,553 +1588,18 @@
     });
 })();
 </script>
-
+<script>
+(function() {
+    const intro = document.getElementById("alzorIntro");
+    if (intro) {
+        intro.addEventListener("click", function() { intro.remove(); });
+        window.setTimeout(function() {
+            if (intro && intro.parentNode) {
+                intro.remove();
+            }
+        }, 5700);
+    }
+})();
+</script>
 </body>
 </html>
-<!-- =====================================================
-     ALZOR COUTURE OPENING ANIMATION
-===================================================== -->
-
-<body>
-   <!-- =====================================================
-     ALZOR COUTURE — SIGNATURE INTRO
-===================================================== -->
-
-<div class="alzor-intro" id="alzorIntro">
-
-    <div class="alzor-signature-wrap">
-
-        <svg
-            class="alzor-signature-svg"
-            viewBox="0 0 520 190"
-            aria-label="Alzor Couture"
-        >
-
-            <!-- subtle lead-in stroke -->
-            <path
-                class="signature-stroke stroke-lead"
-                pathLength="1"
-                d="
-                    M 18 150
-                    C 28 145, 34 138, 40 130
-                "
-            />
-
-            <!-- A -->
-            <path
-                class="signature-stroke stroke-a"
-                pathLength="1"
-                d="
-                    M 42 153
-                    C 49 127, 59 82, 72 48
-                    C 77 34, 83 31, 88 49
-                    C 96 77, 101 113, 108 150
-                "
-            />
-
-            <path
-                class="signature-stroke stroke-a-cross"
-                pathLength="1"
-                d="
-                    M 57 112
-                    C 69 108, 82 106, 96 108
-                "
-            />
-
-            <!-- connection -->
-            <path
-                class="signature-stroke stroke-connect-1"
-                pathLength="1"
-                d="
-                    M 105 149
-                    C 116 157, 122 157, 130 149
-                "
-            />
-
-            <!-- L -->
-            <path
-                class="signature-stroke stroke-l"
-                pathLength="1"
-                d="
-                    M 131 62
-                    C 128 88, 124 119, 126 145
-                    C 128 160, 147 161, 165 151
-                "
-            />
-
-            <!-- connection -->
-            <path
-                class="signature-stroke stroke-connect-2"
-                pathLength="1"
-                d="
-                    M 158 151
-                    C 171 158, 181 157, 190 149
-                "
-            />
-
-            <!-- Z -->
-            <path
-                class="signature-stroke stroke-z"
-                pathLength="1"
-                d="
-                    M 182 70
-                    C 205 64, 229 64, 250 69
-                    C 234 91, 207 122, 181 151
-                    C 206 158, 232 158, 257 150
-                "
-            />
-
-            <!-- connection -->
-            <path
-                class="signature-stroke stroke-connect-3"
-                pathLength="1"
-                d="
-                    M 248 149
-                    C 261 158, 272 157, 281 147
-                "
-            />
-
-            <!-- O -->
-            <path
-                class="signature-stroke stroke-o"
-                pathLength="1"
-                d="
-                    M 286 105
-                    C 292 77, 319 63, 340 75
-                    C 359 86, 357 123, 339 143
-                    C 321 162, 295 157, 287 137
-                    C 280 123, 282 112, 286 105
-                "
-            />
-
-            <!-- connection -->
-            <path
-                class="signature-stroke stroke-connect-4"
-                pathLength="1"
-                d="
-                    M 338 142
-                    C 351 155, 362 156, 373 146
-                "
-            />
-
-            <!-- R -->
-            <path
-                class="signature-stroke stroke-r"
-                pathLength="1"
-                d="
-                    M 372 151
-                    C 377 125, 378 92, 376 67
-                    C 397 60, 423 63, 432 79
-                    C 442 97, 425 111, 397 111
-                    C 416 115, 435 132, 450 153
-                "
-            />
-
-            <!-- final flourish -->
-            <path
-                class="signature-stroke stroke-flourish"
-                pathLength="1"
-                d="
-                    M 448 153
-                    C 464 165, 481 161, 493 148
-                    C 486 160, 475 171, 457 173
-                "
-            />
-
-        </svg>
-
-
-        <div class="alzor-couture-word">
-            COUTURE
-        </div>
-
-        <div class="alzor-intro-line"></div>
-
-    </div>
-
-</div>
-<style>
-
-/* =====================================================
-   ALZOR SIGNATURE INTRO
-===================================================== */
-
-.alzor-intro {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #fffdf9 0%,
-            #f8f6f1 58%,
-            #f2efe8 100%
-        );
-
-    overflow: hidden;
-    pointer-events: none;
-
-    animation:
-        alzorIntroExit
-        1.1s
-        cubic-bezier(.77,0,.18,1)
-        4.5s
-        forwards;
-}
-
-
-/* =====================================================
-   SIGNATURE WRAPPER
-===================================================== */
-
-.alzor-signature-wrap {
-    position: relative;
-
-    width: min(620px, 88vw);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    transform:
-        translateY(-5px);
-}
-
-
-/* =====================================================
-   SVG
-===================================================== */
-
-.alzor-signature-svg {
-    width: 100%;
-    height: auto;
-
-    overflow: visible;
-}
-
-
-/* =====================================================
-   HANDWRITING STROKES
-===================================================== */
-
-.signature-stroke {
-
-    fill: none;
-
-    stroke: #b28b4d;
-
-    stroke-width: 2.05;
-
-    stroke-linecap: round;
-    stroke-linejoin: round;
-
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-
-    animation:
-        signatureWrite
-        .65s
-        cubic-bezier(.65,.05,.36,1)
-        forwards;
-}
-
-
-/* =====================================================
-   DRAWING ORDER
-===================================================== */
-
-.stroke-lead {
-    animation-delay: .10s;
-}
-
-.stroke-a {
-    animation-delay: .25s;
-}
-
-.stroke-a-cross {
-    animation-delay: .52s;
-}
-
-.stroke-connect-1 {
-    animation-delay: .63s;
-}
-
-.stroke-l {
-    animation-delay: .72s;
-}
-
-.stroke-connect-2 {
-    animation-delay: 1.02s;
-}
-
-.stroke-z {
-    animation-delay: 1.10s;
-}
-
-.stroke-connect-3 {
-    animation-delay: 1.48s;
-}
-
-.stroke-o {
-    animation-delay: 1.56s;
-}
-
-.stroke-connect-4 {
-    animation-delay: 1.91s;
-}
-
-.stroke-r {
-    animation-delay: 1.99s;
-}
-
-.stroke-flourish {
-    animation-delay: 2.36s;
-}
-
-
-/* =====================================================
-   GOLD WRITING
-===================================================== */
-
-@keyframes signatureWrite {
-
-    0% {
-        stroke-dashoffset: 1;
-    }
-
-    100% {
-        stroke-dashoffset: 0;
-    }
-
-}
-
-
-/* =====================================================
-   COUTURE
-===================================================== */
-
-.alzor-couture-word {
-
-    margin-top: -15px;
-
-    font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
-
-    font-size: 11px;
-
-    font-weight: 400;
-
-    letter-spacing: 9px;
-
-    color: #a7834a;
-
-    opacity: 0;
-
-    transform:
-        translateY(8px);
-
-    animation:
-        coutureAppear
-        .9s
-        ease
-        2.75s
-        forwards;
-}
-
-
-@keyframes coutureAppear {
-
-    0% {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
-
-
-/* =====================================================
-   GOLD UNDERLINE
-===================================================== */
-
-.alzor-intro-line {
-
-    width: 0;
-    height: 1px;
-
-    margin-top: 19px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            #ad8a51 20%,
-            #d8bd87 50%,
-            #ad8a51 80%,
-            transparent
-        );
-
-    animation:
-        introLine
-        1s
-        cubic-bezier(.77,0,.18,1)
-        3.05s
-        forwards;
-}
-
-
-@keyframes introLine {
-
-    0% {
-        width: 0;
-        opacity: 0;
-    }
-
-    100% {
-        width: 145px;
-        opacity: 1;
-    }
-
-}
-
-
-/* =====================================================
-   GOLD SHIMMER
-===================================================== */
-
-.alzor-signature-wrap::after {
-
-    content: "";
-
-    position: absolute;
-
-    top: 33%;
-    left: -20%;
-
-    width: 80px;
-    height: 55px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(255,255,255,.75),
-            transparent
-        );
-
-    filter: blur(9px);
-
-    transform: skewX(-20deg);
-
-    opacity: 0;
-
-    animation:
-        signatureShine
-        1.1s
-        ease
-        2.85s
-        forwards;
-
-}
-
-
-@keyframes signatureShine {
-
-    0% {
-        left: -20%;
-        opacity: 0;
-    }
-
-    20% {
-        opacity: .8;
-    }
-
-    100% {
-        left: 115%;
-        opacity: 0;
-    }
-
-}
-
-
-/* =====================================================
-   EXIT
-===================================================== */
-
-@keyframes alzorIntroExit {
-
-    0% {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    78% {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    100% {
-        opacity: 0;
-        visibility: hidden;
-    }
-
-}
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media (max-width: 600px) {
-
-    .alzor-signature-wrap {
-        width: 91vw;
-    }
-
-    .alzor-signature-svg {
-        transform: scale(1.04);
-    }
-
-    .alzor-couture-word {
-        margin-top: -9px;
-        font-size: 9px;
-        letter-spacing: 6px;
-    }
-
-}
-
-
-/* =====================================================
-   REDUCED MOTION
-===================================================== */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .alzor-intro,
-    .signature-stroke,
-    .alzor-couture-word,
-    .alzor-intro-line,
-    .alzor-signature-wrap::after {
-
-        animation: none !important;
-    }
-
-    .alzor-intro {
-        opacity: 0;
-        visibility: hidden;
-    }
-
-}
-                            
-</style>

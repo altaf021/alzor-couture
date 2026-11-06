@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} — Alzor Couture</title>
+    <meta name="description" content="{{ meta_description }}">
+    <link rel="canonical" href="{{ site_url }}{{ request.path }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ page_title }} — Alzor Couture">
+    <meta property="og:description" content="{{ meta_description }}">
+    <meta property="og:url" content="{{ site_url }}{{ request.path }}">
+    <meta property="og:image" content="{{ site_url }}/static/images/logo.png">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=40">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}?v=4">
+
+    <style>
+        .policy-hero {
+            padding: 90px 24px 45px;
+            text-align: center;
+            background: #fbfaf7;
+            border-bottom: 1px solid rgba(173, 138, 81, 0.22);
+        }
+        .policy-eyebrow {
+            font-size: 10px;
+            letter-spacing: 3.5px;
+            text-transform: uppercase;
+            color: #ad8a51;
+            margin: 0 0 12px;
+            font-weight: 600;
+        }
+        .policy-hero h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(30px, 4.5vw, 48px);
+            font-weight: 400;
+            color: #181818;
+            margin: 0 0 14px;
+            letter-spacing: -0.5px;
+        }
+        .policy-hero p {
+            color: #7a746b;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            margin: 0 auto;
+            max-width: 580px;
+        }
+        .policy-nav-tabs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 24px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .policy-tab {
+            padding: 8px 16px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #635d55;
+            text-decoration: none;
+            border: 1px solid rgba(173, 138, 81, 0.28);
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+        .policy-tab:hover,
+        .policy-tab.active {
+            background: #181818;
+            color: #ffffff;
+            border-color: #181818;
+        }
+        .policy-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 55px 24px 90px;
+            color: #3f3b36;
+            line-height: 1.85;
+            font-size: 14.5px;
+        }
+        .policy-section {
+            margin-bottom: 42px;
+        }
+        .policy-section h2 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 22px;
+            font-weight: 400;
+            color: #181818;
+            margin: 0 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(173, 138, 81, 0.25);
+            letter-spacing: 0.2px;
+        }
+        .policy-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #ad8a51;
+            margin: 20px 0 8px;
+        }
+        .policy-section p {
+            margin: 0 0 14px;
+            color: #555049;
+        }
+        .policy-section ul {
+            margin: 0 0 16px;
+            padding-left: 22px;
+        }
+        .policy-section li {
+            margin-bottom: 8px;
+            color: #555049;
+        }
+        .policy-highlight-card {
+            background: #fbfaf7;
+            border-left: 3px solid #ad8a51;
+            padding: 20px 24px;
+            margin: 28px 0;
+            border-radius: 0;
+        }
+        .policy-highlight-card h4 {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #181818;
+            margin: 0 0 8px;
+        }
+        .policy-highlight-card p {
+            margin: 0;
+            font-size: 13.5px;
+            color: #635d55;
+        }
+        .policy-contact-cta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+        .policy-whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            background: #25D366;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-radius: 2px;
+            transition: background 0.2s ease;
+        }
+        .policy-whatsapp-btn:hover {
+            background: #1eb956;
+        }
+        .policy-email-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: transparent;
+            color: #181818;
+            border: 1px solid #181818;
+            text-decoration: none;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .policy-email-btn:hover {
+            background: #181818;
+            color: #ffffff;
+        }
+        @media (max-width: 600px) {
+            .policy-hero { padding: 60px 18px 35px; }
+            .policy-container { padding: 36px 18px 60px; font-size: 14px; }
+            .policy-tab { font-size: 9px; padding: 7px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+    <div class="header-inner">
+        <a href="{{ url_for('home') }}" class="brand" aria-label="Alzor Couture Home">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alzor Couture">
+        </a>
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+        </nav>
+        <div class="header-actions">
+            <button type="button" class="header-action search-button alzor-icon-button" id="alzorSearchButton" aria-label="Open search">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><circle cx="13.5" cy="13.5" r="8.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.5 19.5 L27 27" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+            <a href="{{ url_for('wishlist') }}" class="header-action wishlist-button alzor-icon-button" aria-label="Wishlist">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><path d="M16 26.4 C14.9 25.4 7 18.6 5.2 14 C3.8 10.4 5.3 6.4 9.1 5.3 C11.8 4.5 14.5 5.8 16 8.1 C17.5 5.8 20.2 4.5 22.9 5.3 C26.7 6.4 28.2 10.4 26.8 14 C25 18.6 17.1 25.4 16 26.4 Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </a>
+            <a href="{{ url_for('cart') }}" class="header-action bag-button alzor-icon-button" aria-label="Shopping Bag">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><rect x="6" y="9" width="20" height="18" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 9 V7 A5 5 0 0 1 21 7 V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                <span class="cart-count">{{ cart_count }}</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="policy-hero">
+    <p class="policy-eyebrow">CLIENT CONCIERGE &amp; POLICIES</p>
+    <h1>{{ policy_heading }}</h1>
+    <p>{{ policy_subtitle }}</p>
+</section>
+
+<!-- POLICY TABS -->
+<nav class="policy-nav-tabs" aria-label="Policy Navigation">
+    <a href="{{ url_for('shipping_policy') }}" class="policy-tab {% if active_policy == 'shipping' %}active{% endif %}">Shipping &amp; Delivery</a>
+    <a href="{{ url_for('returns_exchange') }}" class="policy-tab {% if active_policy == 'returns' %}active{% endif %}">Returns &amp; Exchange</a>
+    <a href="{{ url_for('privacy_policy') }}" class="policy-tab {% if active_policy == 'privacy' %}active{% endif %}">Privacy Policy</a>
+    <a href="{{ url_for('terms_of_service') }}" class="policy-tab {% if active_policy == 'terms' %}active{% endif %}">Terms of Service</a>
+    <a href="{{ url_for('track_order') }}" class="policy-tab {% if active_policy == 'track' %}active{% endif %}">Track Order</a>
+    <a href="{{ url_for('contact') }}" class="policy-tab {% if active_policy == 'contact' %}active{% endif %}">Contact Concierge</a>
+</nav>
+
+<!-- CONTENT -->
+<main class="policy-container">
+    {{ policy_body|safe }}
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alzor Couture">
+            <p>Elegance, reimagined.</p>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
+        </div>
+        <div class="footer-bottom">
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/search.js') }}?v=2"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=40"></script>
+</body>
+</html>

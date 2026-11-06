@@ -4,18 +4,18 @@
 <head>
 
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <meta
-        name="description"
-        content="Your selected Alzor Couture pieces."
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review your selected Alzor Couture pieces in your shopping bag. Free shipping across India.">
     <title>Shopping Bag — Alzor Couture</title>
+    <link rel="canonical" href="{{ site_url }}/cart">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Shopping Bag — Alzor Couture">
+    <meta property="og:description" content="Review your selected Alzor Couture pieces in your shopping bag.">
+    <meta property="og:url" content="{{ site_url }}/cart">
+    <meta property="og:image" content="{{ site_url }}/static/images/hero.png">
 
     <!-- Main site styling -->
     <link
@@ -27,6 +27,12 @@
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/cart.css') }}?v=100"
+    >
+
+    <!-- Search overlay styling -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/search.css') }}?v=100"
     >
 
 </head>
@@ -722,7 +728,7 @@
 
 
             <a
-                href="/checkout"
+                href="{{ url_for('checkout') }}"
                 class="checkout-button"
                 id="checkoutButton"
             >
@@ -894,28 +900,21 @@
 
 
         <div class="footer-links">
-
-            <a href="{{ url_for('home') }}">
-                HOME
-            </a>
-
-            <a href="{{ url_for('new_arrivals') }}">
-                NEW ARRIVALS
-            </a>
-
-            <a href="{{ url_for('dresses') }}">
-                DRESSES
-            </a>
-
-            <a href="{{ url_for('co_ord_sets') }}">
-                CO-ORD SETS
-            </a>
-
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
         </div>
 
-
         <div class="footer-bottom">
-            © 2026 ALZOR COUTURE. ALL RIGHTS RESERVED.
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
         </div>
 
     </div>

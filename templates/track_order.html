@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order — Alzor Couture</title>
+    <meta name="description" content="Track your Alzor Couture order status in real time. Enter your order number and contact information.">
+    <link rel="canonical" href="{{ site_url }}/track-order">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Track Your Order — Alzor Couture">
+    <meta property="og:description" content="Track your Alzor Couture order status in real time.">
+    <meta property="og:url" content="{{ site_url }}/track-order">
+    <meta property="og:image" content="{{ site_url }}/static/images/logo.png">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=40">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}?v=4">
+
+    <style>
+        .track-hero {
+            padding: 85px 24px 45px;
+            text-align: center;
+            background: #fbfaf7;
+            border-bottom: 1px solid rgba(173, 138, 81, 0.22);
+        }
+        .track-eyebrow {
+            font-size: 10px;
+            letter-spacing: 3.5px;
+            text-transform: uppercase;
+            color: #ad8a51;
+            margin: 0 0 12px;
+            font-weight: 600;
+        }
+        .track-hero h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(30px, 4.5vw, 46px);
+            font-weight: 400;
+            color: #181818;
+            margin: 0 0 12px;
+        }
+        .track-hero p {
+            color: #7a746b;
+            font-size: 13.5px;
+            margin: 0 auto;
+            max-width: 520px;
+        }
+        .track-main {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 55px 24px 90px;
+        }
+        .track-card {
+            background: #ffffff;
+            border: 1px solid rgba(173, 138, 81, 0.35);
+            padding: 36px 32px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            margin-bottom: 35px;
+        }
+        .track-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+        .track-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .track-field.full {
+            grid-column: 1 / -1;
+        }
+        .track-field label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #555049;
+            font-weight: 600;
+        }
+        .track-field input {
+            padding: 13px 15px;
+            border: 1px solid #dcd7ce;
+            background: #fbfaf7;
+            font-size: 13px;
+            color: #181818;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .track-field input:focus {
+            border-color: #ad8a51;
+            background: #ffffff;
+        }
+        .track-submit-btn {
+            width: 100%;
+            padding: 15px 24px;
+            background: #181818;
+            color: #ffffff;
+            border: none;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+        .track-submit-btn:hover {
+            background: #ad8a51;
+        }
+        .track-error {
+            background: #fdf2f2;
+            border: 1px solid rgba(220, 50, 40, 0.3);
+            color: #c53030;
+            padding: 14px 18px;
+            font-size: 13px;
+            margin-bottom: 24px;
+        }
+        .track-result-card {
+            background: #ffffff;
+            border: 1px solid rgba(173, 138, 81, 0.45);
+            padding: 32px;
+            margin-top: 25px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.06);
+        }
+        .track-result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(173, 138, 81, 0.25);
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .track-status-pill {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #181818;
+            color: #c8a76d;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .track-info-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .track-info-cell h5 {
+            font-size: 9px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: #9a958e;
+            margin: 0 0 5px;
+            font-weight: 500;
+        }
+        .track-info-cell p {
+            margin: 0;
+            font-size: 13.5px;
+            color: #181818;
+            font-weight: 600;
+        }
+        .track-items-list {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .track-item-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .track-item-img {
+            width: 48px;
+            height: 60px;
+            object-fit: cover;
+            border: 1px solid #e0dad0;
+        }
+        .track-item-info {
+            flex: 1;
+        }
+        .track-item-info h4 {
+            margin: 0 0 4px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #181818;
+        }
+        .track-item-info p {
+            margin: 0;
+            font-size: 11px;
+            color: #8a847b;
+            letter-spacing: 1px;
+        }
+        .track-item-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: #181818;
+        }
+        .track-help-card {
+            background: #fbfaf7;
+            padding: 22px 24px;
+            border: 1px solid rgba(173, 138, 81, 0.25);
+            text-align: center;
+            margin-top: 30px;
+        }
+        .track-help-card h4 {
+            margin: 0 0 6px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #181818;
+        }
+        .track-help-card p {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: #635d55;
+        }
+        .track-wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            background: #25D366;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        @media (max-width: 600px) {
+            .track-form-grid { grid-template-columns: 1fr; }
+            .track-card { padding: 24px 18px; }
+            .track-result-card { padding: 22px 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+    <div class="header-inner">
+        <a href="{{ url_for('home') }}" class="brand" aria-label="Alzor Couture Home">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alzor Couture">
+        </a>
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+        </nav>
+        <div class="header-actions">
+            <button type="button" class="header-action search-button alzor-icon-button" id="alzorSearchButton" aria-label="Open search">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><circle cx="13.5" cy="13.5" r="8.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.5 19.5 L27 27" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+            <a href="{{ url_for('wishlist') }}" class="header-action wishlist-button alzor-icon-button" aria-label="Wishlist">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><path d="M16 26.4 C14.9 25.4 7 18.6 5.2 14 C3.8 10.4 5.3 6.4 9.1 5.3 C11.8 4.5 14.5 5.8 16 8.1 C17.5 5.8 20.2 4.5 22.9 5.3 C26.7 6.4 28.2 10.4 26.8 14 C25 18.6 17.1 25.4 16 26.4 Z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            </a>
+            <a href="{{ url_for('cart') }}" class="header-action bag-button alzor-icon-button" aria-label="Shopping Bag">
+                <svg class="alzor-header-icon" viewBox="0 0 32 32"><rect x="6" y="9" width="20" height="18" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 9 V7 A5 5 0 0 1 21 7 V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                <span class="cart-count">{{ cart_count }}</span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="track-hero">
+    <p class="track-eyebrow">ORDER CONCIERGE</p>
+    <h1>Track Your Order</h1>
+    <p>Enter your Alzor Couture order number and the phone number or email used during checkout to view current status.</p>
+</section>
+
+<!-- MAIN -->
+<main class="track-main">
+    <div class="track-card">
+        {% if error %}
+        <div class="track-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('track_order') }}">
+            <div class="track-form-grid">
+                <div class="track-field full">
+                    <label for="order_number">Order Number *</label>
+                    <input
+                        type="text"
+                        id="order_number"
+                        name="order_number"
+                        placeholder="e.g. ALZOR-20261106-ABCD"
+                        value="{{ order_number or '' }}"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="track-field full">
+                    <label for="contact_info">Phone Number or Email Address *</label>
+                    <input
+                        type="text"
+                        id="contact_info"
+                        name="contact_info"
+                        placeholder="e.g. 9876543210 or yourname@gmail.com"
+                        value="{{ contact_info or '' }}"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+            </div>
+            <button type="submit" class="track-submit-btn">TRACK ORDER</button>
+        </form>
+    </div>
+
+    {% if order %}
+    <div class="track-result-card">
+        <div class="track-result-header">
+            <div>
+                <h3 style="margin:0 0 4px;font-family:Georgia,serif;font-size:20px;font-weight:400;">Order {{ order.order_number }}</h3>
+                <p style="margin:0;font-size:12px;color:#7a746b;">Placed on {{ order.created_at[:10] if order.created_at else 'Recent' }}</p>
+            </div>
+            <span class="track-status-pill">{{ order.status or 'CONFIRMED' }}</span>
+        </div>
+
+        <div class="track-info-row">
+            <div class="track-info-cell">
+                <h5>Payment Status</h5>
+                <p style="color:#2b8a3e;">PAID (Verified)</p>
+            </div>
+            <div class="track-info-cell">
+                <h5>Order Total</h5>
+                <p>₹{{ "{:,}".format(order.total_amount) }}</p>
+            </div>
+            <div class="track-info-cell">
+                <h5>Customer</h5>
+                <p>{{ order.customer_name }}</p>
+            </div>
+            <div class="track-info-cell">
+                <h5>Delivery Destination</h5>
+                <p>{{ order.city }}, {{ order.state }}</p>
+            </div>
+        </div>
+
+        {% if order.items %}
+        <h4 style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#555049;margin:0 0 8px;">ORDERED PIECES</h4>
+        <div class="track-items-list">
+            {% for item in order.items %}
+            <div class="track-item-row">
+                {% if item.image %}
+                <img src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.name }}" class="track-item-img">
+                {% endif %}
+                <div class="track-item-info">
+                    <h4>{{ item.name }}</h4>
+                    <p>SIZE: {{ item.size }} &bull; QTY: {{ item.quantity }}</p>
+                </div>
+                <div class="track-item-price">₹{{ "{:,}".format(item.price * item.quantity) }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="track-help-card">
+        <h4>Need Instant Assistance?</h4>
+        <p>Our concierge team is available to assist you with order status, dispatch updates, and bespoke fit modifications.</p>
+        <a href="https://wa.me/918527144345?text=Hi%20Alzor%20Couture%2C%20I%20would%20like%20an%20update%20on%20my%20order." target="_blank" rel="noopener noreferrer" class="track-wa-btn">
+            CONNECT ON WHATSAPP
+        </a>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alzor Couture">
+            <p>Elegance, reimagined.</p>
+        </div>
+        <div class="footer-links">
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
+        </div>
+        <div class="footer-bottom">
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/search.js') }}?v=2"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v=40"></script>
+</body>
+</html>

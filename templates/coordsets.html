@@ -9,12 +9,20 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <meta
-        name="description"
-        content="Explore refined two-piece silhouettes from Alzor Couture."
-    >
-
+    <meta name="description" content="Explore refined two-piece silhouettes from Alzor Couture. Elegant contemporary co-ord sets designed for effortless statement dressing.">
     <title>Co-Ord Sets — Alzor Couture</title>
+    <link rel="canonical" href="{{ site_url }}/co-ord-sets">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <meta property="og:site_name" content="ALZOR COUTURE">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Co-Ord Sets — Alzor Couture">
+    <meta property="og:description" content="Explore refined two-piece silhouettes from Alzor Couture.">
+    <meta property="og:url" content="{{ site_url }}/co-ord-sets">
+    <meta property="og:image" content="{{ site_url }}/static/images/coord-set.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Co-Ord Sets — Alzor Couture">
+    <meta name="twitter:description" content="Explore refined two-piece silhouettes from Alzor Couture.">
 
     <link
         rel="stylesheet"
@@ -1115,28 +1123,21 @@
         </div>
 
         <div class="footer-links">
-
-            <a href="{{ url_for('home') }}">
-                HOME
-            </a>
-
-            <a href="{{ url_for('new_arrivals') }}">
-                NEW ARRIVALS
-            </a>
-
-            <a href="{{ url_for('dresses') }}">
-                DRESSES
-            </a>
-
-            <a href="{{ url_for('co_ord_sets') }}">
-                CO-ORD SETS
-            </a>
-
+            <a href="{{ url_for('home') }}">HOME</a>
+            <a href="{{ url_for('new_arrivals') }}">NEW ARRIVALS</a>
+            <a href="{{ url_for('dresses') }}">DRESSES</a>
+            <a href="{{ url_for('co_ord_sets') }}">CO-ORD SETS</a>
+            <a href="{{ url_for('wishlist') }}">WISHLIST</a>
+            <a href="{{ url_for('shipping_policy') }}">SHIPPING</a>
+            <a href="{{ url_for('returns_exchange') }}">RETURNS &amp; EXCHANGES</a>
+            <a href="{{ url_for('privacy_policy') }}">PRIVACY</a>
+            <a href="{{ url_for('terms_of_service') }}">TERMS</a>
+            <a href="{{ url_for('track_order') }}">TRACK ORDER</a>
+            <a href="{{ url_for('contact') }}">CONTACT</a>
         </div>
 
         <div class="footer-bottom">
-            © 2026 ALZOR COUTURE.
-            ALL RIGHTS RESERVED.
+            © 2026 ALZOR COUTURE (alzorcouture.in). ALL RIGHTS RESERVED. • SECURE RAZORPAY LIVE CHECKOUT
         </div>
 
     </div>
