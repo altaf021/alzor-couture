@@ -47,7 +47,9 @@ def add_security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    if request.endpoint == "order_confirmation":
+    if request.is_secure or request.headers.get("X-Forwarded-Proto") == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    if request.endpoint in ("order_confirmation", "admin_dashboard", "admin_login"):
         response.headers["Cache-Control"] = "no-store, private, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Vary"] = "Cookie"
@@ -55,6 +57,8 @@ def add_security_headers(response):
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "").strip()
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "").strip()
+RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "").strip()
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "alzor2026admin").strip()
 RAZORPAY_IS_LIVE = RAZORPAY_KEY_ID.startswith("rzp_live_")
 RAZORPAY_IS_TEST = RAZORPAY_KEY_ID.startswith("rzp_test_")
 
@@ -541,6 +545,77 @@ def find_order_by_number(order_number):
                 return json.loads(data)
             except Exception:
                 return None
+        return data
+
+
+def load_all_orders(limit=150):
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT order_data, created_at FROM alzor_orders ORDER BY created_at DESC LIMIT {param_char}",
+            (limit,),
+        )
+        rows = cur.fetchall()
+        orders = []
+        for row in rows:
+            data = row[0]
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except Exception:
+                    continue
+            orders.append(data)
+        return orders
+
+
+def load_all_pending_payments(limit=50):
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT payment_data, created_at FROM alzor_pending_payments ORDER BY created_at DESC LIMIT {param_char}",
+            (limit,),
+        )
+        rows = cur.fetchall()
+        pending = []
+        for row in rows:
+            data = row[0]
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except Exception:
+                    continue
+            pending.append(data)
+        return pending
+
+
+def update_order_status(order_number, new_status):
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT order_data FROM alzor_orders WHERE order_number = {param_char}",
+            (order_number,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        data = row[0]
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:
+                return None
+        data["status"] = str(new_status).strip()
+        data["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if is_pg:
+            cur.execute(
+                "UPDATE alzor_orders SET order_data = %s WHERE order_number = %s",
+                (Jsonb(data), order_number),
+            )
+        else:
+            cur.execute(
+                "UPDATE alzor_orders SET order_data = ? WHERE order_number = ?",
+                (json.dumps(data, ensure_ascii=False), order_number),
+            )
         return data
 
 
@@ -1590,6 +1665,193 @@ def order_confirmation(order_number):
 
 
 # =========================================================
+# RAZORPAY WEBHOOK (INDEPENDENT SERVER-SIDE CONFIRMATION)
+# =========================================================
+
+@app.route("/api/razorpay-webhook", methods=["POST"])
+def razorpay_webhook():
+    webhook_secret = RAZORPAY_WEBHOOK_SECRET
+    webhook_body = request.get_data(as_text=True)
+    webhook_signature = request.headers.get("X-Razorpay-Signature", "")
+
+    client = get_razorpay_client()
+    if client is None:
+        app.logger.warning("Razorpay webhook received but keys are not configured.")
+        return jsonify({"status": "error", "message": "Razorpay client not configured"}), 503
+
+    if webhook_secret:
+        try:
+            client.utility.verify_webhook_signature(
+                webhook_body,
+                webhook_signature,
+                webhook_secret
+            )
+        except Exception:
+            app.logger.warning("Razorpay webhook signature verification failed.")
+            return jsonify({"status": "error", "message": "Invalid webhook signature"}), 400
+
+    try:
+        event = json.loads(webhook_body)
+    except Exception:
+        return jsonify({"status": "error", "message": "Invalid JSON"}), 400
+
+    event_type = event.get("event")
+    payload = event.get("payload", {})
+    payment_entity = payload.get("payment", {}).get("entity", {})
+    order_entity = payload.get("order", {}).get("entity", {})
+
+    razorpay_payment_id = payment_entity.get("id")
+    razorpay_order_id = payment_entity.get("order_id") or order_entity.get("id")
+
+    if not razorpay_payment_id:
+        return jsonify({"status": "ignored", "message": "No payment entity found"}), 200
+
+    # Idempotent check: if order already exists in database, do not create duplicate
+    existing = find_order_by_payment_id(razorpay_payment_id)
+    if existing:
+        return jsonify({"status": "success", "message": "Order already processed"}), 200
+
+    if event_type in ("payment.captured", "order.paid"):
+        pending = load_pending_payment(razorpay_order_id) if razorpay_order_id else None
+
+        if pending:
+            order_number = generate_order_number()
+            order = {
+                "order_number": order_number,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "Order Placed",
+                "payment_method": "Razorpay (Webhook Verified)",
+                "payment_status": "Paid",
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "customer": pending["customer"],
+                "items": pending["items"],
+                "subtotal": pending["subtotal"],
+                "shipping": pending["shipping"],
+                "total": pending["total"]
+            }
+            save_order(order)
+            delete_pending_payment(razorpay_order_id)
+            app.logger.info(f"Order {order_number} created via webhook for payment {razorpay_payment_id}")
+        else:
+            order_number = generate_order_number()
+            amount_rupees = int(payment_entity.get("amount", 0)) // 100
+            order = {
+                "order_number": order_number,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "status": "Order Placed",
+                "payment_method": "Razorpay (Direct Webhook)",
+                "payment_status": "Paid",
+                "razorpay_order_id": razorpay_order_id or "direct",
+                "razorpay_payment_id": razorpay_payment_id,
+                "customer": {
+                    "first_name": payment_entity.get("notes", {}).get("brand", "Client"),
+                    "last_name": "",
+                    "email": payment_entity.get("email", ""),
+                    "phone": payment_entity.get("contact", ""),
+                    "address": "Captured via Razorpay Webhook",
+                    "city": "",
+                    "state": "",
+                    "pincode": ""
+                },
+                "items": [],
+                "subtotal": amount_rupees,
+                "shipping": 0,
+                "total": amount_rupees
+            }
+            save_order(order)
+            app.logger.info(f"Direct order {order_number} created via webhook for payment {razorpay_payment_id}")
+
+        return jsonify({"status": "success", "message": "Payment captured and order recorded"}), 200
+
+    elif event_type == "payment.failed":
+        app.logger.warning(f"Payment failed via webhook: {razorpay_payment_id} for order {razorpay_order_id}")
+        return jsonify({"status": "recorded", "message": "Payment failure noted"}), 200
+
+    return jsonify({"status": "ignored", "event": event_type}), 200
+
+
+# =========================================================
+# ATELIER ADMIN PORTAL
+# =========================================================
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    error = None
+    if session.get("alzor_admin_authenticated"):
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        password = request.form.get("password", "").strip()
+        admin_pass = ADMIN_PASSWORD
+        if password and password == admin_pass:
+            session["alzor_admin_authenticated"] = True
+            session.permanent = True
+            return redirect(url_for("admin_dashboard"))
+        else:
+            error = "Invalid Atelier Passcode. Please enter the authorized administrator key."
+
+    return render_template("admin_login.html", error=error)
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("alzor_admin_authenticated", None)
+    return redirect(url_for("admin_login"))
+
+
+@app.route("/admin")
+@app.route("/admin/orders")
+def admin_dashboard():
+    if not session.get("alzor_admin_authenticated"):
+        return redirect(url_for("admin_login"))
+
+    try:
+        orders = load_all_orders(limit=150)
+    except Exception:
+        app.logger.exception("Failed to load orders for admin dashboard")
+        orders = []
+
+    try:
+        pending = load_all_pending_payments(limit=50)
+    except Exception:
+        app.logger.exception("Failed to load pending payments for admin dashboard")
+        pending = []
+
+    total_revenue = sum(int(o.get("total", 0)) for o in orders if o.get("payment_status") == "Paid")
+
+    return render_template(
+        "admin.html",
+        orders=orders,
+        pending=pending,
+        total_revenue=total_revenue,
+        orders_count=len(orders),
+        pending_count=len(pending),
+        is_live=RAZORPAY_IS_LIVE,
+        razorpay_key_preview=RAZORPAY_KEY_ID[:12] if RAZORPAY_KEY_ID else "NOT_CONFIGURED"
+    )
+
+
+@app.route("/admin/order/<order_number>/status", methods=["POST"])
+def admin_update_order_status(order_number):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or request.form
+    new_status = data.get("status", "").strip()
+    valid_statuses = ["Order Placed", "In Production", "Quality Check", "Dispatched", "Delivered", "Cancelled"]
+
+    if new_status not in valid_statuses:
+        return jsonify({"success": False, "message": "Invalid status value"}), 400
+
+    updated = update_order_status(order_number, new_status)
+    if not updated:
+        return jsonify({"success": False, "message": "Order not found"}), 404
+
+    return jsonify({"success": True, "message": f"Order status updated to {new_status}", "order": updated})
+
+
+# =========================================================
 # CLIENT CONCIERGE & POLICIES
 # =========================================================
 
@@ -1879,6 +2141,10 @@ def track_order():
 def robots_txt():
     content = f"""User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /checkout
 Disallow: /order-confirmation/
 Disallow: /create-razorpay-order
 Disallow: /verify-razorpay-payment
@@ -1924,6 +2190,33 @@ def sitemap_xml():
         lines.append("  </url>")
     lines.append("</urlset>")
     return Response("\n".join(lines), mimetype="application/xml")
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, "static", "images"),
+        "logo.png",
+        mimetype="image/png"
+    )
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template(
+        "404.html",
+        site_url=SITE_URL
+    ), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template(
+        "404.html",
+        site_url=SITE_URL,
+        error_title="TEMPORARILY UNAVAILABLE",
+        error_message="Our atelier service is undergoing a brief refinement. Please return shortly or connect with our concierge."
+    ), 500
 
 
 @app.route("/domain-setup")
