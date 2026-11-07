@@ -581,64 +581,45 @@
 
         @media(max-width:700px) {
             .collection-hero-coord {
-                min-height: 325px;
+                min-height: auto !important;
+                padding: 40px 16px 28px !important;
+                overflow: hidden !important;
             }
 
             .collection-hero-coord h1 {
-                font-size: 52px;
-                letter-spacing: -2px;
+                font-size: clamp(26px, 7.5vw, 34px) !important;
+                letter-spacing: -0.5px !important;
+                line-height: 1.15 !important;
             }
 
             .coord-grid {
-                background-size: 44px 44px;
+                background-size: 36px 36px;
+                opacity: 0.14;
             }
 
-            .coord-frame-1 {
-                width: 550px;
-                height: 175px;
-            }
-
-            .coord-frame-2 {
-                width: 440px;
-                height: 135px;
-            }
-
-            .coord-frame-3 {
-                width: 340px;
-                height: 105px;
-            }
-
+            .coord-frame-1,
+            .coord-frame-2,
+            .coord-frame-3,
             .coord-line {
-                width: 560px;
+                max-width: 90vw !important;
             }
         }
 
         @media(max-width:430px) {
             .collection-hero-coord {
-                min-height: 300px;
+                min-height: auto !important;
+                padding: 35px 14px 25px !important;
             }
 
             .collection-hero-coord h1 {
-                font-size: 47px;
+                font-size: clamp(24px, 7vw, 30px) !important;
             }
 
-            .coord-frame-1 {
-                width: 470px;
-                height: 150px;
-            }
-
-            .coord-frame-2 {
-                width: 365px;
-                height: 118px;
-            }
-
-            .coord-frame-3 {
-                width: 285px;
-                height: 90px;
-            }
-
+            .coord-frame-1,
+            .coord-frame-2,
+            .coord-frame-3,
             .coord-line {
-                width: 470px;
+                display: none !important;
             }
         }
     </style>

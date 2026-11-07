@@ -902,112 +902,44 @@
         @media (max-width: 700px) {
 
             .collection-hero-motion {
-
-                min-height: 320px;
-
+                min-height: auto !important;
+                padding: 40px 16px 28px !important;
+                overflow: hidden !important;
             }
-
 
             .collection-hero-motion h1 {
-
-                font-size: 52px;
-
-                letter-spacing: -2px;
-
+                font-size: clamp(26px, 7.5vw, 34px) !important;
+                letter-spacing: -0.5px !important;
+                line-height: 1.15 !important;
             }
 
-
-            .motion-orbit-1 {
-
-                width: 570px;
-                height: 175px;
-
-            }
-
-
-            .motion-orbit-2 {
-
-                width: 465px;
-                height: 145px;
-
-            }
-
-
-            .motion-orbit-3 {
-
-                width: 360px;
-                height: 112px;
-
-            }
-
-
-            .motion-orbit-4 {
-
-                width: 275px;
-                height: 88px;
-
-            }
-
-
+            .motion-orbit-1,
+            .motion-orbit-2,
+            .motion-orbit-3,
+            .motion-orbit-4,
             .motion-glow {
-
-                width: 230px;
-                height: 125px;
-
+                max-width: 90vw !important;
             }
 
         }
 
-
-        /* ==================================================
-           SMALL MOBILE
-        ================================================== */
-
         @media (max-width: 430px) {
 
             .collection-hero-motion {
-
-                min-height: 300px;
-
+                min-height: auto !important;
+                padding: 35px 14px 25px !important;
             }
-
 
             .collection-hero-motion h1 {
-
-                font-size: 47px;
-
+                font-size: clamp(24px, 7vw, 30px) !important;
             }
 
-
-            .motion-orbit-1 {
-
-                width: 470px;
-                height: 150px;
-
-            }
-
-
-            .motion-orbit-2 {
-
-                width: 370px;
-                height: 120px;
-
-            }
-
-
-            .motion-orbit-3 {
-
-                width: 285px;
-                height: 92px;
-
-            }
-
-
-            .motion-orbit-4 {
-
-                width: 225px;
-                height: 75px;
-
+            .motion-orbit-1,
+            .motion-orbit-2,
+            .motion-orbit-3,
+            .motion-orbit-4,
+            .motion-glow {
+                display: none !important;
             }
 
         }
