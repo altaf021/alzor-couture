@@ -1004,6 +1004,10 @@ img {
    TERMS
 ========================================================= */
 
+.terms-wrap {
+    margin: 0 0 17px;
+}
+
 .terms {
     display: flex;
 
@@ -1011,14 +1015,41 @@ img {
 
     gap: 9px;
 
-    margin:
-        0
-        0
-        17px;
+    margin: 0;
 
     color: #6f6962;
 
     font-size: 10px;
+
+    padding: 6px 10px;
+
+    border: 1px solid transparent;
+
+    border-radius: 4px;
+
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+
+.terms.terms-highlight {
+    border-color: #d9534f;
+    background: rgba(217, 83, 79, 0.08);
+    animation: termsShake 0.45s ease-in-out;
+}
+
+@keyframes termsShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.terms-error {
+    display: block;
+    color: #d9534f;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    margin: 5px 0 0 6px;
+    min-height: 14px;
+    font-weight: 500;
 }
 
 .terms input {

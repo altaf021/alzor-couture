@@ -14,7 +14,8 @@
     <meta property="og:description" content="Complete your Alzor Couture order securely.">
     <meta property="og:url" content="{{ site_url }}/checkout">
     <meta property="og:image" content="{{ site_url }}/static/images/hero.png">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}?v=checkout-clean-3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cart-toast.css') }}?v=2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}?v=checkout-clean-4">
 </head>
 <body>
 
@@ -184,10 +185,13 @@
                         </div>
                     </div>
 
-                    <label class="terms full-width">
-                        <input id="terms" type="checkbox" required>
-                        <span>I agree to the ALZOR COUTURE terms and conditions.</span>
-                    </label>
+                    <div class="terms-wrap full-width">
+                        <label class="terms" for="terms">
+                            <input id="terms" type="checkbox" required>
+                            <span>I agree to the <a href="{{ url_for('terms_of_service') }}" target="_blank" style="color:inherit;text-decoration:underline;">ALZOR COUTURE terms and conditions</a>.</span>
+                        </label>
+                        <small id="termsError" class="terms-error" data-error-for="terms"></small>
+                    </div>
 
                     <p id="checkoutFormMessage" class="form-message full-width" aria-live="polite"></p>
 
@@ -274,7 +278,8 @@
 
 </div>
 
+<script src="{{ url_for('static', filename='js/cart-toast.js') }}?v=2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="{{ url_for('static', filename='js/checkout.js') }}?v=alzor-checkout-2"></script>
+<script src="{{ url_for('static', filename='js/checkout.js') }}?v=alzor-checkout-4"></script>
 </body>
 </html>

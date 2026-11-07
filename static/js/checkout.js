@@ -96,6 +96,21 @@
         });
     });
 
+    const termsEl = document.getElementById("terms");
+    if (termsEl) {
+        termsEl.addEventListener("change", function () {
+            if (termsEl.checked) {
+                const wrap = termsEl.closest(".terms");
+                if (wrap) wrap.classList.remove("terms-highlight");
+                const err = document.getElementById("termsError");
+                if (err) err.textContent = "";
+                if (message && message.textContent.toLowerCase().includes("terms")) {
+                    setMessage("", "");
+                }
+            }
+        });
+    }
+
     function setLoading(isLoading, text) {
         button.disabled = isLoading;
         button.classList.toggle("is-loading", isLoading);
@@ -144,9 +159,28 @@
         });
 
         const terms = document.getElementById("terms");
+        const termsWrap = terms ? terms.closest(".terms") : null;
+        const termsError = document.getElementById("termsError");
+
         if (!terms || !terms.checked) {
             valid = false;
-            setMessage("Please accept the terms and conditions before continuing to payment.", "error");
+            const termsMsg = "Please accept the ALZOR COUTURE terms and conditions before continuing.";
+            setMessage(termsMsg, "error");
+            if (termsError) {
+                termsError.textContent = "Please select this box to accept terms and conditions.";
+            }
+            if (termsWrap) {
+                termsWrap.classList.remove("terms-highlight");
+                void termsWrap.offsetWidth;
+                termsWrap.classList.add("terms-highlight");
+            }
+            if (window.AlzorToast && typeof window.AlzorToast.warning === "function") {
+                window.AlzorToast.warning(termsMsg);
+            }
+            if (!firstInvalid && terms) {
+                firstInvalid = terms;
+                terms.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
         }
 
         if (!valid) {
