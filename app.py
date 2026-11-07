@@ -1818,7 +1818,13 @@ def admin_dashboard():
         app.logger.exception("Failed to load pending payments for admin dashboard")
         pending = []
 
-    total_revenue = sum(int(o.get("total", 0)) for o in orders if o.get("payment_status") == "Paid")
+    total_revenue = 0
+    for o in orders:
+        if isinstance(o, dict) and o.get("payment_status") == "Paid":
+            try:
+                total_revenue += int(o.get("total") or 0)
+            except (TypeError, ValueError):
+                pass
 
     return render_template(
         "admin.html",

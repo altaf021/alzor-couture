@@ -276,7 +276,7 @@
         <section class="kpi-grid">
             <div class="kpi-card">
                 <span>Total Atelier Revenue</span>
-                <strong>₹{{ "{:,}".format(total_revenue) }}</strong>
+                <strong>₹{{ total_revenue }}</strong>
             </div>
             <div class="kpi-card">
                 <span>Confirmed Orders</span>
@@ -320,6 +320,7 @@
                 </thead>
                 <tbody>
                     {% for o in orders %}
+                    {% set cust = o.customer or {} %}
                     <tr class="order-row">
                         <td>
                             <span class="order-num">{{ o.order_number }}</span>
@@ -329,25 +330,25 @@
                         </td>
                         <td>
                             <div class="cust-name">
-                                {{ o.customer.first_name }} {{ o.customer.last_name }}
+                                {{ cust.first_name or '' }} {{ cust.last_name or '' }}
                             </div>
-                            <div class="cust-sub">{{ o.customer.phone }}</div>
-                            <div class="cust-sub">{{ o.customer.email }}</div>
-                            <div class="cust-sub" style="margin-top:4px;">{{ o.customer.address }}, {{ o.customer.city }} {{ o.customer.pincode }}</div>
+                            <div class="cust-sub">{{ cust.phone or '' }}</div>
+                            <div class="cust-sub">{{ cust.email or '' }}</div>
+                            <div class="cust-sub" style="margin-top:4px;">{{ cust.address or '' }}{% if cust.city %}, {{ cust.city }}{% endif %} {% if cust.pincode %}{{ cust.pincode }}{% endif %}</div>
                         </td>
                         <td>
-                            {% for item in o.items %}
+                            {% for item in (o.items or []) %}
                             <div class="item-pill">
-                                <strong>{{ item.name }}</strong> (Size: {{ item.size }}, Qty: {{ item.quantity }})
+                                <strong>{{ item.name or '' }}</strong> (Size: {{ item.size or 'S' }}, Qty: {{ item.quantity or 1 }})
                             </div>
                             {% endfor %}
                         </td>
                         <td>
-                            <strong style="color:var(--gold);">₹{{ "{:,}".format(o.total or 0) }}</strong>
+                            <strong style="color:var(--gold);">₹{{ o.total or 0 }}</strong>
                         </td>
                         <td>
-                            <div class="cust-sub">Pay: <code style="color:#ffffff;">{{ o.razorpay_payment_id }}</code></div>
-                            <div class="cust-sub">Ord: <code style="color:var(--muted);">{{ o.razorpay_order_id }}</code></div>
+                            <div class="cust-sub">Pay: <code style="color:#ffffff;">{{ o.razorpay_payment_id or 'N/A' }}</code></div>
+                            <div class="cust-sub">Ord: <code style="color:var(--muted);">{{ o.razorpay_order_id or 'N/A' }}</code></div>
                         </td>
                         <td>
                             <select class="status-select" onchange="updateStatus('{{ o.order_number }}', this.value)">
@@ -382,20 +383,21 @@
                 </thead>
                 <tbody>
                     {% for p in pending %}
+                    {% set pcust = p.customer or {} %}
                     <tr>
-                        <td><code>{{ p.razorpay_order_id }}</code></td>
-                        <td>{{ p.customer.first_name }} {{ p.customer.last_name }}</td>
+                        <td><code>{{ p.razorpay_order_id or '' }}</code></td>
+                        <td>{{ pcust.first_name or '' }} {{ pcust.last_name or '' }}</td>
                         <td>
-                            <div>{{ p.customer.phone }}</div>
-                            <div class="cust-sub">{{ p.customer.email }}</div>
-                            <div class="cust-sub">{{ p.customer.city }}, {{ p.customer.state }}</div>
+                            <div>{{ pcust.phone or '' }}</div>
+                            <div class="cust-sub">{{ pcust.email or '' }}</div>
+                            <div class="cust-sub">{{ pcust.city or '' }}{% if pcust.state %}, {{ pcust.state }}{% endif %}</div>
                         </td>
                         <td>
-                            {% for it in p.items %}
-                            <span class="item-pill">{{ it.name }} ({{ it.size }})</span>
+                            {% for it in (p.items or []) %}
+                            <span class="item-pill">{{ it.name or '' }} ({{ it.size or 'S' }})</span>
                             {% endfor %}
                         </td>
-                        <td><strong>₹{{ "{:,}".format(p.total or 0) }}</strong></td>
+                        <td><strong>₹{{ p.total or 0 }}</strong></td>
                     </tr>
                     {% endfor %}
                 </tbody>
