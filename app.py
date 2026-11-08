@@ -276,6 +276,34 @@ PRODUCTS = [
         "care":
             "Dry clean recommended."
     }
+],
+        "care":
+            "Dry clean recommended."
+    },
+
+    {
+        "name": "Denim Signature",
+        "slug": "denim-signature",
+        "category": "CO-ORD SET",
+        "price": 7199,
+        "images": [
+            "dw 1.jpeg",
+            "dw 2.jpeg",
+            "dw 3.jpeg",
+            "dw 4.jpeg",
+            "dw 5.jpeg"
+        ],
+        "description":
+            "A statement in contemporary denim, Denim Signature pairs a structured indigo waistcoat with elegantly flowing wide-leg trousers. Defined by its refined silhouette and coordinated design, this two-piece ensemble brings effortless sophistication to modern dressing.",
+        "details": [
+            "Indigo denim waistcoat",
+            "Matching wide-leg trousers",
+            "Two-piece co-ord set",
+            "Contemporary tailored silhouette"
+        ],
+        "care":
+            "Care instructions to be confirmed."
+    }
 ]
 
 
