@@ -317,31 +317,33 @@ DRESSES = [
 # INSTAGRAM
 # =========================================================
 
+INSTAGRAM_URL = "https://www.instagram.com/alzor.couture?vrfl=MWJvY3hqYjZldXdmYQ=="
+
 INSTAGRAM_POSTS = [
 
     {
         "image": "insta-1.jpeg",
-        "url": "https://www.instagram.com/p/DYjBcjSD0VV/"
+        "url": INSTAGRAM_URL
     },
 
     {
         "image": "insta-2.jpeg",
-        "url": "https://www.instagram.com/p/DYJfSCRD4_x/"
+        "url": INSTAGRAM_URL
     },
 
     {
         "image": "insta-3.jpeg",
-        "url": "https://www.instagram.com/p/DXivl08D7lP/"
+        "url": INSTAGRAM_URL
     },
 
     {
         "image": "insta-4.jpeg",
-        "url": "https://www.instagram.com/p/DW-m9WID2QF/"
+        "url": INSTAGRAM_URL
     },
 
     {
         "image": "insta-5.jpeg",
-        "url": "https://www.instagram.com/p/DYTl-rxDwm0/"
+        "url": INSTAGRAM_URL
     }
 ]
 
@@ -2057,6 +2059,9 @@ def contact():
             </a>
             <a href="mailto:contact@alzorcouture.in" class="policy-email-btn">
                 EMAIL: CONTACT@ALZORCOUTURE.IN
+            </a>
+            <a href="https://www.instagram.com/alzor.couture?vrfl=MWJvY3hqYjZldXdmYQ==" target="_blank" rel="noopener noreferrer" class="policy-email-btn" style="border-color:#ad8a51;color:#ad8a51;">
+                INSTAGRAM: @ALZOR.COUTURE
             </a>
         </div>
     </div>
