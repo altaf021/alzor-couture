@@ -252,7 +252,7 @@ PRODUCTS = [
             "Gentle wash or dry clean recommended."
     },
 
-    {
+      {
         "name": "Shadow Blossom Ensemble",
         "slug": "shadow-blossom-ensemble",
         "category": "CO-ORD SET",
@@ -273,10 +273,6 @@ PRODUCTS = [
             "Contemporary silhouette",
             "Elegant statement design"
         ],
-        "care":
-            "Dry clean recommended."
-    }
-],
         "care":
             "Dry clean recommended."
     },
