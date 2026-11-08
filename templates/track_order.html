@@ -336,15 +336,15 @@
             </div>
             <div class="track-info-cell">
                 <h5>Order Total</h5>
-                <p>₹{{ "{:,}".format(order.total_amount) }}</p>
+                <p>₹{{ "{:,}".format(order.total_amount or order.total or 0) }}</p>
             </div>
             <div class="track-info-cell">
                 <h5>Customer</h5>
-                <p>{{ order.customer_name }}</p>
+                <p>{{ order.customer_name or ((order.customer.first_name ~ ' ' ~ order.customer.last_name)|trim if order.customer else 'Valued Client') }}</p>
             </div>
             <div class="track-info-cell">
                 <h5>Delivery Destination</h5>
-                <p>{{ order.city }}, {{ order.state }}</p>
+                <p>{{ (order.customer.city ~ ', ' ~ order.customer.state) if (order.customer and order.customer.city) else ((order.city ~ ', ' ~ order.state) if order.city else 'Dispatched') }}</p>
             </div>
         </div>
 

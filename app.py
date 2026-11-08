@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response
+from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response, send_from_directory
 import json
 import logging
 import os
@@ -396,19 +396,27 @@ def ensure_database_schema(conn, is_postgres=True):
         """)
 
 
+_schema_ensured = False
+
+
 @contextmanager
 def get_db_cursor():
     """Context manager yielding (cursor, is_postgres). Handles commits/rollbacks."""
+    global _schema_ensured
     if USE_POSTGRES:
         with psycopg.connect(get_database_url(), connect_timeout=8, autocommit=False) as conn:
-            ensure_database_schema(conn, is_postgres=True)
+            if not _schema_ensured:
+                ensure_database_schema(conn, is_postgres=True)
+                _schema_ensured = True
             with conn.cursor() as cur:
                 yield cur, True
             conn.commit()
     else:
         conn = sqlite3.connect(SQLITE_DB_PATH)
         try:
-            ensure_database_schema(conn, is_postgres=False)
+            if not _schema_ensured:
+                ensure_database_schema(conn, is_postgres=False)
+                _schema_ensured = True
             cur = conn.cursor()
             yield cur, False
             conn.commit()
@@ -605,10 +613,16 @@ def get_cart_subtotal():
 
 @app.context_processor
 def inject_global_values():
+    effective_site_url = os.getenv("SITE_URL", "").strip().rstrip("/")
+    if not effective_site_url:
+        try:
+            effective_site_url = request.host_url.rstrip("/")
+        except Exception:
+            effective_site_url = SITE_URL
     return {
         "available_sizes": AVAILABLE_SIZES,
         "cart_count": get_cart_count(),
-        "site_url": SITE_URL,
+        "site_url": effective_site_url,
         "domain": "alzorcouture.in",
         "contact_email": "contact@alzorcouture.in",
         "brand_name": "Alzor Couture",
@@ -1827,12 +1841,22 @@ def track_order():
             if not found:
                 error = f"We could not find any order matching '{order_number}'. Please verify the order number from your confirmation email."
             else:
-                cust_phone = (found.get("customer_phone") or "").strip().lower()
-                cust_email = (found.get("customer_email") or "").strip().lower()
+                customer = found.get("customer") or {}
+                cust_phone = (customer.get("phone") or found.get("customer_phone") or "").strip().lower()
+                cust_email = (customer.get("email") or found.get("customer_email") or "").strip().lower()
                 clean_contact = contact_info.replace(" ", "").replace("-", "").replace("+91", "")
                 clean_phone = cust_phone.replace(" ", "").replace("-", "").replace("+91", "")
 
-                if contact_info == cust_email or (clean_contact and clean_contact in clean_phone) or (clean_phone and clean_phone in clean_contact):
+                matches_email = bool(cust_email and contact_info == cust_email)
+                matches_phone = bool(clean_contact and clean_phone and (clean_contact in clean_phone or clean_phone in clean_contact))
+
+                if matches_email or matches_phone:
+                    found["total_amount"] = found.get("total") if found.get("total") is not None else (found.get("total_amount") or 0)
+                    first = customer.get("first_name", "")
+                    last = customer.get("last_name", "")
+                    found["customer_name"] = f"{first} {last}".strip() or found.get("customer_name") or "Valued Client"
+                    found["city"] = customer.get("city") or found.get("city") or ""
+                    found["state"] = customer.get("state") or found.get("state") or ""
                     order = found
                 else:
                     error = "The contact details entered do not match our records for this order."
@@ -1900,6 +1924,11 @@ def sitemap_xml():
         lines.append("  </url>")
     lines.append("</urlset>")
     return Response("\n".join(lines), mimetype="application/xml")
+
+
+@app.route("/domain-setup")
+def domain_setup():
+    return send_from_directory("static", "domain-setup.html")
 
 
 # =========================================================
