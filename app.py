@@ -358,6 +358,27 @@ DRESSES = [
         ],
         "care":
             "Gentle wash or dry clean recommended."
+    },
+    
+        {
+        "name": "Scarlet Petal Dress",
+        "slug": "scarlet-petal-dress",
+        "category": "DRESS",
+        "price": 5599,
+        "images": [
+            "rb 1.jpeg",
+            "rb 2.jpeg",
+            "rb 3.jpeg",
+            "rb 4.jpeg"
+        ],
+        "description":
+            "A striking expression of contemporary elegance, Scarlet Petal features a bold red-and-black design adorned with beautiful floral appliqué detailing. Its sleek silhouette and contrasting colours create a sophisticated statement, making it a distinctive choice for evening occasions and special moments.",
+        "details": [
+            "Red and black colour combination",
+            "Floral appliqué detailing",
+            "Sleeveless design",
+            "Contemporary dress silhouette"
+        ]
     }
 ]
 
