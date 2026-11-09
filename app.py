@@ -299,8 +299,32 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
-    }
-]
+    },
+
+        {
+        "name": "Red Muse Co Ord Set",
+        "slug": "red-muse-co-ord-set",
+        "category": "CO-ORD SET",
+        "price": 6999,
+        "images": [
+            "rw 1.jpeg",
+            "rw 2.jpeg",
+            "rw 3.jpeg",
+            "rw 4.jpeg",
+            "rw 5.jpeg"
+        ],
+        "description":
+            "A captivating expression of modern elegance, the Red Muse Co Ord Set pairs a vibrant red statement top with delicate white floral appliqué detailing and elegantly tailored white wide-leg trousers. The striking contrast and graceful silhouette create a refined two-piece ensemble designed to make every occasion memorable.",
+        "details": [
+            "Vibrant red statement top",
+            "White floral appliqué detailing",
+            "White wide-leg trousers",
+            "Elegant two-piece co-ord set",
+            "Contemporary statement silhouette"
+        ],
+        "care":
+            "Care instructions to be confirmed."
+    },
 
 
 # =========================================================
