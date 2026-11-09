@@ -324,7 +324,8 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
-    },
+    }
+]
 
 
 # =========================================================
