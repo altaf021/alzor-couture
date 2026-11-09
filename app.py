@@ -324,6 +324,28 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
+    },
+        {
+        "name": "Maroon Élan Co-ord Set",
+        "slug": "maroon-elan-co-ord-set",
+        "category": "CO-ORD SET",
+        "price": 6799,
+        "images": [
+            "maroon 1.jpeg",
+            "maroon 2.jpeg",
+            "maroon 3.jpeg",
+            "maroon 4.jpeg",
+            "maroon 5.jpeg"
+        ],
+        "description":
+            "A refined blend of elegance and contemporary style, Maroon Élan features a rich maroon design with delicate black bead embellishments. The button-front top, distinctive diagonal detailing and coordinated silhouette create a sophisticated look, perfect for evening outings and special occasions.",
+        "details": [
+            "Rich maroon colour",
+            "Button-front top",
+            "Delicate black bead embellishments",
+            "Distinctive diagonal detailing",
+            "Coordinated two-piece set"
+        ]
     }
 ]
 
