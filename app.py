@@ -368,7 +368,28 @@ PRODUCTS = [
             "Statement two-piece co-ord set",
             "Contemporary silhouette"
         ]
+    },
+    
+    {
+        "name": "Denim Élan Fringe Short Set",
+        "slug": "denim-elan-fringe-short-set",
+        "category": "CO-ORD SET",
+        "price": 5999,
+        "images": [
+            "denim elan 1 s.jpeg",
+            "denim elan 2 s.jpeg",
+            "denim elan 3 s.jpeg"
+        ],
+        "description":
+            "A contemporary take on denim dressing, the Denim Élan Fringe Short Set pairs a relaxed button-front shirt with matching tailored shorts. Finished with striking ivory fringe accents, this coordinated two-piece brings playful movement and modern sophistication to a standout summer look.",
+        "details": [
+            "Blue denim shirt",
+            "Matching denim shorts",
+            "Contrasting ivory fringe detailing",
+            "Two-piece co-ord set"
+        ]
     }
+
 ]
 
 
