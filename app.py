@@ -346,6 +346,28 @@ PRODUCTS = [
             "Distinctive diagonal detailing",
             "Coordinated two-piece set"
         ]
+    },
+        {
+        "name": "Denim Élan Co-ord Set",
+        "slug": "denim-elan-co-ord-set",
+        "category": "CO-ORD SET",
+        "price": 6599,
+        "images": [
+            "denim elan 1.jpeg",
+            "denim elan 2.jpeg",
+            "denim elan 3.jpeg",
+            "denim elan 4.jpeg",
+            "denim elan 5.jpeg"
+        ],
+        "description":
+            "A contemporary take on denim dressing, Denim Élan brings together a structured indigo shirt and matching wide-leg trousers, elevated with striking ivory fringe detailing. The contrasting textures and statement fringe panels create a distinctive silhouette that blends modern sophistication with effortless style.",
+        "details": [
+            "Indigo denim shirt",
+            "Matching wide-leg trousers",
+            "Contrasting ivory fringe detailing",
+            "Statement two-piece co-ord set",
+            "Contemporary silhouette"
+        ]
     }
 ]
 
