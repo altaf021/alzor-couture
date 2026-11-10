@@ -388,6 +388,29 @@ PRODUCTS = [
             "Contrasting ivory fringe detailing",
             "Two-piece co-ord set"
         ]
+    },
+        {
+        "name": "Scarlet Muse Set",
+        "slug": "scarlet-muse-set",
+        "category": "CO-ORD SET",
+        "price": 4599,
+        "images": [
+            "sm1.jpeg",
+            "sm2.jpeg",
+            "sm3.jpeg",
+            "sm4.jpeg",
+            "sm5.jpeg"
+        ],
+        "description":
+            "A statement in colour and versatility, the Scarlet Muse Set features a striking multicolour strapless top designed to pair beautifully with two distinctive bottom styles. Choose the bold red wrap skirt for a playful, contemporary look or the elegant navy flared trousers for a more refined silhouette.",
+        "details": [
+            "Multicolour strapless top",
+            "Red wrap skirt styling option",
+            "Navy flared trousers styling option",
+            "Versatile contemporary design"
+        ],
+        "care":
+            "Care instructions to be confirmed."
     }
 
 ]
