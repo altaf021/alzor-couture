@@ -467,6 +467,27 @@ DRESSES = [
             "Sleeveless design",
             "Contemporary dress silhouette"
         ]
+    },
+        {
+        "name": "Ivory Blossom Gown",
+        "slug": "ivory-blossom-gown",
+        "category": "DRESS",
+        "price": 8199,
+        "images": [
+            "IBG-1.jpeg",
+            "IBG-2.jpeg",
+            "IBG-3.jpeg",
+            "IBG-4.jpeg",
+            "IBG-5.jpeg"
+        ],
+        "description":
+            "A celebration of understated elegance, the Ivory Blossom Gown features delicate three-dimensional floral appliqués complemented by intricate embellished vine detailing. Designed with a graceful full-length silhouette and refined long sleeves, this statement piece brings timeless sophistication to special occasions and elegant evenings.",
+        "details": [
+            "Three-dimensional floral appliqués",
+            "Delicate embellished vine detailing",
+            "Elegant full-length silhouette",
+            "Refined long sleeves"
+        ]
     }
 ]
 
