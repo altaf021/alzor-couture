@@ -411,6 +411,29 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
+    },
+        {
+        "name": "Midnight Muse Set",
+        "slug": "midnight-muse-set",
+        "category": "CO-ORD SET",
+        "price": 5599,
+        "images": [
+            "MS-1.jpeg",
+            "MS-2.jpeg",
+            "MS-3.jpeg",
+            "MS-4.jpeg",
+            "MS-5.jpeg"
+        ],
+        "description":
+            "A striking blend of colour and contemporary elegance, the Midnight Muse Set features a statement multicolour top paired with sophisticated navy wide-leg trousers. Its distinctive colour-block design and graceful silhouette create a confident, modern look for special occasions and stylish outings.",
+        "details": [
+            "Multicolour statement top",
+            "Deep navy wide-leg trousers",
+            "Two-piece co-ord set",
+            "Contemporary colour-block design"
+        ],
+        "care":
+            "Care instructions to be confirmed."
     }
 
 ]
