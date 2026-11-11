@@ -64,7 +64,6 @@
            PRODUCT PAGE — REFINED RESPONSIVE POLISH
         ===================================================== */
 
-
         /* =====================================================
            PRODUCT TITLE + WISHLIST
         ===================================================== */
@@ -487,6 +486,153 @@
             opacity: 0.7;
             cursor: wait;
         }
+
+        /* =====================================================
+           ALZOR SIZE GUIDE — CLEAN RESPONSIVE MODAL
+        ===================================================== */
+
+        .size-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .size-guide-trigger {
+            border: 0;
+            border-bottom: 1px solid rgba(173, 138, 81, .75);
+            padding: 4px 0;
+            background: transparent;
+            color: #9b7740;
+            font: inherit;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: color .2s ease, border-color .2s ease;
+        }
+
+        .size-guide-trigger:hover {
+            color: #4b4030;
+            border-color: #4b4030;
+        }
+
+        .size-guide-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 22px;
+            background: rgba(18, 17, 15, .76);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .size-guide-overlay.is-open {
+            display: flex;
+        }
+
+        .size-guide-dialog {
+            position: relative;
+            width: min(100%, 980px);
+            max-height: 92vh;
+            overflow: auto;
+            padding: 18px;
+            border: 1px solid rgba(173, 138, 81, .55);
+            background: #f8f6f1;
+            box-shadow: 0 22px 70px rgba(0, 0, 0, .28);
+        }
+
+        .size-guide-topline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .size-guide-kicker {
+            margin: 0;
+            color: #9b7740;
+            font-size: 9px;
+            letter-spacing: 2.5px;
+        }
+
+        .size-guide-close {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(173, 138, 81, .55);
+            border-radius: 50%;
+            background: transparent;
+            color: #292723;
+            font-size: 25px;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease;
+        }
+
+        .size-guide-close:hover {
+            background: #292723;
+            color: #fff;
+        }
+
+        .size-guide-image-wrap {
+            width: 100%;
+            max-height: calc(92vh - 100px);
+            overflow: auto;
+            text-align: center;
+            background: #fff;
+        }
+
+        .size-guide-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: calc(92vh - 100px);
+            object-fit: contain;
+            margin: 0 auto;
+        }
+
+        body.size-guide-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 600px) {
+            .size-guide-overlay {
+                padding: 10px;
+            }
+
+            .size-guide-dialog {
+                width: 100%;
+                max-height: 94vh;
+                padding: 10px;
+            }
+
+            .size-guide-image-wrap {
+                max-height: calc(94vh - 75px);
+            }
+
+            .size-guide-image {
+                max-height: calc(94vh - 75px);
+            }
+
+            .size-guide-kicker {
+                font-size: 8px;
+                letter-spacing: 1.7px;
+            }
+
+            .size-guide-trigger {
+                font-size: 9px;
+                letter-spacing: 1px;
+            }
+        }
+
     </style>
 </head>
 
@@ -757,7 +903,15 @@
             <div class="size-section">
                 <div class="size-heading">
                     <span>SELECT SIZE</span>
-                    <span>SIZE GUIDE</span>
+                    <button
+                        type="button"
+                        class="size-guide-trigger"
+                        id="openSizeGuide"
+                        aria-haspopup="dialog"
+                        aria-controls="sizeGuideModal"
+                    >
+                        SIZE GUIDE
+                    </button>
                 </div>
 
                 <div class="size-options">
@@ -770,6 +924,43 @@
                         {{ size }}
                     </button>
                     {% endfor %}
+                </div>
+            </div>
+
+            <!-- ALZOR COUTURE SIZE GUIDE MODAL -->
+            <div
+                class="size-guide-overlay"
+                id="sizeGuideModal"
+                aria-hidden="true"
+            >
+                <div
+                    class="size-guide-dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="sizeGuideTitle"
+                >
+                    <div class="size-guide-topline">
+                        <p class="size-guide-kicker" id="sizeGuideTitle">
+                            ALZOR COUTURE · SIZE GUIDE
+                        </p>
+
+                        <button
+                            type="button"
+                            class="size-guide-close"
+                            id="closeSizeGuide"
+                            aria-label="Close size guide"
+                        >
+                            &times;
+                        </button>
+                    </div>
+
+                    <div class="size-guide-image-wrap">
+                        <img
+                            class="size-guide-image"
+                            src="{{ url_for('static', filename='images/ALZOR Couture Size Chart.png') }}"
+                            alt="Alzor Couture size chart showing body and trouser measurements in inches"
+                        >
+                    </div>
                 </div>
             </div>
 
@@ -1205,5 +1396,47 @@
     })();
 </script>
 
+
+<script>
+    /* =====================================================
+       ALZOR SIZE GUIDE MODAL
+    ===================================================== */
+    (function () {
+        const modal = document.getElementById("sizeGuideModal");
+        const openButton = document.getElementById("openSizeGuide");
+        const closeButton = document.getElementById("closeSizeGuide");
+
+        if (!modal || !openButton || !closeButton) return;
+
+        function openSizeGuide() {
+            modal.classList.add("is-open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("size-guide-open");
+            closeButton.focus();
+        }
+
+        function closeSizeGuide() {
+            modal.classList.remove("is-open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("size-guide-open");
+            openButton.focus();
+        }
+
+        openButton.addEventListener("click", openSizeGuide);
+        closeButton.addEventListener("click", closeSizeGuide);
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeSizeGuide();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && modal.classList.contains("is-open")) {
+                closeSizeGuide();
+            }
+        });
+    })();
+</script>
+
 </body>
-</html>
