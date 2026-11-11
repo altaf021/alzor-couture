@@ -475,7 +475,7 @@ DRESSES = [
         "name": "Scarlet Petal Dress",
         "slug": "scarlet-petal-dress",
         "category": "DRESS",
-        "price": 5599,
+        "price": 9999,
         "images": [
             "rb 1.jpeg",
             "rb 2.jpeg",
@@ -495,7 +495,7 @@ DRESSES = [
         "name": "Ivory Blossom Gown",
         "slug": "ivory-blossom-gown",
         "category": "DRESS",
-        "price": 8199,
+        "price": 15999,
         "images": [
             "IBG-1.jpeg",
             "IBG-2.jpeg",
