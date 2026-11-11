@@ -488,6 +488,26 @@ DRESSES = [
             "Elegant full-length silhouette",
             "Refined long sleeves"
         ]
+    },
+        {
+        "name": "Classic Dottie",
+        "slug": "classic-dottie",
+        "category": "DRESS",
+        "price": 4599,
+        "images": [
+            "CD-1.jpeg",
+            "CD-2.jpeg",
+            "CD-3.jpeg",
+            "CD-4.jpeg"
+        ],
+        "description":
+            "A timeless blend of playful charm and effortless elegance, the Classic Dottie Dress features a crisp white base adorned with classic black polka dots. Designed with delicate spaghetti straps, a flattering V-neckline and a beautifully gathered waist, this chic silhouette makes a stylish choice for brunches, outings and casual occasions.",
+        "details": [
+            "White dress with black polka-dot pattern",
+            "Delicate spaghetti straps",
+            "Flattering V-neckline",
+            "Gathered waist detail"
+        ]
     }
 ]
 
