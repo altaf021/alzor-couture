@@ -553,6 +553,31 @@ DRESSES = [
             "Flattering V-neckline",
             "Gathered waist detail"
         ]
+    },
+        {
+        "name": "Alzor Lime Élan",
+        "slug": "alzor-lime-elan",
+        "category": "DRESS",
+        "price": 5299,
+        "images": [
+            "GR-1.jpeg",
+            "GR-2.jpeg",
+            "GR-3.jpeg",
+            "GR-4.jpeg",
+            "GR-5.jpeg",
+            "GR-6.jpeg"
+        ],
+        "description":
+            "A graceful expression of modern elegance, Alzor Lime Élan features a soft lime-toned dress with delicate layered flutter sleeves, a flattering V-neckline and a beautifully defined waist. Finished with delicate floral detailing and an elegant asymmetrical hemline, this design brings effortless charm to special occasions and daytime celebrations.",
+        "details": [
+            "Soft lime-toned dress",
+            "Layered flutter sleeves",
+            "Flattering V-neckline",
+            "Decorative floral detailing",
+            "Elegant asymmetrical hemline"
+        ],
+        "care":
+            "Care instructions to be confirmed."
     }
 ]
 
