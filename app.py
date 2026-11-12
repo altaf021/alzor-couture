@@ -434,6 +434,28 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
+    },
+        {
+        "name": "Crimson Muse Set",
+        "slug": "crimson-muse-set",
+        "category": "CO-ORD SET",
+        "price": 5999,
+        "images": [
+            "cm-1.jpeg",
+            "cm-2.jpeg",
+            "cm-3.jpeg",
+            "cm-4.jpeg"
+        ],
+        "description":
+            "A striking blend of colour and contemporary elegance, Crimson Muse Set features a statement colour-block strapless top paired with a sleek burgundy skirt. The rich combination of crimson, navy, black and burgundy creates a distinctive look, perfect for making an impression at special occasions.",
+        "details": [
+            "Strapless colour-block top",
+            "Combination of crimson, navy, black and burgundy",
+            "Matching burgundy skirt",
+            "Contemporary two-piece set"
+        ],
+        "care":
+            "Care instructions to be confirmed."
     }
 
 ]
