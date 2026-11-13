@@ -3,48 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atelier Orders & Operations — Alzor Couture Admin</title>
+    <title>Atelier Intelligence &amp; Order Operations — Alzor Couture Admin</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <style>
         :root {
             --gold: #ad8a51;
             --gold-light: #d4b06f;
-            --dark: #0f0d0c;
-            --card-bg: #181513;
-            --panel-bg: #141210;
-            --border: rgba(173, 138, 81, 0.25);
-            --text: #eae5dc;
-            --muted: #9e978c;
+            --gold-dark: #8c6e3d;
+            --dark: #0c0b0a;
+            --card-bg: #161412;
+            --panel-bg: #12100e;
+            --border: rgba(173, 138, 81, 0.28);
+            --border-light: rgba(173, 138, 81, 0.15);
+            --text: #ede8e1;
+            --muted: #9b9489;
             --success: #28a745;
             --warning: #ffc107;
-            --danger: #dc3545;
+            --danger: #e04b4b;
+            --info: #3b82f6;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: var(--dark);
             color: var(--text);
             line-height: 1.5;
             padding: 24px;
+            font-size: 13px;
         }
         .container {
-            max-width: 1300px;
+            max-width: 1420px;
             margin: 0 auto;
         }
+
+        /* HEADER */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-bottom: 20px;
+            padding-bottom: 22px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 28px;
+            margin-bottom: 26px;
             flex-wrap: wrap;
             gap: 16px;
         }
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
         }
         .header-brand img {
             width: 44px;
@@ -55,38 +61,170 @@
             font-family: Georgia, serif;
             font-size: 22px;
             font-weight: 400;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: #ffffff;
         }
         .header-brand span {
-            font-size: 11px;
-            letter-spacing: 2px;
+            font-size: 10px;
+            letter-spacing: 3px;
             text-transform: uppercase;
             color: var(--gold);
-            font-weight: 600;
+            font-weight: 700;
             display: block;
         }
         .header-actions {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
-        .badge-live {
-            background: rgba(40, 167, 69, 0.2);
-            color: #5ddc7c;
-            border: 1px solid rgba(40, 167, 69, 0.5);
-            padding: 6px 12px;
+
+        /* NOTIFICATION BELL */
+        .notif-wrapper {
+            position: relative;
+        }
+        .notif-bell-btn {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .notif-bell-btn:hover {
+            border-color: var(--gold);
+            color: #ffffff;
+        }
+        .notif-badge {
+            background: var(--danger);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .notif-badge.hidden {
+            display: none;
+        }
+        .notif-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 380px;
+            max-height: 480px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+        .notif-dropdown.show {
+            display: flex;
+        }
+        .notif-dropdown-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #110f0d;
+        }
+        .notif-dropdown-header h4 {
             font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+        }
+        .notif-dropdown-header button {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .notif-dropdown-header button:hover {
+            color: #ffffff;
+        }
+        .notif-list {
+            overflow-y: auto;
+            max-height: 380px;
+        }
+        .notif-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .notif-item:hover {
+            background: rgba(173,138,81,0.06);
+        }
+        .notif-item.unread {
+            background: rgba(173,138,81,0.12);
+            border-left: 3px solid var(--gold);
+        }
+        .notif-item-title {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 12.5px;
+            margin-bottom: 2px;
+        }
+        .notif-item-msg {
+            color: var(--muted);
+            font-size: 11.5px;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        .notif-item-meta {
+            font-size: 10px;
+            color: var(--gold-light);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* SOUND TOGGLE */
+        .btn-sound-toggle {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 8px 12px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-sound-toggle.active {
+            color: #5ddc7c;
+            border-color: rgba(40, 167, 69, 0.4);
+        }
+
+        .badge-live {
+            background: rgba(40, 167, 69, 0.16);
+            color: #5ddc7c;
+            border: 1px solid rgba(40, 167, 69, 0.45);
+            padding: 7px 13px;
+            font-size: 10px;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: 700;
         }
         .badge-test {
-            background: rgba(255, 193, 7, 0.2);
+            background: rgba(255, 193, 7, 0.16);
             color: #ffd454;
-            border: 1px solid rgba(255, 193, 7, 0.5);
-            padding: 6px 12px;
-            font-size: 11px;
+            border: 1px solid rgba(255, 193, 7, 0.45);
+            padding: 7px 13px;
+            font-size: 10px;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: 700;
@@ -95,7 +233,7 @@
             background: transparent;
             border: 1px solid var(--border);
             color: var(--muted);
-            padding: 7px 16px;
+            padding: 7px 14px;
             font-size: 11px;
             letter-spacing: 1.5px;
             text-transform: uppercase;
@@ -107,19 +245,22 @@
             color: #ffffff;
             border-color: #ffffff;
         }
+
+        /* KPI STATS */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 16px;
-            margin-bottom: 28px;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+            gap: 14px;
+            margin-bottom: 26px;
         }
         .kpi-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            padding: 20px 22px;
+            padding: 18px 20px;
+            position: relative;
         }
         .kpi-card span {
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--muted);
@@ -127,82 +268,197 @@
             margin-bottom: 6px;
         }
         .kpi-card strong {
-            font-size: 26px;
+            font-size: 24px;
             font-family: Georgia, serif;
             color: #ffffff;
             font-weight: 400;
         }
+        .kpi-sub {
+            font-size: 11px;
+            color: var(--gold-light);
+            margin-top: 4px;
+        }
+
+        /* MAIN TABS */
+        .tabs-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 4px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            border-bottom: none;
+            color: var(--muted);
+            padding: 11px 18px;
+            font-size: 11.5px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            color: #ffffff;
+        }
+        .tab-btn.active {
+            background: var(--card-bg);
+            border-color: var(--border);
+            border-bottom: 2px solid var(--gold);
+            color: #ffffff;
+        }
+        .tab-count {
+            background: rgba(255,255,255,0.08);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 10px;
+            color: var(--gold-light);
+        }
+
+        /* TOOLBAR */
         .toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-light);
+            padding: 12px 16px;
         }
-        .tabs {
+        .filters-group {
             display: flex;
-            gap: 8px;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .tab-btn {
+        .search-box input {
             background: var(--panel-bg);
             border: 1px solid var(--border);
-            color: var(--muted);
-            padding: 9px 18px;
+            padding: 8px 12px;
+            color: #ffffff;
+            font-size: 12.5px;
+            outline: none;
+            min-width: 260px;
+        }
+        .search-box input:focus {
+            border-color: var(--gold);
+        }
+        .filter-select {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+        .filter-select:focus {
+            border-color: var(--gold);
+        }
+        .btn-action-primary {
+            background: var(--gold);
+            color: var(--dark);
+            border: 1px solid var(--gold);
+            padding: 8px 16px;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-action-primary:hover {
+            background: var(--gold-light);
+        }
+        .btn-action-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
             font-size: 11px;
             letter-spacing: 1.5px;
             text-transform: uppercase;
             font-weight: 600;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
-        .tab-btn.active {
-            background: var(--gold);
-            color: var(--dark);
+        .btn-action-secondary:hover {
             border-color: var(--gold);
-            font-weight: 700;
-        }
-        .search-box {
-            position: relative;
-            min-width: 280px;
-        }
-        .search-box input {
-            width: 100%;
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            padding: 9px 14px;
             color: #ffffff;
-            font-size: 13px;
-            outline: none;
         }
-        .search-box input:focus {
+
+        /* STATUS PILLS FILTER */
+        .status-chips-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .chip-btn {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-light);
+            color: var(--muted);
+            padding: 5px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip-btn:hover, .chip-btn.active {
             border-color: var(--gold);
+            color: #ffffff;
+            background: rgba(173,138,81,0.12);
         }
+
+        /* TABLES */
         .table-wrap {
             background: var(--card-bg);
             border: 1px solid var(--border);
             overflow-x: auto;
+            margin-bottom: 30px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12.5px;
         }
         th, td {
-            padding: 14px 16px;
+            padding: 13px 15px;
             text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            vertical-align: top;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
         }
         th {
-            background: #12100e;
+            background: #110f0d;
             color: var(--gold);
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
             font-weight: 700;
+            white-space: nowrap;
         }
         tr:hover td {
-            background: rgba(173, 138, 81, 0.04);
+            background: rgba(173, 138, 81, 0.03);
         }
         .order-num {
             font-family: Consolas, monospace;
@@ -216,30 +472,253 @@
             margin-bottom: 2px;
         }
         .cust-sub {
-            font-size: 12px;
+            font-size: 11.5px;
             color: var(--muted);
         }
         .item-pill {
             display: inline-block;
             background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
             padding: 3px 8px;
             border-radius: 3px;
             font-size: 11px;
             margin-right: 4px;
             margin-bottom: 4px;
         }
-        .status-select {
+        .status-badge-inline {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 2px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .status-confirmed, .status-order-placed {
+            background: rgba(59, 130, 246, 0.18);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .status-processing, .status-in-production, .status-packed {
+            background: rgba(234, 179, 8, 0.18);
+            color: #fde047;
+            border: 1px solid rgba(234, 179, 8, 0.4);
+        }
+        .status-shipped, .status-out-for-delivery {
+            background: rgba(168, 85, 247, 0.18);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+        .status-delivered {
+            background: rgba(40, 167, 69, 0.18);
+            color: #5ddc7c;
+            border: 1px solid rgba(40, 167, 69, 0.4);
+        }
+        .status-cancelled, .status-returned, .status-refunded {
+            background: rgba(224, 75, 75, 0.18);
+            color: #f87171;
+            border: 1px solid rgba(224, 75, 75, 0.4);
+        }
+        .table-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-row-action {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-light);
+            color: var(--text);
+            padding: 5px 9px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-row-action:hover {
+            border-color: var(--gold);
+            color: #ffffff;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 820px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+            padding: 28px 32px;
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+        }
+        .modal-header h3 {
+            font-family: Georgia, serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: #ffffff;
+        }
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 22px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close-btn:hover {
+            color: #ffffff;
+        }
+
+        /* FORM STYLES */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-field.full {
+            grid-column: 1 / -1;
+        }
+        .form-field label {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+        }
+        .form-field input, .form-field select, .form-field textarea {
             background: var(--panel-bg);
             border: 1px solid var(--border);
+            padding: 9px 12px;
             color: #ffffff;
-            padding: 6px 10px;
-            font-size: 12px;
+            font-size: 13px;
             outline: none;
-            cursor: pointer;
+            font-family: inherit;
         }
-        .status-select:focus {
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
             border-color: var(--gold);
         }
+
+        /* ORDER DETAILS MODAL CONTENT */
+        .modal-section-title {
+            font-size: 10.5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+            margin: 20px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+        .detail-item h5 {
+            font-size: 9.5px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .detail-item p {
+            font-size: 13px;
+            color: #ffffff;
+        }
+
+        /* TIMELINE */
+        .timeline-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 14px 0;
+            padding-left: 14px;
+            border-left: 2px solid var(--gold);
+        }
+        .timeline-step {
+            position: relative;
+            padding-left: 14px;
+        }
+        .timeline-step::before {
+            content: "";
+            position: absolute;
+            left: -20px;
+            top: 4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gold);
+        }
+        .timeline-step-title {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 12.5px;
+        }
+        .timeline-step-meta {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* NOTES LIST */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            background: #110f0d;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+        }
+        .note-bubble {
+            background: rgba(255,255,255,0.03);
+            border-left: 2px solid var(--gold-light);
+            padding: 8px 10px;
+        }
+        .note-bubble-meta {
+            font-size: 10px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+        .note-bubble-text {
+            color: #ffffff;
+            font-size: 12px;
+        }
+
         .empty-state {
             padding: 60px 24px;
             text-align: center;
@@ -255,204 +734,1147 @@
 </head>
 <body>
     <div class="container">
+
+        <!-- HEADER -->
         <header>
             <div class="header-brand">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Alzor Logo">
                 <div>
                     <h1>Alzor Couture Atelier</h1>
-                    <span>Operations &amp; Order Intelligence</span>
+                    <span>Order Operations &amp; Intelligence Hub</span>
                 </div>
             </div>
             <div class="header-actions">
+                <!-- AUDIO CHIME TOGGLE -->
+                <button type="button" id="soundToggleBtn" class="btn-sound-toggle active" onclick="toggleSound()">
+                    <span id="soundIcon">🔔</span> <span id="soundText">Sound: ON</span>
+                </button>
+
+                <!-- NOTIFICATION BELL -->
+                <div class="notif-wrapper">
+                    <button type="button" class="notif-bell-btn" onclick="toggleNotifDropdown()">
+                        <span>📢 Notifications</span>
+                        <span id="notifBadge" class="notif-badge {% if unread_notifs == 0 %}hidden{% endif %}">{{ unread_notifs }}</span>
+                    </button>
+                    <div id="notifDropdown" class="notif-dropdown">
+                        <div class="notif-dropdown-header">
+                            <h4>Atelier Notifications</h4>
+                            <button type="button" onclick="markAllNotificationsRead()">Mark all as read</button>
+                        </div>
+                        <div id="notifList" class="notif-list">
+                            {% for n in notifications %}
+                            <div class="notif-item {% if not n.is_read %}unread{% endif %}" onclick="handleNotifClick({{ n.id }}, '{{ n.order_number }}')">
+                                <div class="notif-item-title">{{ n.title }}</div>
+                                <div class="notif-item-msg">{{ n.message }}</div>
+                                <div class="notif-item-meta">
+                                    <span>{% if n.amount > 0 %}₹{{ "{:,}".format(n.amount|int) }}{% endif %}</span>
+                                    <span>{{ n.created_at[:16] }}</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div style="padding:24px;text-align:center;color:var(--muted);">No notifications recorded yet.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
                 {% if is_live %}
                 <span class="badge-live">● RAZORPAY LIVE MODE</span>
                 {% else %}
                 <span class="badge-test">⚠ TEST MODE ({{ razorpay_key_preview }})</span>
                 {% endif %}
+
                 <a href="{{ url_for('admin_logout') }}" class="btn-logout">Sign Out</a>
             </div>
         </header>
 
+        <!-- KPI GRID -->
         <section class="kpi-grid">
             <div class="kpi-card">
-                <span>Total Atelier Revenue</span>
-                <strong>₹{{ total_revenue }}</strong>
+                <span>Total Atelier Sales</span>
+                <strong>₹{{ "{:,}".format(total_revenue) }}</strong>
+                <div class="kpi-sub">Lifetime verified revenue</div>
+            </div>
+            <div class="kpi-card">
+                <span>Today's Sales</span>
+                <strong style="color:var(--gold);">₹{{ "{:,}".format(today_revenue) }}</strong>
+                <div class="kpi-sub">{{ today_orders_count }} order(s) confirmed today</div>
             </div>
             <div class="kpi-card">
                 <span>Confirmed Orders</span>
                 <strong>{{ orders_count }}</strong>
+                <div class="kpi-sub">{{ status_counts.get("Delivered", 0) }} delivered</div>
             </div>
             <div class="kpi-card">
-                <span>Pending Checkouts</span>
+                <span>Total Discounts Given</span>
+                <strong style="color:#d4b06f;">₹{{ "{:,}".format(total_discounts) }}</strong>
+                <div class="kpi-sub">Across promo campaigns</div>
+            </div>
+            <div class="kpi-card">
+                <span>Active Promo Codes</span>
+                <strong>{{ coupons_count }}</strong>
+                <div class="kpi-sub">Managed in coupons tab</div>
+            </div>
+            <div class="kpi-card">
+                <span>In-Flight Checkouts</span>
                 <strong>{{ pending_count }}</strong>
-            </div>
-            <div class="kpi-card">
-                <span>Razorpay Key Status</span>
-                <strong style="font-size: 18px; color: {% if is_live %}#5ddc7c{% else %}#ffd454{% endif %};">
-                    {% if is_live %}Live Active{% else %}Switch to rzp_live_{% endif %}
-                </strong>
+                <div class="kpi-sub">Customer bag sessions</div>
             </div>
         </section>
 
-        <div class="toolbar">
-            <div class="tabs">
-                <button type="button" class="tab-btn active" onclick="switchTab('orders')">Confirmed Orders ({{ orders_count }})</button>
-                <button type="button" class="tab-btn" onclick="switchTab('pending')">Pending Checkouts ({{ pending_count }})</button>
-            </div>
-            <div class="search-box">
-                <input type="text" id="orderSearch" placeholder="Search order #, customer, phone..." oninput="filterOrders()">
+        <!-- MAIN TABS -->
+        <div class="tabs-bar">
+            <div class="tab-buttons">
+                <button type="button" class="tab-btn active" id="tabBtn-orders" onclick="switchMainTab('orders')">
+                    Confirmed Orders <span class="tab-count">{{ orders_count }}</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabBtn-coupons" onclick="switchMainTab('coupons')">
+                    Promo Codes &amp; Coupons <span class="tab-count">{{ coupons_count }}</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabBtn-inventory" onclick="switchMainTab('inventory')">
+                    Inventory &amp; Sizing <span class="tab-count">{{ inventory_count }}</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabBtn-pending" onclick="switchMainTab('pending')">
+                    Pending Checkouts <span class="tab-count">{{ pending_count }}</span>
+                </button>
             </div>
         </div>
 
-        <section id="ordersPanel" class="table-wrap">
-            {% if orders %}
-            <table id="ordersTable">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Date &amp; Time</th>
-                        <th>Client</th>
-                        <th>Items &amp; Sizing</th>
-                        <th>Total</th>
-                        <th>Razorpay IDs</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for o in orders %}
-                    {% set cust = o.customer or {} %}
-                    <tr class="order-row">
-                        <td>
-                            <span class="order-num">{{ o.order_number }}</span>
-                        </td>
-                        <td>
-                            <span class="cust-sub">{{ o.created_at }}</span>
-                        </td>
-                        <td>
-                            <div class="cust-name">
-                                {{ cust.first_name or '' }} {{ cust.last_name or '' }}
-                            </div>
-                            <div class="cust-sub">{{ cust.phone or '' }}</div>
-                            <div class="cust-sub">{{ cust.email or '' }}</div>
-                            <div class="cust-sub" style="margin-top:4px;">{{ cust.address or '' }}{% if cust.city %}, {{ cust.city }}{% endif %} {% if cust.pincode %}{{ cust.pincode }}{% endif %}</div>
-                        </td>
-                        <td>
-                            {% for item in (o.items or []) %}
-                            <div class="item-pill">
-                                <strong>{{ item.name or '' }}</strong> (Size: {{ item.size or 'S' }}, Qty: {{ item.quantity or 1 }})
-                            </div>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            <strong style="color:var(--gold);">₹{{ o.total or 0 }}</strong>
-                        </td>
-                        <td>
-                            <div class="cust-sub">Pay: <code style="color:#ffffff;">{{ o.razorpay_payment_id or 'N/A' }}</code></div>
-                            <div class="cust-sub">Ord: <code style="color:var(--muted);">{{ o.razorpay_order_id or 'N/A' }}</code></div>
-                        </td>
-                        <td>
-                            <select class="status-select" onchange="updateStatus('{{ o.order_number }}', this.value)">
-                                {% for s in ["Order Placed", "In Production", "Quality Check", "Dispatched", "Delivered", "Cancelled"] %}
-                                <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state">
-                <h3>No Confirmed Orders Yet</h3>
-                <p>When customers complete checkout, their orders and verified Razorpay payment receipts will appear here immediately.</p>
-            </div>
-            {% endif %}
-        </section>
+        <!-- ========================================================= -->
+        <!-- TAB 1: CONFIRMED ORDERS -->
+        <!-- ========================================================= -->
+        <div id="tabContent-orders" class="tab-pane">
 
-        <section id="pendingPanel" class="table-wrap" style="display:none;">
-            {% if pending %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Razorpay Order ID</th>
-                        <th>Customer</th>
-                        <th>Contact</th>
-                        <th>Items</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in pending %}
-                    {% set pcust = p.customer or {} %}
-                    <tr>
-                        <td><code>{{ p.razorpay_order_id or '' }}</code></td>
-                        <td>{{ pcust.first_name or '' }} {{ pcust.last_name or '' }}</td>
-                        <td>
-                            <div>{{ pcust.phone or '' }}</div>
-                            <div class="cust-sub">{{ pcust.email or '' }}</div>
-                            <div class="cust-sub">{{ pcust.city or '' }}{% if pcust.state %}, {{ pcust.state }}{% endif %}</div>
-                        </td>
-                        <td>
-                            {% for it in (p.items or []) %}
-                            <span class="item-pill">{{ it.name or '' }} ({{ it.size or 'S' }})</span>
-                            {% endfor %}
-                        </td>
-                        <td><strong>₹{{ p.total or 0 }}</strong></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state">
-                <h3>No In-Flight Checkouts</h3>
-                <p>There are no abandoned or pending checkout sessions right now.</p>
+            <!-- STATUS QUICK CHIPS -->
+            <div class="status-chips-bar">
+                <button type="button" class="chip-btn active" onclick="filterByChip('ALL')">All Orders ({{ orders_count }})</button>
+                <button type="button" class="chip-btn" onclick="filterByChip('Confirmed')">Confirmed ({{ status_counts.get("Confirmed", 0) + status_counts.get("Order Placed", 0) }})</button>
+                <button type="button" class="chip-btn" onclick="filterByChip('Processing')">Processing / Production ({{ status_counts.get("Processing", 0) + status_counts.get("In Production", 0) }})</button>
+                <button type="button" class="chip-btn" onclick="filterByChip('Shipped')">Shipped ({{ status_counts.get("Shipped", 0) + status_counts.get("Dispatched", 0) }})</button>
+                <button type="button" class="chip-btn" onclick="filterByChip('Delivered')">Delivered ({{ status_counts.get("Delivered", 0) }})</button>
+                <button type="button" class="chip-btn" onclick="filterByChip('Cancelled')">Cancelled / Returned ({{ status_counts.get("Cancelled", 0) + status_counts.get("Returned", 0) }})</button>
             </div>
-            {% endif %}
-        </section>
+
+            <!-- TOOLBAR -->
+            <div class="toolbar">
+                <div class="filters-group">
+                    <div class="search-box">
+                        <input type="text" id="orderSearchInput" placeholder="Search order #, customer, mobile, email..." oninput="applyOrderFilters()">
+                    </div>
+                    <select id="statusFilter" class="filter-select" onchange="applyOrderFilters()">
+                        <option value="ALL">All Order Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Packed">Packed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Out for Delivery">Out for Delivery</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Returned">Returned</option>
+                        <option value="Refunded">Refunded</option>
+                    </select>
+                    <select id="dateFilter" class="filter-select" onchange="applyOrderFilters()">
+                        <option value="ALL">All Dates</option>
+                        <option value="TODAY">Today</option>
+                        <option value="WEEK">Last 7 Days</option>
+                        <option value="MONTH">This Month</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <a href="{{ url_for('admin_export_orders_csv') }}" class="btn-action-primary">
+                        📥 Export Orders to CSV
+                    </a>
+                </div>
+            </div>
+
+            <!-- ORDERS TABLE -->
+            <section class="table-wrap">
+                {% if orders %}
+                <table id="ordersTable">
+                    <thead>
+                        <tr>
+                            <th>Order Details</th>
+                            <th>Customer &amp; Contact</th>
+                            <th>Pieces &amp; Sizing</th>
+                            <th>Financials</th>
+                            <th>Payment ID</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in orders %}
+                        {% set cust = o.customer or {} %}
+                        <tr class="order-row"
+                            data-ordernum="{{ o.order_number }}"
+                            data-date="{{ (o.created_at or '')[:10] }}"
+                            data-status="{{ o.status or 'Confirmed' }}"
+                            data-customer="{{ cust.first_name or '' }} {{ cust.last_name or '' }}"
+                            data-phone="{{ cust.phone or '' }}"
+                            data-email="{{ cust.email or '' }}">
+                            <td>
+                                <span class="order-num">{{ o.order_number }}</span>
+                                <div class="cust-sub">{{ o.created_at }}</div>
+                            </td>
+                            <td>
+                                <div class="cust-name">{{ cust.first_name or '' }} {{ cust.last_name or '' }}</div>
+                                <div class="cust-sub">📞 {{ cust.phone or 'N/A' }}</div>
+                                <div class="cust-sub">✉ {{ cust.email or 'N/A' }}</div>
+                                <div class="cust-sub" style="margin-top:3px;color:#ad8a51;">📍 {{ cust.city or '' }}{% if cust.state %}, {{ cust.state }}{% endif %}</div>
+                            </td>
+                            <td>
+                                {% for item in (o.items or []) %}
+                                <div class="item-pill">
+                                    <strong>{{ item.name or '' }}</strong> &bull; Size: <strong>{{ item.size or 'S' }}</strong> &bull; Qty: {{ item.quantity or 1 }}
+                                </div>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <div style="font-size:14px;font-weight:700;color:#ffffff;">₹{{ "{:,}".format(o.total or 0) }}</div>
+                                {% if o.discount and o.discount > 0 %}
+                                <div class="cust-sub" style="color:var(--gold);">Promo: -₹{{ "{:,}".format(o.discount) }} ({{ o.coupon_code or 'CODE' }})</div>
+                                {% endif %}
+                                <div class="cust-sub">Subtotal: ₹{{ "{:,}".format(o.subtotal or 0) }}</div>
+                            </td>
+                            <td>
+                                <div class="cust-sub">Pay: <code style="color:#ffffff;">{{ o.razorpay_payment_id or 'N/A' }}</code></div>
+                                <div class="cust-sub">Mode: {{ o.payment_method or 'Razorpay' }}</div>
+                            </td>
+                            <td>
+                                <select class="filter-select" style="padding:4px 8px;font-size:11px;" onchange="updateOrderStatusAjax('{{ o.order_number }}', this.value)">
+                                    {% for s in ["Pending", "Confirmed", "Order Placed", "In Production", "Processing", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned", "Refunded"] %}
+                                    <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button type="button" class="btn-row-action" onclick="openOrderModal('{{ o.order_number }}')">👁 View</button>
+                                    <a href="/admin/order/{{ o.order_number }}/invoice" target="_blank" class="btn-row-action">🖨 Invoice</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Confirmed Orders Found</h3>
+                    <p>New online purchases verified via Razorpay will immediately display here.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: PROMO CODES & COUPONS -->
+        <!-- ========================================================= -->
+        <div id="tabContent-coupons" class="tab-pane" style="display:none;">
+            <div class="toolbar">
+                <div>
+                    <h3 style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#ffffff;">Promo Campaigns &amp; Atelier Coupons</h3>
+                    <p style="font-size:12px;color:var(--muted);margin-top:2px;">Create, toggle, or inspect promo codes with usage and discount controls.</p>
+                </div>
+                <button type="button" class="btn-action-primary" onclick="openCreateCouponModal()">
+                    + Create New Promo Code
+                </button>
+            </div>
+
+            <section class="table-wrap">
+                {% if coupons %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Promo Code</th>
+                            <th>Discount Rule</th>
+                            <th>Min Order Amount</th>
+                            <th>Max Discount</th>
+                            <th>Usage / Limit</th>
+                            <th>Per Client Limit</th>
+                            <th>First Order Only</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in coupons %}
+                        <tr>
+                            <td>
+                                <strong style="font-size:13px;letter-spacing:1px;color:#ffffff;">{{ c.code }}</strong>
+                            </td>
+                            <td>
+                                {% if c.discount_type == 'percentage' %}
+                                <span style="color:#5ddc7c;font-weight:700;">{{ c.discount_value|int }}% OFF</span>
+                                {% elif c.discount_type == 'fixed' %}
+                                <span style="color:#5ddc7c;font-weight:700;">₹{{ c.discount_value|int }} FLAT OFF</span>
+                                {% else %}
+                                <span style="color:#60a5fa;font-weight:700;">COMPLIMENTARY SHIPPING</span>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ "{:,}".format(c.min_order_amount|int) }}</td>
+                            <td>{% if c.max_discount_amount > 0 %}₹{{ "{:,}".format(c.max_discount_amount|int) }}{% else %}No Cap{% endif %}</td>
+                            <td>
+                                <strong>{{ c.used_count }}</strong> / {% if c.usage_limit > 0 %}{{ c.usage_limit }}{% else %}Unlimited{% endif %}
+                            </td>
+                            <td>{% if c.per_customer_limit > 0 %}{{ c.per_customer_limit }} time(s){% else %}Unlimited{% endif %}</td>
+                            <td>{% if c.first_order_only %}<span style="color:#fde047;">YES (First Order)</span>{% else %}No{% endif %}</td>
+                            <td>
+                                {% if c.is_active %}
+                                <span class="status-badge-inline status-delivered">ACTIVE</span>
+                                {% else %}
+                                <span class="status-badge-inline status-cancelled">INACTIVE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <button type="button" class="btn-row-action" onclick="toggleCouponAjax('{{ c.code }}')">
+                                        {% if c.is_active %}Deactivate{% else %}Activate{% endif %}
+                                    </button>
+                                    <button type="button" class="btn-row-action" onclick="viewRedemptionsModal('{{ c.code }}')">
+                                        Redemptions
+                                    </button>
+                                    <button type="button" class="btn-row-action" style="color:var(--danger);" onclick="deleteCouponAjax('{{ c.code }}')">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Promo Codes Configured</h3>
+                    <p>Click "Create New Promo Code" above to launch a couture promotional code.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: INVENTORY & SIZING -->
+        <!-- ========================================================= -->
+        <div id="tabContent-inventory" class="tab-pane" style="display:none;">
+            <div class="toolbar">
+                <div>
+                    <h3 style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#ffffff;">Atelier Stock &amp; Sizing Management</h3>
+                    <p style="font-size:12px;color:var(--muted);margin-top:2px;">Real-time piece inventory per size. Stock automatically deducts upon checkout and restores upon cancellation.</p>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="inventorySearch" placeholder="Search piece name or size..." oninput="filterInventory()">
+                </div>
+            </div>
+
+            <section class="table-wrap">
+                {% if inventory %}
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Piece</th>
+                            <th>Category</th>
+                            <th>Size</th>
+                            <th>Stock Status</th>
+                            <th>Current Units</th>
+                            <th>Quick Stock Update</th>
+                            <th>Last Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in inventory %}
+                        <tr class="inv-row" data-name="{{ inv.name }}" data-size="{{ inv.size }}">
+                            <td>
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    {% if inv.image %}
+                                    <img src="{{ url_for('static', filename='images/' ~ inv.image) }}" style="width:36px;height:48px;object-fit:cover;border:1px solid var(--border-light);">
+                                    {% endif %}
+                                    <div>
+                                        <strong style="color:#ffffff;">{{ inv.name }}</strong>
+                                        <div class="cust-sub">₹{{ "{:,}".format(inv.price) }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ inv.category }}</td>
+                            <td><strong style="font-size:14px;color:var(--gold);">{{ inv.size }}</strong></td>
+                            <td>
+                                {% if inv.stock > 5 %}
+                                <span class="status-badge-inline status-delivered">IN STOCK ({{ inv.stock }})</span>
+                                {% elif inv.stock > 0 %}
+                                <span class="status-badge-inline status-processing">LOW STOCK ({{ inv.stock }})</span>
+                                {% else %}
+                                <span class="status-badge-inline status-cancelled">OUT OF STOCK (0)</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong style="font-size:15px;color:#ffffff;">{{ inv.stock }}</strong>
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;align-items:center;">
+                                    <input type="number" min="0" value="{{ inv.stock }}" id="stockInput-{{ inv.slug }}-{{ inv.size }}" style="width:70px;background:var(--panel-bg);border:1px solid var(--border);color:#fff;padding:5px 8px;outline:none;">
+                                    <button type="button" class="btn-row-action" onclick="updateStockAjax('{{ inv.slug }}', '{{ inv.size }}')">Save</button>
+                                </div>
+                            </td>
+                            <td><span class="cust-sub">{{ inv.updated_at[:16] }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Inventory Records Found</h3>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: PENDING CHECKOUTS -->
+        <!-- ========================================================= -->
+        <div id="tabContent-pending" class="tab-pane" style="display:none;">
+            <div class="toolbar">
+                <div>
+                    <h3 style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#ffffff;">In-Flight Checkout Sessions</h3>
+                    <p style="font-size:12px;color:var(--muted);margin-top:2px;">Clients who filled their address and initiated Razorpay checkout.</p>
+                </div>
+            </div>
+
+            <section class="table-wrap">
+                {% if pending %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Razorpay Order ID</th>
+                            <th>Customer Name</th>
+                            <th>Contact</th>
+                            <th>Delivery City</th>
+                            <th>Bag Pieces</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pending %}
+                        {% set pcust = p.customer or {} %}
+                        <tr>
+                            <td><code>{{ p.razorpay_order_id }}</code></td>
+                            <td><strong style="color:#ffffff;">{{ pcust.first_name }} {{ pcust.last_name }}</strong></td>
+                            <td>
+                                <div>📞 {{ pcust.phone }}</div>
+                                <div class="cust-sub">✉ {{ pcust.email }}</div>
+                            </td>
+                            <td>{{ pcust.city }}{% if pcust.state %}, {{ pcust.state }}{% endif %}</td>
+                            <td>
+                                {% for it in (p.items or []) %}
+                                <span class="item-pill">{{ it.name }} ({{ it.size }}x{{ it.quantity }})</span>
+                                {% endfor %}
+                            </td>
+                            <td><strong style="color:var(--gold);font-size:14px;">₹{{ "{:,}".format(p.total or 0) }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Pending Checkouts Right Now</h3>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
     </div>
 
-    <script>
-        function switchTab(tab) {
-            const ordersPanel = document.getElementById("ordersPanel");
-            const pendingPanel = document.getElementById("pendingPanel");
-            const buttons = document.querySelectorAll(".tab-btn");
+    <!-- ========================================================= -->
+    <!-- ORDER DETAILS MODAL -->
+    <!-- ========================================================= -->
+    <div id="orderDetailModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modalOrderNum">ORDER DETAILS</h3>
+                    <span id="modalOrderStatusBadge" class="status-badge-inline" style="margin-top:4px;"></span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeOrderModal()">&times;</button>
+            </div>
 
-            if (tab === "orders") {
-                ordersPanel.style.display = "block";
-                pendingPanel.style.display = "none";
-                buttons[0].classList.add("active");
-                buttons[1].classList.remove("active");
+            <div id="modalOrderBody">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- CREATE COUPON MODAL -->
+    <!-- ========================================================= -->
+    <div id="createCouponModal" class="modal-overlay">
+        <div class="modal-card" style="max-width:580px;">
+            <div class="modal-header">
+                <h3>Create New Promo Code</h3>
+                <button type="button" class="modal-close-btn" onclick="closeCreateCouponModal()">&times;</button>
+            </div>
+            <form id="createCouponForm" onsubmit="submitCreateCoupon(event)">
+                <div class="form-grid">
+                    <div class="form-field full">
+                        <label>Promo Code Name *</label>
+                        <input type="text" id="cp_code" required placeholder="e.g. FESTIVE20" style="text-transform:uppercase;">
+                    </div>
+                    <div class="form-field">
+                        <label>Discount Type</label>
+                        <select id="cp_discount_type">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                            <option value="free_shipping">Free Shipping</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Discount Value (% or ₹)</label>
+                        <input type="number" id="cp_discount_value" min="0" step="1" required placeholder="e.g. 15">
+                    </div>
+                    <div class="form-field">
+                        <label>Minimum Order Amount (₹)</label>
+                        <input type="number" id="cp_min_order_amount" min="0" step="100" placeholder="e.g. 3000">
+                    </div>
+                    <div class="form-field">
+                        <label>Maximum Discount Cap (₹)</label>
+                        <input type="number" id="cp_max_discount_amount" min="0" step="100" placeholder="0 = No Limit">
+                    </div>
+                    <div class="form-field">
+                        <label>Start Date (Optional)</label>
+                        <input type="date" id="cp_start_date">
+                    </div>
+                    <div class="form-field">
+                        <label>Expiry Date (Optional)</label>
+                        <input type="date" id="cp_expiry_date">
+                    </div>
+                    <div class="form-field">
+                        <label>Total Usage Limit</label>
+                        <input type="number" id="cp_usage_limit" min="0" placeholder="0 = Unlimited">
+                    </div>
+                    <div class="form-field">
+                        <label>Per Client Usage Limit</label>
+                        <input type="number" id="cp_per_customer_limit" min="1" value="1">
+                    </div>
+                    <div class="form-field full" style="flex-direction:row;align-items:center;gap:10px;">
+                        <input type="checkbox" id="cp_first_order_only" style="width:auto;">
+                        <label for="cp_first_order_only" style="cursor:pointer;">Valid for First-Time Couture Orders Only</label>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+                    <button type="button" class="btn-action-secondary" onclick="closeCreateCouponModal()">Cancel</button>
+                    <button type="submit" class="btn-action-primary">Create Code</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- VIEW REDEMPTIONS MODAL -->
+    <!-- ========================================================= -->
+    <div id="redemptionsModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="redemptionsModalTitle">Coupon Redemptions</h3>
+                <button type="button" class="modal-close-btn" onclick="closeRedemptionsModal()">&times;</button>
+            </div>
+            <div id="redemptionsModalBody" style="max-height:400px;overflow-y:auto;">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // CLIENT-SIDE ORDERS DATA CACHE FOR INSTANT MODAL OPEN
+        const ORDERS_CACHE = {{ orders|tojson|safe }};
+
+        // SOUND CHIME SYSTEM
+        let soundEnabled = localStorage.getItem("alzor_admin_sound") !== "false";
+        updateSoundButtonState();
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem("alzor_admin_sound", soundEnabled ? "true" : "false");
+            updateSoundButtonState();
+            if (soundEnabled) playChime();
+        }
+
+        function updateSoundButtonState() {
+            const btn = document.getElementById("soundToggleBtn");
+            const icon = document.getElementById("soundIcon");
+            const text = document.getElementById("soundText");
+            if (soundEnabled) {
+                btn.classList.add("active");
+                icon.textContent = "🔔";
+                text.textContent = "Sound: ON";
             } else {
-                ordersPanel.style.display = "none";
-                pendingPanel.style.display = "block";
-                buttons[0].classList.remove("active");
-                buttons[1].classList.add("active");
+                btn.classList.remove("active");
+                icon.textContent = "🔕";
+                text.textContent = "Sound: MUTED";
             }
         }
 
-        function filterOrders() {
-            const q = document.getElementById("orderSearch").value.toLowerCase();
-            const rows = document.querySelectorAll(".order-row");
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(q) ? "" : "none";
+        function playChime() {
+            if (!soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.14); // A5
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.7);
+            } catch (e) {
+                console.warn("Web Audio chime could not play:", e);
+            }
+        }
+
+        // REAL-TIME 15-SECOND POLLING
+        let knownNotifIds = new Set([{% for n in notifications %}{{ n.id }},{% endfor %}]);
+        setInterval(pollNotifications, 15000);
+
+        async function pollNotifications() {
+            try {
+                const res = await fetch("/admin/api/notifications");
+                const data = await res.json();
+                if (!data.success) return;
+
+                const badge = document.getElementById("notifBadge");
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count;
+                    badge.classList.remove("hidden");
+                } else {
+                    badge.classList.add("hidden");
+                }
+
+                // Check for new notifications
+                let hasNew = false;
+                for (const n of data.notifications) {
+                    if (!knownNotifIds.has(n.id)) {
+                        knownNotifIds.add(n.id);
+                        hasNew = true;
+                    }
+                }
+                if (hasNew) {
+                    playChime();
+                    renderNotifList(data.notifications);
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }
+
+        function renderNotifList(notifs) {
+            const list = document.getElementById("notifList");
+            if (!notifs || notifs.length === 0) {
+                list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">No notifications recorded yet.</div>';
+                return;
+            }
+            list.innerHTML = notifs.map(n => `
+                <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="handleNotifClick(${n.id}, '${n.order_number}')">
+                    <div class="notif-item-title">${escapeHtml(n.title)}</div>
+                    <div class="notif-item-msg">${escapeHtml(n.message)}</div>
+                    <div class="notif-item-meta">
+                        <span>${n.amount > 0 ? '₹' + Number(n.amount).toLocaleString('en-IN') : ''}</span>
+                        <span>${n.created_at ? n.created_at.substring(0, 16) : ''}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function toggleNotifDropdown() {
+            const dd = document.getElementById("notifDropdown");
+            dd.classList.toggle("show");
+        }
+
+        window.addEventListener("click", function (e) {
+            const wrapper = document.querySelector(".notif-wrapper");
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById("notifDropdown").classList.remove("show");
+            }
+        });
+
+        async function handleNotifClick(notifId, orderNumber) {
+            try {
+                await fetch(`/admin/api/notifications/mark-read/${notifId}`, { method: "POST" });
+                pollNotifications();
+                if (orderNumber) openOrderModal(orderNumber);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await fetch("/admin/api/notifications/mark-all-read", { method: "POST" });
+                pollNotifications();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // MAIN TABS
+        function switchMainTab(tab) {
+            const tabs = ["orders", "coupons", "inventory", "pending"];
+            tabs.forEach(t => {
+                const pane = document.getElementById(`tabContent-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tab) {
+                    pane.style.display = "block";
+                    btn.classList.add("active");
+                } else {
+                    pane.style.display = "none";
+                    btn.classList.remove("active");
+                }
             });
         }
 
-        async function updateStatus(orderNumber, newStatus) {
+        // ORDER FILTERING
+        let activeStatusChip = "ALL";
+
+        function filterByChip(chip) {
+            activeStatusChip = chip;
+            document.querySelectorAll(".chip-btn").forEach(btn => btn.classList.remove("active"));
+            event.target.classList.add("active");
+            applyOrderFilters();
+        }
+
+        function applyOrderFilters() {
+            const search = (document.getElementById("orderSearchInput").value || "").toLowerCase().trim();
+            const statusFilter = document.getElementById("statusFilter").value;
+            const dateFilter = document.getElementById("dateFilter").value;
+
+            const todayStr = new Date().toISOString().substring(0, 10);
+            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().substring(0, 10);
+            const thisMonthPrefix = todayStr.substring(0, 7);
+
+            const rows = document.querySelectorAll(".order-row");
+            rows.forEach(row => {
+                const orderNum = (row.dataset.ordernum || "").toLowerCase();
+                const cust = (row.dataset.customer || "").toLowerCase();
+                const phone = (row.dataset.phone || "").toLowerCase();
+                const email = (row.dataset.email || "").toLowerCase();
+                const status = row.dataset.status || "";
+                const date = row.dataset.date || "";
+
+                // Search match
+                const matchSearch = !search || orderNum.includes(search) || cust.includes(search) || phone.includes(search) || email.includes(search);
+
+                // Status chip match
+                let matchChip = true;
+                if (activeStatusChip === "Confirmed") matchChip = status === "Confirmed" || status === "Order Placed";
+                else if (activeStatusChip === "Processing") matchChip = status === "Processing" || status === "In Production";
+                else if (activeStatusChip === "Shipped") matchChip = status === "Shipped" || status === "Dispatched";
+                else if (activeStatusChip === "Delivered") matchChip = status === "Delivered";
+                else if (activeStatusChip === "Cancelled") matchChip = status === "Cancelled" || status === "Returned" || status === "Refunded";
+
+                // Dropdown status match
+                const matchDropdownStatus = statusFilter === "ALL" || status === statusFilter;
+
+                // Date filter match
+                let matchDate = true;
+                if (dateFilter === "TODAY") matchDate = date === todayStr;
+                else if (dateFilter === "WEEK") matchDate = date >= sevenDaysAgo;
+                else if (dateFilter === "MONTH") matchDate = date.startsWith(thisMonthPrefix);
+
+                row.style.display = (matchSearch && matchChip && matchDropdownStatus && matchDate) ? "" : "none";
+            });
+        }
+
+        // ORDER DETAILS MODAL
+        function openOrderModal(orderNumber) {
+            const order = ORDERS_CACHE.find(o => o.order_number === orderNumber);
+            if (!order) {
+                alert("Order details not found.");
+                return;
+            }
+
+            document.getElementById("modalOrderNum").textContent = "ORDER #" + order.order_number;
+            const badge = document.getElementById("modalOrderStatusBadge");
+            badge.textContent = order.status || "CONFIRMED";
+            badge.className = "status-badge-inline status-" + (order.status || "").toLowerCase().replace(/\s+/g, "-");
+
+            const cust = order.customer || {};
+            const items = order.items || [];
+            const timeline = order.timeline || [];
+            const notes = order.admin_notes || [];
+
+            let itemsHtml = items.map(it => `
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                    <td style="padding:10px 0;">
+                        <strong style="color:#ffffff;">${escapeHtml(it.name)}</strong>
+                        <div class="cust-sub">${escapeHtml(it.category || '')}</div>
+                    </td>
+                    <td style="text-align:center;"><strong style="color:var(--gold);">${it.size || 'S'}</strong></td>
+                    <td style="text-align:center;">${it.quantity || 1}</td>
+                    <td style="text-align:right;">₹${Number(it.price || 0).toLocaleString('en-IN')}</td>
+                    <td style="text-align:right;"><strong>₹${Number((it.price || 0) * (it.quantity || 1)).toLocaleString('en-IN')}</strong></td>
+                </tr>
+            `).join("");
+
+            let timelineHtml = timeline.map(t => `
+                <div class="timeline-step">
+                    <div class="timeline-step-title">${escapeHtml(t.status)}</div>
+                    <div class="timeline-step-meta">${escapeHtml(t.time)} &bull; ${escapeHtml(t.admin || 'System')}</div>
+                    ${t.note ? `<div style="font-size:12px;color:#ffffff;margin-top:2px;">${escapeHtml(t.note)}</div>` : ''}
+                </div>
+            `).join("");
+
+            let notesHtml = notes.map(n => `
+                <div class="note-bubble">
+                    <div class="note-bubble-meta">${escapeHtml(n.time)} &bull; ${escapeHtml(n.admin || 'Admin')}</div>
+                    <div class="note-bubble-text">${escapeHtml(n.note)}</div>
+                </div>
+            `).join("");
+
+            document.getElementById("modalOrderBody").innerHTML = `
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <h5>Client Name</h5>
+                        <p>${escapeHtml(cust.first_name || '')} ${escapeHtml(cust.last_name || '')}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Phone</h5>
+                        <p>${escapeHtml(cust.phone || 'N/A')}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Email</h5>
+                        <p>${escapeHtml(cust.email || 'N/A')}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Date &amp; Time</h5>
+                        <p>${escapeHtml(order.created_at || '')}</p>
+                    </div>
+                </div>
+
+                <div class="detail-grid">
+                    <div class="detail-item" style="grid-column: 1 / -1;">
+                        <h5>Delivery Address</h5>
+                        <p>${escapeHtml(cust.address || '')}, ${escapeHtml(cust.city || '')}, ${escapeHtml(cust.state || '')} — ${escapeHtml(cust.pincode || '')}</p>
+                    </div>
+                </div>
+
+                <div class="modal-section-title">ORDERED COUTURE PIECES</div>
+                <table style="width:100%;margin-bottom:16px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid var(--border-light);">
+                            <th>Piece</th>
+                            <th style="text-align:center;">Size</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:right;">Rate</th>
+                            <th style="text-align:right;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <div style="background:#110f0d;border:1px solid var(--border-light);padding:14px;margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <span>Subtotal:</span>
+                        <strong>₹${Number(order.subtotal || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                    ${order.discount ? `
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;color:var(--gold);">
+                        <span>Promo Discount (${escapeHtml(order.coupon_code || 'CODE')}):</span>
+                        <strong>-₹${Number(order.discount).toLocaleString('en-IN')}</strong>
+                    </div>` : ''}
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                        <span>Insured Pan-India Shipping:</span>
+                        <strong style="color:#5ddc7c;">FREE</strong>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;color:#ffffff;">
+                        <span>Total Paid:</span>
+                        <strong style="color:var(--gold);">₹${Number(order.total || 0).toLocaleString('en-IN')}</strong>
+                    </div>
+                </div>
+
+                <div class="modal-section-title">PAYMENT &amp; VERIFICATION REFERENCE</div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <h5>Payment Method</h5>
+                        <p>${escapeHtml(order.payment_method || 'Razorpay')}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Payment Status</h5>
+                        <p style="color:#5ddc7c;font-weight:700;">${escapeHtml(order.payment_status || 'Paid')}</p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Razorpay Payment ID</h5>
+                        <p><code>${escapeHtml(order.razorpay_payment_id || 'N/A')}</code></p>
+                    </div>
+                    <div class="detail-item">
+                        <h5>Razorpay Order ID</h5>
+                        <p><code>${escapeHtml(order.razorpay_order_id || 'N/A')}</code></p>
+                    </div>
+                </div>
+
+                <div class="modal-section-title">STATUS TIMELINE HISTORY</div>
+                <div class="timeline-box">${timelineHtml || '<p style="color:var(--muted);">No timeline events recorded.</p>'}</div>
+
+                <!-- UPDATE STATUS SECTION -->
+                <div class="modal-section-title">UPDATE ORDER STATUS</div>
+                <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;">
+                    <div class="form-field" style="flex:1;min-width:180px;">
+                        <label>New Status</label>
+                        <select id="modalStatusSelect">
+                            ${["Pending", "Confirmed", "Order Placed", "In Production", "Processing", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned", "Refunded"].map(st => `
+                                <option value="${st}" ${st === order.status ? 'selected' : ''}>${st}</option>
+                            `).join("")}
+                        </select>
+                    </div>
+                    <div class="form-field" style="flex:2;min-width:240px;">
+                        <label>Status Change Note (Optional)</label>
+                        <input type="text" id="modalStatusNote" placeholder="e.g. Shipped via BlueDart AWB 987654321">
+                    </div>
+                    <button type="button" class="btn-action-primary" onclick="submitModalStatusUpdate('${order.order_number}')">
+                        Update Status
+                    </button>
+                </div>
+
+                <!-- ADMIN INTERNAL NOTES -->
+                <div class="modal-section-title">INTERNAL ATELIER NOTES</div>
+                <div id="modalNotesList" class="notes-list">${notesHtml || '<p style="color:var(--muted);font-size:11px;">No internal notes yet.</p>'}</div>
+                <div style="display:flex;gap:10px;">
+                    <input type="text" id="newAdminNoteInput" placeholder="Add confidential atelier note..." style="flex:1;background:var(--panel-bg);border:1px solid var(--border);padding:8px 12px;color:#fff;">
+                    <button type="button" class="btn-action-secondary" onclick="submitAdminNote('${order.order_number}')">Add Note</button>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:16px;border-top:1px solid var(--border-light);">
+                    <a href="/admin/order/${order.order_number}/invoice" target="_blank" class="btn-action-primary">
+                        🖨 Print Official Tax Invoice
+                    </a>
+                    <button type="button" class="btn-action-secondary" onclick="closeOrderModal()">Close</button>
+                </div>
+            `;
+
+            document.getElementById("orderDetailModal").classList.add("open");
+        }
+
+        function closeOrderModal() {
+            document.getElementById("orderDetailModal").classList.remove("open");
+        }
+
+        async function submitModalStatusUpdate(orderNumber) {
+            const newStatus = document.getElementById("modalStatusSelect").value;
+            const note = document.getElementById("modalStatusNote").value.trim();
+            await updateOrderStatusAjax(orderNumber, newStatus, note);
+            openOrderModal(orderNumber);
+        }
+
+        async function updateOrderStatusAjax(orderNumber, newStatus, note = "") {
             try {
                 const res = await fetch(`/admin/order/${orderNumber}/status`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: newStatus })
+                    body: JSON.stringify({ status: newStatus, note: note })
                 });
                 const data = await res.json();
-                if (!data.success) {
+                if (data.success) {
+                    const ord = ORDERS_CACHE.find(o => o.order_number === orderNumber);
+                    if (ord) {
+                        ord.status = newStatus;
+                        ord.timeline = data.order.timeline;
+                    }
+                    const row = document.querySelector(`.order-row[data-ordernum="${orderNumber}"]`);
+                    if (row) {
+                        row.dataset.status = newStatus;
+                        row.querySelector(".status-select").value = newStatus;
+                    }
+                    alert("Order status successfully updated to " + newStatus);
+                } else {
                     alert("Status update failed: " + (data.message || "Unknown error"));
                 }
             } catch (err) {
                 alert("Network error updating status.");
             }
+        }
+
+        async function submitAdminNote(orderNumber) {
+            const input = document.getElementById("newAdminNoteInput");
+            const note = input.value.trim();
+            if (!note) return;
+            try {
+                const res = await fetch(`/admin/order/${orderNumber}/note`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ note: note })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const ord = ORDERS_CACHE.find(o => o.order_number === orderNumber);
+                    if (ord) ord.admin_notes = data.admin_notes;
+                    input.value = "";
+                    openOrderModal(orderNumber);
+                } else {
+                    alert("Note error: " + data.message);
+                }
+            } catch (e) {
+                alert("Network error saving note.");
+            }
+        }
+
+        // PROMO CODE MODAL & ACTIONS
+        function openCreateCouponModal() {
+            document.getElementById("createCouponModal").classList.add("open");
+        }
+        function closeCreateCouponModal() {
+            document.getElementById("createCouponModal").classList.remove("open");
+        }
+
+        async function submitCreateCoupon(e) {
+            e.preventDefault();
+            const payload = {
+                code: document.getElementById("cp_code").value.trim().toUpperCase(),
+                discount_type: document.getElementById("cp_discount_type").value,
+                discount_value: document.getElementById("cp_discount_value").value,
+                min_order_amount: document.getElementById("cp_min_order_amount").value || 0,
+                max_discount_amount: document.getElementById("cp_max_discount_amount").value || 0,
+                start_date: document.getElementById("cp_start_date").value,
+                expiry_date: document.getElementById("cp_expiry_date").value,
+                usage_limit: document.getElementById("cp_usage_limit").value || 0,
+                per_customer_limit: document.getElementById("cp_per_customer_limit").value || 1,
+                first_order_only: document.getElementById("cp_first_order_only").checked
+            };
+
+            try {
+                const res = await fetch("/admin/api/coupons/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert("Could not create code: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error creating promo code.");
+            }
+        }
+
+        async function toggleCouponAjax(code) {
+            try {
+                const res = await fetch(`/admin/api/coupons/${code}/toggle`, { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error.");
+            }
+        }
+
+        async function deleteCouponAjax(code) {
+            if (!confirm(`Are you sure you want to delete promo code '${code}'?`)) return;
+            try {
+                const res = await fetch(`/admin/api/coupons/${code}/delete`, { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert("Error: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error.");
+            }
+        }
+
+        async function viewRedemptionsModal(code) {
+            try {
+                const res = await fetch(`/admin/api/coupons/${code}/redemptions`);
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById("redemptionsModalTitle").textContent = `Redemptions for ${code}`;
+                    const body = document.getElementById("redemptionsModalBody");
+                    if (!data.redemptions || data.redemptions.length === 0) {
+                        body.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);">No customer redemptions recorded yet for ${code}.</div>`;
+                    } else {
+                        body.innerHTML = `
+                            <table style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer Email</th>
+                                        <th>Phone</th>
+                                        <th>Discount</th>
+                                        <th>Redeemed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.redemptions.map(r => `
+                                        <tr>
+                                            <td><code>${escapeHtml(r.order_number)}</code></td>
+                                            <td>${escapeHtml(r.customer_email)}</td>
+                                            <td>${escapeHtml(r.customer_phone)}</td>
+                                            <td style="color:#5ddc7c;font-weight:700;">₹${Number(r.discount_amount).toLocaleString('en-IN')}</td>
+                                            <td>${escapeHtml(r.redeemed_at ? r.redeemed_at.substring(0, 16) : '')}</td>
+                                        </tr>
+                                    `).join("")}
+                                </tbody>
+                            </table>
+                        `;
+                    }
+                    document.getElementById("redemptionsModal").classList.add("open");
+                }
+            } catch (e) {
+                alert("Network error loading redemptions.");
+            }
+        }
+        function closeRedemptionsModal() {
+            document.getElementById("redemptionsModal").classList.remove("open");
+        }
+
+        // INVENTORY MANAGEMENT
+        function filterInventory() {
+            const q = (document.getElementById("inventorySearch").value || "").toLowerCase().trim();
+            const rows = document.querySelectorAll(".inv-row");
+            rows.forEach(r => {
+                const name = (r.dataset.name || "").toLowerCase();
+                const sz = (r.dataset.size || "").toLowerCase();
+                r.style.display = (!q || name.includes(q) || sz.includes(q)) ? "" : "none";
+            });
+        }
+
+        async function updateStockAjax(slug, size) {
+            const input = document.getElementById(`stockInput-${slug}-${size}`);
+            const newStock = parseInt(input.value, 10);
+            if (isNaN(newStock) || newStock < 0) {
+                alert("Please enter a valid stock count.");
+                return;
+            }
+            try {
+                const res = await fetch("/admin/api/inventory/update", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ slug: slug, size: size, stock: newStock })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert("Stock update failed: " + data.message);
+                }
+            } catch (err) {
+                alert("Network error updating stock.");
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
     </script>
 </body>

@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response, send_from_directory
+import csv
+import io
 import json
 import logging
 import os
 import random
 import sqlite3
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import string
 from contextlib import contextmanager
 from datetime import datetime
@@ -68,6 +73,38 @@ def get_razorpay_client():
     if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
         return None
     return razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+
+SMTP_HOST = os.getenv("SMTP_HOST", "").strip()
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587")) if os.getenv("SMTP_PORT", "").strip().isdigit() else 587
+SMTP_USER = os.getenv("SMTP_USER", "").strip()
+SMTP_PASS = os.getenv("SMTP_PASS", "").strip()
+SMTP_FROM = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "orders@alzorcouture.in")).strip()
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "contact@alzorcouture.in").strip()
+
+
+def send_order_email(to_email, subject, html_content):
+    """Send an HTML transactional email via SMTP if configured, or log safely."""
+    if not to_email:
+        return False
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASS:
+        app.logger.info(f"[Transactional Email Simulation] To: {to_email} | Subject: {subject}")
+        return True
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"Alzor Couture <{SMTP_FROM}>"
+        msg["To"] = to_email
+        msg.attach(MIMEText(html_content, "html", "utf-8"))
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_FROM, [to_email], msg.as_string())
+        app.logger.info(f"Order email successfully dispatched to {to_email}")
+        return True
+    except Exception as e:
+        app.logger.warning(f"Could not dispatch email to {to_email}: {e}")
+        return False
 
 
 # =========================================================
@@ -636,7 +673,7 @@ def get_database_url():
 
 
 def ensure_database_schema(conn, is_postgres=True):
-    """Create the storage tables if this is the first app run."""
+    """Create the storage tables and seed initial data if this is the first app run."""
     if is_postgres:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS alzor_orders (
@@ -651,6 +688,56 @@ def ensure_database_schema(conn, is_postgres=True):
                 razorpay_order_id TEXT PRIMARY KEY,
                 payment_data JSONB NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_coupons (
+                code TEXT PRIMARY KEY,
+                discount_type TEXT NOT NULL DEFAULT 'percentage',
+                discount_value NUMERIC NOT NULL DEFAULT 0,
+                min_order_amount NUMERIC NOT NULL DEFAULT 0,
+                max_discount_amount NUMERIC NOT NULL DEFAULT 0,
+                start_date TEXT,
+                expiry_date TEXT,
+                usage_limit INTEGER NOT NULL DEFAULT 0,
+                used_count INTEGER NOT NULL DEFAULT 0,
+                per_customer_limit INTEGER NOT NULL DEFAULT 1,
+                first_order_only BOOLEAN NOT NULL DEFAULT FALSE,
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_coupon_redemptions (
+                id SERIAL PRIMARY KEY,
+                coupon_code TEXT NOT NULL,
+                order_number TEXT NOT NULL,
+                customer_email TEXT NOT NULL,
+                customer_phone TEXT NOT NULL,
+                discount_amount NUMERIC NOT NULL DEFAULT 0,
+                redeemed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_admin_notifications (
+                id SERIAL PRIMARY KEY,
+                order_number TEXT NOT NULL,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                amount NUMERIC NOT NULL DEFAULT 0,
+                customer_name TEXT,
+                customer_phone TEXT,
+                is_read BOOLEAN NOT NULL DEFAULT FALSE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_inventory (
+                product_slug TEXT NOT NULL,
+                size TEXT NOT NULL,
+                stock INTEGER NOT NULL DEFAULT 15,
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                PRIMARY KEY (product_slug, size)
             )
         """)
     else:
@@ -669,6 +756,102 @@ def ensure_database_schema(conn, is_postgres=True):
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_coupons (
+                code TEXT PRIMARY KEY,
+                discount_type TEXT NOT NULL DEFAULT 'percentage',
+                discount_value REAL NOT NULL DEFAULT 0,
+                min_order_amount REAL NOT NULL DEFAULT 0,
+                max_discount_amount REAL NOT NULL DEFAULT 0,
+                start_date TEXT,
+                expiry_date TEXT,
+                usage_limit INTEGER NOT NULL DEFAULT 0,
+                used_count INTEGER NOT NULL DEFAULT 0,
+                per_customer_limit INTEGER NOT NULL DEFAULT 1,
+                first_order_only INTEGER NOT NULL DEFAULT 0,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_coupon_redemptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                coupon_code TEXT NOT NULL,
+                order_number TEXT NOT NULL,
+                customer_email TEXT NOT NULL,
+                customer_phone TEXT NOT NULL,
+                discount_amount REAL NOT NULL DEFAULT 0,
+                redeemed_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_admin_notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_number TEXT NOT NULL,
+                title TEXT NOT NULL,
+                message TEXT NOT NULL,
+                amount REAL NOT NULL DEFAULT 0,
+                customer_name TEXT,
+                customer_phone TEXT,
+                is_read INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_inventory (
+                product_slug TEXT NOT NULL,
+                size TEXT NOT NULL,
+                stock INTEGER NOT NULL DEFAULT 15,
+                updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+                PRIMARY KEY (product_slug, size)
+            )
+        """)
+
+    seed_initial_data(conn, is_postgres)
+
+
+def seed_initial_data(conn, is_postgres=True):
+    """Seed initial coupons and inventory stock if not yet populated."""
+    cur = conn.cursor()
+    try:
+        # Seed default coupons
+        cur.execute("SELECT COUNT(*) FROM alzor_coupons")
+        cnt = cur.fetchone()[0]
+        if cnt == 0:
+            initial_coupons = [
+                ("WELCOME10", "percentage", 10, 3000, 1500, "", "", 0, 0, 1, False if is_postgres else 0, True if is_postgres else 1),
+                ("SAVE100", "fixed", 100, 2000, 100, "", "", 0, 0, 2, False if is_postgres else 0, True if is_postgres else 1),
+                ("FREESHIP", "free_shipping", 0, 1000, 0, "", "", 0, 0, 0, False if is_postgres else 0, True if is_postgres else 1),
+                ("FIRST15", "percentage", 15, 4000, 2000, "", "", 0, 0, 1, True if is_postgres else 1, True if is_postgres else 1),
+            ]
+            ph = "%s" if is_postgres else "?"
+            sql = f"""INSERT INTO alzor_coupons
+                      (code, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, expiry_date, usage_limit, used_count, per_customer_limit, first_order_only, is_active)
+                      VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})"""
+            for cp in initial_coupons:
+                cur.execute(sql, cp)
+
+        # Seed initial inventory for all catalog pieces & sizes
+        all_prods = PRODUCTS + DRESSES
+        for prod in all_prods:
+            slug = prod.get("slug")
+            if not slug:
+                continue
+            for sz in AVAILABLE_SIZES:
+                if is_postgres:
+                    cur.execute(
+                        "INSERT INTO alzor_inventory (product_slug, size, stock) VALUES (%s, %s, 15) ON CONFLICT (product_slug, size) DO NOTHING",
+                        (slug, sz)
+                    )
+                else:
+                    cur.execute(
+                        "INSERT OR IGNORE INTO alzor_inventory (product_slug, size, stock) VALUES (?, ?, 15)",
+                        (slug, sz)
+                    )
+    except Exception as e:
+        app.logger.warning(f"Error seeding initial database data: {e}")
+    finally:
+        cur.close()
 
 
 _schema_ensured = False
@@ -859,7 +1042,8 @@ def load_all_pending_payments(limit=50):
         return pending
 
 
-def update_order_status(order_number, new_status):
+def update_order_status(order_number, new_status, note=None, admin_name="Atelier Admin"):
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with get_db_cursor() as (cur, is_pg):
         param_char = "%s" if is_pg else "?"
         cur.execute(
@@ -875,8 +1059,31 @@ def update_order_status(order_number, new_status):
                 data = json.loads(data)
             except Exception:
                 return None
+
+        old_status = data.get("status", "")
         data["status"] = str(new_status).strip()
-        data["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        data["updated_at"] = now_str
+
+        # Maintain status timeline history
+        timeline = data.get("timeline") or []
+        timeline.append({
+            "status": new_status,
+            "time": now_str,
+            "admin": admin_name,
+            "note": note or f"Status updated from '{old_status}' to '{new_status}'."
+        })
+        data["timeline"] = timeline
+
+        # Restore inventory if cancelled, returned, or refunded
+        if new_status in ("Cancelled", "Returned", "Refunded") and not data.get("stock_restored"):
+            for item in data.get("items", []):
+                slug = item.get("slug")
+                size = item.get("size", "S")
+                qty = int(item.get("quantity", 1))
+                if slug:
+                    restore_stock(slug, size, qty)
+            data["stock_restored"] = True
+
         if is_pg:
             cur.execute(
                 "UPDATE alzor_orders SET order_data = %s WHERE order_number = %s",
@@ -888,6 +1095,526 @@ def update_order_status(order_number, new_status):
                 (json.dumps(data, ensure_ascii=False), order_number),
             )
         return data
+
+
+def add_order_admin_note(order_number, note_text, admin_name="Atelier Admin"):
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_db_cursor() as (cur, is_pg):
+        param_char = "%s" if is_pg else "?"
+        cur.execute(
+            f"SELECT order_data FROM alzor_orders WHERE order_number = {param_char}",
+            (order_number,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        data = row[0]
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except Exception:
+                return None
+
+        notes = data.get("admin_notes") or []
+        notes.append({
+            "time": now_str,
+            "admin": admin_name,
+            "note": note_text.strip()
+        })
+        data["admin_notes"] = notes
+
+        if is_pg:
+            cur.execute(
+                "UPDATE alzor_orders SET order_data = %s WHERE order_number = %s",
+                (Jsonb(data), order_number),
+            )
+        else:
+            cur.execute(
+                "UPDATE alzor_orders SET order_data = ? WHERE order_number = ?",
+                (json.dumps(data, ensure_ascii=False), order_number),
+            )
+        return data
+
+
+# =========================================================
+# PROMO CODE & COUPON HELPERS
+# =========================================================
+
+def get_coupon(code):
+    if not code:
+        return None
+    code = str(code).strip().upper()
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"SELECT code, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, expiry_date, usage_limit, used_count, per_customer_limit, first_order_only, is_active, created_at FROM alzor_coupons WHERE UPPER(code) = {ph}", (code,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "code": row[0],
+            "discount_type": row[1],
+            "discount_value": float(row[2] or 0),
+            "min_order_amount": float(row[3] or 0),
+            "max_discount_amount": float(row[4] or 0),
+            "start_date": row[5] or "",
+            "expiry_date": row[6] or "",
+            "usage_limit": int(row[7] or 0),
+            "used_count": int(row[8] or 0),
+            "per_customer_limit": int(row[9] or 1),
+            "first_order_only": bool(row[10]),
+            "is_active": bool(row[11]),
+            "created_at": str(row[12] or "")
+        }
+
+
+def get_all_coupons():
+    with get_db_cursor() as (cur, is_pg):
+        cur.execute("SELECT code, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, expiry_date, usage_limit, used_count, per_customer_limit, first_order_only, is_active, created_at FROM alzor_coupons ORDER BY created_at DESC")
+        rows = cur.fetchall()
+        coupons = []
+        for row in rows:
+            coupons.append({
+                "code": row[0],
+                "discount_type": row[1],
+                "discount_value": float(row[2] or 0),
+                "min_order_amount": float(row[3] or 0),
+                "max_discount_amount": float(row[4] or 0),
+                "start_date": row[5] or "",
+                "expiry_date": row[6] or "",
+                "usage_limit": int(row[7] or 0),
+                "used_count": int(row[8] or 0),
+                "per_customer_limit": int(row[9] or 1),
+                "first_order_only": bool(row[10]),
+                "is_active": bool(row[11]),
+                "created_at": str(row[12] or "")
+            })
+        return coupons
+
+
+def create_coupon(data):
+    code = str(data.get("code", "")).strip().upper()
+    if not code:
+        return False, "Promo code name is required."
+    existing = get_coupon(code)
+    if existing:
+        return False, f"Promo code '{code}' already exists."
+
+    discount_type = str(data.get("discount_type", "percentage")).strip().lower()
+    if discount_type not in ("percentage", "fixed", "free_shipping"):
+        discount_type = "percentage"
+
+    try:
+        discount_value = float(data.get("discount_value", 0))
+    except (ValueError, TypeError):
+        discount_value = 0.0
+
+    try:
+        min_order_amount = float(data.get("min_order_amount", 0))
+    except (ValueError, TypeError):
+        min_order_amount = 0.0
+
+    try:
+        max_discount_amount = float(data.get("max_discount_amount", 0))
+    except (ValueError, TypeError):
+        max_discount_amount = 0.0
+
+    start_date = str(data.get("start_date", "")).strip()
+    expiry_date = str(data.get("expiry_date", "")).strip()
+
+    try:
+        usage_limit = int(data.get("usage_limit", 0))
+    except (ValueError, TypeError):
+        usage_limit = 0
+
+    try:
+        per_customer_limit = int(data.get("per_customer_limit", 1))
+    except (ValueError, TypeError):
+        per_customer_limit = 1
+
+    first_order_only = bool(data.get("first_order_only", False))
+    is_active = bool(data.get("is_active", True))
+
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        fo_val = True if is_pg else (1 if first_order_only else 0)
+        ia_val = True if is_pg else (1 if is_active else 0)
+        cur.execute(
+            f"""INSERT INTO alzor_coupons
+               (code, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, expiry_date, usage_limit, used_count, per_customer_limit, first_order_only, is_active)
+               VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, 0, {ph}, {ph}, {ph})""",
+            (code, discount_type, discount_value, min_order_amount, max_discount_amount, start_date, expiry_date, usage_limit, per_customer_limit, fo_val, ia_val)
+        )
+    return True, f"Promo code '{code}' created successfully."
+
+
+def toggle_coupon(code, is_active=None):
+    coupon = get_coupon(code)
+    if not coupon:
+        return False, "Promo code not found."
+    new_state = (not coupon["is_active"]) if is_active is None else bool(is_active)
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        val = True if is_pg else (1 if new_state else 0)
+        cur.execute(f"UPDATE alzor_coupons SET is_active = {ph} WHERE UPPER(code) = {ph}", (val, code.upper()))
+    return True, f"Promo code '{code}' {'activated' if new_state else 'deactivated'}."
+
+
+def delete_coupon(code):
+    coupon = get_coupon(code)
+    if not coupon:
+        return False, "Promo code not found."
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"DELETE FROM alzor_coupons WHERE UPPER(code) = {ph}", (code.upper(),))
+    return True, f"Promo code '{code}' deleted successfully."
+
+
+def record_coupon_redemption(code, order_number, email, phone, discount):
+    if not code:
+        return
+    code = code.strip().upper()
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(
+            f"""INSERT INTO alzor_coupon_redemptions (coupon_code, order_number, customer_email, customer_phone, discount_amount)
+               VALUES ({ph}, {ph}, {ph}, {ph}, {ph})""",
+            (code, order_number, email.strip().lower(), phone.strip(), float(discount))
+        )
+        cur.execute(f"UPDATE alzor_coupons SET used_count = used_count + 1 WHERE UPPER(code) = {ph}", (code,))
+
+
+def get_coupon_redemptions(code):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"SELECT order_number, customer_email, customer_phone, discount_amount, redeemed_at FROM alzor_coupon_redemptions WHERE UPPER(coupon_code) = {ph} ORDER BY redeemed_at DESC", (code.upper(),))
+        rows = cur.fetchall()
+        redemptions = []
+        for r in rows:
+            redemptions.append({
+                "order_number": r[0],
+                "customer_email": r[1],
+                "customer_phone": r[2],
+                "discount_amount": float(r[3] or 0),
+                "redeemed_at": str(r[4] or "")
+            })
+        return redemptions
+
+
+def validate_coupon(code, subtotal, customer_email="", customer_phone=""):
+    """
+    Validate coupon against subtotal and customer redemption limits.
+    Returns: (is_valid: bool, message: str, discount: int, coupon: dict or None)
+    """
+    if not code:
+        return False, "Please enter a promo code.", 0, None
+    coupon = get_coupon(code)
+    if not coupon:
+        return False, f"Promo code '{code.upper()}' is not valid.", 0, None
+    if not coupon["is_active"]:
+        return False, f"Promo code '{coupon['code']}' is currently inactive.", 0, None
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    if coupon["start_date"] and today_str < coupon["start_date"]:
+        return False, f"Promo code '{coupon['code']}' is not yet active (starts on {coupon['start_date']}).", 0, None
+    if coupon["expiry_date"] and today_str > coupon["expiry_date"]:
+        return False, f"Promo code '{coupon['code']}' has expired.", 0, None
+
+    if coupon["usage_limit"] > 0 and coupon["used_count"] >= coupon["usage_limit"]:
+        return False, f"Promo code '{coupon['code']}' has reached its maximum usage limit.", 0, None
+
+    if coupon["min_order_amount"] > 0 and subtotal < coupon["min_order_amount"]:
+        return False, f"Promo code '{coupon['code']}' requires a minimum bag value of ₹{int(coupon['min_order_amount']):,}.", 0, None
+
+    clean_email = str(customer_email or "").strip().lower()
+    clean_phone = str(customer_phone or "").strip().replace(" ", "").replace("-", "").replace("+91", "")
+
+    if clean_email or clean_phone:
+        with get_db_cursor() as (cur, is_pg):
+            ph = "%s" if is_pg else "?"
+            if coupon["first_order_only"]:
+                cur.execute(
+                    f"SELECT COUNT(*) FROM alzor_orders WHERE (order_data::text ILIKE {ph} OR order_data::text ILIKE {ph})" if is_pg else
+                    f"SELECT COUNT(*) FROM alzor_orders WHERE (order_data LIKE {ph} OR order_data LIKE {ph})",
+                    (f"%{clean_email}%" if clean_email else "___NOMATCH___", f"%{clean_phone}%" if clean_phone else "___NOMATCH___")
+                )
+                past_orders_count = cur.fetchone()[0]
+                if past_orders_count > 0:
+                    return False, f"Promo code '{coupon['code']}' is exclusive to first-time couture orders.", 0, None
+
+            if coupon["per_customer_limit"] > 0:
+                cur.execute(
+                    f"""SELECT COUNT(*) FROM alzor_coupon_redemptions
+                       WHERE UPPER(coupon_code) = {ph} AND (LOWER(customer_email) = {ph} OR customer_phone = {ph})""",
+                    (coupon["code"].upper(), clean_email if clean_email else "___NOMATCH___", clean_phone if clean_phone else "___NOMATCH___")
+                )
+                used_by_cust = cur.fetchone()[0]
+                if used_by_cust >= coupon["per_customer_limit"]:
+                    return False, f"You have already redeemed '{coupon['code']}' the maximum allowed ({coupon['per_customer_limit']} time(s)).", 0, None
+
+    discount = 0
+    t = coupon["discount_type"]
+    if t == "percentage":
+        discount = (subtotal * coupon["discount_value"]) / 100.0
+        if coupon["max_discount_amount"] > 0 and discount > coupon["max_discount_amount"]:
+            discount = coupon["max_discount_amount"]
+    elif t == "fixed":
+        discount = min(coupon["discount_value"], subtotal)
+    elif t == "free_shipping":
+        discount = 0
+
+    discount_int = int(round(discount))
+    return True, f"Code '{coupon['code']}' applied! You save ₹{discount_int:,}.", discount_int, coupon
+
+
+# =========================================================
+# INVENTORY MANAGEMENT HELPERS
+# =========================================================
+
+def get_product_stock(slug, size):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"SELECT stock FROM alzor_inventory WHERE product_slug = {ph} AND size = {ph}", (slug, size))
+        row = cur.fetchone()
+        return int(row[0]) if row else 15
+
+
+def deduct_stock(slug, size, quantity=1):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        if is_pg:
+            cur.execute(
+                f"UPDATE alzor_inventory SET stock = GREATEST(0, stock - {ph}), updated_at = NOW() WHERE product_slug = {ph} AND size = {ph}",
+                (int(quantity), slug, size)
+            )
+        else:
+            cur.execute(
+                f"UPDATE alzor_inventory SET stock = MAX(0, stock - {ph}), updated_at = datetime('now') WHERE product_slug = {ph} AND size = {ph}",
+                (int(quantity), slug, size)
+            )
+
+
+def restore_stock(slug, size, quantity=1):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        if is_pg:
+            cur.execute(
+                f"UPDATE alzor_inventory SET stock = stock + {ph}, updated_at = NOW() WHERE product_slug = {ph} AND size = {ph}",
+                (int(quantity), slug, size)
+            )
+        else:
+            cur.execute(
+                f"UPDATE alzor_inventory SET stock = stock + {ph}, updated_at = datetime('now') WHERE product_slug = {ph} AND size = {ph}",
+                (int(quantity), slug, size)
+            )
+
+
+def update_stock(slug, size, new_stock):
+    new_stock = max(0, int(new_stock))
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        if is_pg:
+            cur.execute(
+                f"""INSERT INTO alzor_inventory (product_slug, size, stock, updated_at)
+                   VALUES ({ph}, {ph}, {ph}, NOW())
+                   ON CONFLICT (product_slug, size) DO UPDATE SET stock = EXCLUDED.stock, updated_at = NOW()""",
+                (slug, size, new_stock)
+            )
+        else:
+            cur.execute(
+                f"""INSERT OR REPLACE INTO alzor_inventory (product_slug, size, stock, updated_at)
+                   VALUES ({ph}, {ph}, {ph}, datetime('now'))""",
+                (slug, size, new_stock)
+            )
+
+
+def get_all_inventory():
+    all_prods = PRODUCTS + DRESSES
+    prod_map = {p["slug"]: p for p in all_prods if p.get("slug")}
+    inv_list = []
+    with get_db_cursor() as (cur, is_pg):
+        cur.execute("SELECT product_slug, size, stock, updated_at FROM alzor_inventory ORDER BY product_slug ASC, size ASC")
+        rows = cur.fetchall()
+        for r in rows:
+            slug, size, stock, upd = r[0], r[1], int(r[2]), str(r[3])
+            prod = prod_map.get(slug, {})
+            inv_list.append({
+                "slug": slug,
+                "name": prod.get("name", slug),
+                "category": prod.get("category", "CO-ORD SET"),
+                "image": prod.get("images", [""])[0] if prod.get("images") else "",
+                "price": prod.get("price", 0),
+                "size": size,
+                "stock": stock,
+                "updated_at": upd
+            })
+    return inv_list
+
+
+# =========================================================
+# ADMIN NOTIFICATIONS HELPERS
+# =========================================================
+
+def create_admin_notification(order_number, title, message, amount=0, customer_name="", customer_phone=""):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        is_read_val = False if is_pg else 0
+        cur.execute(
+            f"""INSERT INTO alzor_admin_notifications
+               (order_number, title, message, amount, customer_name, customer_phone, is_read)
+               VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})""",
+            (order_number, title, message, float(amount or 0), customer_name, customer_phone, is_read_val)
+        )
+
+
+def get_admin_notifications(limit=50):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(
+            f"""SELECT id, order_number, title, message, amount, customer_name, customer_phone, is_read, created_at
+               FROM alzor_admin_notifications ORDER BY created_at DESC LIMIT {ph}""",
+            (limit,)
+        )
+        rows = cur.fetchall()
+        notifs = []
+        for r in rows:
+            notifs.append({
+                "id": r[0],
+                "order_number": r[1],
+                "title": r[2],
+                "message": r[3],
+                "amount": float(r[4] or 0),
+                "customer_name": r[5] or "",
+                "customer_phone": r[6] or "",
+                "is_read": bool(r[7]),
+                "created_at": str(r[8] or "")
+            })
+        return notifs
+
+
+def get_unread_notification_count():
+    with get_db_cursor() as (cur, is_pg):
+        cur.execute("SELECT COUNT(*) FROM alzor_admin_notifications WHERE is_read = FALSE" if is_pg else "SELECT COUNT(*) FROM alzor_admin_notifications WHERE is_read = 0")
+        row = cur.fetchone()
+        return int(row[0]) if row else 0
+
+
+def mark_notification_read(notif_id):
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        val = True if is_pg else 1
+        cur.execute(f"UPDATE alzor_admin_notifications SET is_read = {ph} WHERE id = {ph}", (val, notif_id))
+
+
+def mark_all_notifications_read():
+    with get_db_cursor() as (cur, is_pg):
+        cur.execute("UPDATE alzor_admin_notifications SET is_read = TRUE" if is_pg else "UPDATE alzor_admin_notifications SET is_read = 1")
+
+
+# =========================================================
+# TRANSACTIONAL EMAIL TEMPLATE BUILDER
+# =========================================================
+
+def build_order_confirmation_email_html(order):
+    cust = order.get("customer", {})
+    order_num = order.get("order_number", "")
+    items = order.get("items", [])
+    subtotal = order.get("subtotal", 0)
+    discount = order.get("discount", 0)
+    coupon_code = order.get("coupon_code", "")
+    shipping = order.get("shipping", 0)
+    total = order.get("total", 0)
+    name = f"{cust.get('first_name', '')} {cust.get('last_name', '')}".strip() or "Valued Client"
+
+    items_html = ""
+    for it in items:
+        items_html += f"""
+        <tr>
+            <td style="padding:12px;border-bottom:1px solid #eee;">
+                <strong>{it.get('name', '')}</strong><br>
+                <span style="font-size:12px;color:#777;">Size: {it.get('size', 'S')} &bull; Qty: {it.get('quantity', 1)}</span>
+            </td>
+            <td style="padding:12px;border-bottom:1px solid #eee;text-align:right;">
+                ₹{it.get('price', 0) * it.get('quantity', 1):,}
+            </td>
+        </tr>
+        """
+
+    discount_row = ""
+    if discount > 0:
+        discount_row = f"""
+        <tr>
+            <td style="padding:6px 12px;color:#ad8a51;">Discount ({coupon_code or 'PROMO'})</td>
+            <td style="padding:6px 12px;text-align:right;color:#ad8a51;">-₹{discount:,}</td>
+        </tr>
+        """
+
+    track_url = f"{SITE_URL}/track-order"
+    invoice_url = f"{SITE_URL}/order-invoice/{order_num}"
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fbfaf7;color:#181818;margin:0;padding:24px;">
+        <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e0dad0;padding:36px 32px;">
+            <div style="text-align:center;padding-bottom:20px;border-bottom:2px solid #ad8a51;margin-bottom:24px;">
+                <h1 style="font-family:Georgia,serif;font-size:24px;letter-spacing:2px;margin:0 0 6px;">ALZOR COUTURE</h1>
+                <p style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#ad8a51;margin:0;">ORDER CONFIRMATION</p>
+            </div>
+            <p style="font-size:14px;margin-bottom:16px;">Dear {name},</p>
+            <p style="font-size:13.5px;color:#555;line-height:1.6;margin-bottom:20px;">
+                Thank you for choosing Alzor Couture. We are delighted to confirm that your order <strong>{order_num}</strong> has been received and your payment has been successfully verified.
+            </p>
+            <div style="background:#fcfbf9;border:1px solid #ece7df;padding:16px;margin-bottom:24px;">
+                <p style="margin:0 0 6px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#888;">ORDER SUMMARY</p>
+                <p style="margin:0;font-size:14px;"><strong>Order ID:</strong> {order_num}</p>
+                <p style="margin:4px 0 0;font-size:13px;color:#666;"><strong>Date:</strong> {order.get('created_at', '')}</p>
+                <p style="margin:4px 0 0;font-size:13px;color:#28a745;"><strong>Payment Status:</strong> Paid (Razorpay Verified)</p>
+            </div>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;">
+                <thead>
+                    <tr style="background:#f7f4ee;">
+                        <th style="padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;">Piece</th>
+                        <th style="padding:10px 12px;text-align:right;font-size:10px;letter-spacing:1px;text-transform:uppercase;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {items_html}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td style="padding:8px 12px 4px;">Subtotal</td>
+                        <td style="padding:8px 12px 4px;text-align:right;">₹{subtotal:,}</td>
+                    </tr>
+                    {discount_row}
+                    <tr>
+                        <td style="padding:4px 12px;">Pan-India Delivery</td>
+                        <td style="padding:4px 12px;text-align:right;color:#28a745;">FREE</td>
+                    </tr>
+                    <tr style="font-size:15px;font-weight:bold;border-top:2px solid #181818;">
+                        <td style="padding:12px;">Total Paid</td>
+                        <td style="padding:12px;text-align:right;color:#ad8a51;">₹{total:,}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="background:#fbfaf7;border-left:3px solid #ad8a51;padding:14px;margin-bottom:24px;font-size:12.5px;color:#555;">
+                <strong>Delivery Address:</strong><br>
+                {cust.get('address', '')}<br>
+                {cust.get('city', '')}, {cust.get('state', '')} — {cust.get('pincode', '')}<br>
+                Phone: {cust.get('phone', '')}
+            </div>
+            <div style="text-align:center;margin:28px 0;">
+                <a href="{invoice_url}" style="display:inline-block;padding:12px 24px;background:#181818;color:#ffffff;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-right:8px;">VIEW / PRINT INVOICE</a>
+                <a href="{track_url}" style="display:inline-block;padding:12px 24px;background:#f5f2eb;color:#181818;border:1px solid #d4cdbe;text-decoration:none;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:600;">TRACK ORDER</a>
+            </div>
+            <div style="border-top:1px solid #ece7df;padding-top:18px;text-align:center;font-size:11px;color:#888;line-height:1.6;">
+                Need assistance? Connect with our atelier concierge via WhatsApp at <strong>+91 8527144345</strong> or email us at <strong>contact@alzorcouture.in</strong>.<br>
+                &copy; 2026 ALZOR COUTURE &bull; alzorcouture.in
+            </div>
+        </div>
+    </body>
+    </html>
+    """
 
 
 # =========================================================
@@ -1613,6 +2340,57 @@ def generate_order_number():
 
 
 # =========================================================
+# PROMO CODE API (CHECKOUT)
+# =========================================================
+
+@app.route("/api/apply-coupon", methods=["POST"])
+def api_apply_coupon():
+    data = request.get_json(silent=True) or {}
+    code = str(data.get("code", "")).strip().upper()
+    email = str(data.get("email", "")).strip()
+    phone = str(data.get("phone", "")).strip()
+
+    subtotal = get_cart_subtotal()
+    if subtotal <= 0:
+        return jsonify({"success": False, "message": "Your bag is empty."}), 400
+
+    is_valid, msg, discount, coupon = validate_coupon(code, subtotal, email, phone)
+    if not is_valid:
+        return jsonify({"success": False, "message": msg}), 400
+
+    session["applied_coupon"] = {
+        "code": coupon["code"],
+        "discount": discount
+    }
+    session.modified = True
+
+    new_total = max(0, subtotal - discount)
+    return jsonify({
+        "success": True,
+        "message": msg,
+        "code": coupon["code"],
+        "discount": discount,
+        "subtotal": subtotal,
+        "shipping": 0,
+        "new_total": new_total
+    })
+
+
+@app.route("/api/remove-coupon", methods=["POST"])
+def api_remove_coupon():
+    session.pop("applied_coupon", None)
+    session.modified = True
+    subtotal = get_cart_subtotal()
+    return jsonify({
+        "success": True,
+        "message": "Promo code removed.",
+        "subtotal": subtotal,
+        "shipping": 0,
+        "total": subtotal
+    })
+
+
+# =========================================================
 # RAZORPAY PAYMENT: CREATE ORDER
 # =========================================================
 
@@ -1654,6 +2432,23 @@ def create_razorpay_order():
             "message": "Your bag is empty."
         }), 400
 
+    # Verify inventory availability for all items before initiating payment
+    for item in stored_cart:
+        product = find_product(item.get("slug"))
+        if product is None:
+            continue
+        sz = str(item.get("size", "S")).strip().upper()
+        try:
+            qty = max(1, int(item.get("quantity", 1)))
+        except (ValueError, TypeError):
+            qty = 1
+        available_stock = get_product_stock(product["slug"], sz)
+        if available_stock < qty:
+            return jsonify({
+                "success": False,
+                "message": f"Sorry, '{product['name']}' in Size {sz} currently has only {available_stock} piece(s) available in atelier inventory."
+            }), 400
+
     order_items = []
     subtotal = 0
 
@@ -1689,8 +2484,24 @@ def create_razorpay_order():
             "message": "Unable to create your order."
         }), 400
 
+    # Coupon validation on server
+    applied_coupon_code = str(data.get("coupon_code") or session.get("applied_coupon", {}).get("code") or "").strip().upper()
+    discount = 0
+    if applied_coupon_code:
+        is_val, val_msg, calc_discount, _ = validate_coupon(
+            applied_coupon_code,
+            subtotal,
+            customer_email=str(data.get("email", "")),
+            customer_phone=str(data.get("phone", ""))
+        )
+        if is_val:
+            discount = calc_discount
+        else:
+            applied_coupon_code = ""
+            discount = 0
+
     shipping = 0
-    total = subtotal + shipping
+    total = max(0, subtotal - discount + shipping)
     amount_paise = int(round(total * 100))
 
     try:
@@ -1700,7 +2511,8 @@ def create_razorpay_order():
             "receipt": generate_order_number(),
             "notes": {
                 "brand": "ALZOR COUTURE",
-                "customer_email": str(data.get("email", "")).strip()
+                "customer_email": str(data.get("email", "")).strip(),
+                "coupon_code": applied_coupon_code or "NONE"
             }
         })
     except Exception:
@@ -1710,7 +2522,7 @@ def create_razorpay_order():
             "message": "Razorpay could not start the payment. Please verify your payment credentials or try again later."
         }), 502
 
-    # Store customer/order details in PostgreSQL, not in the browser cookie or local files.
+    # Store customer/order details in PostgreSQL/SQLite, not in browser cookies
     pending = {
         "razorpay_order_id": razorpay_order["id"],
         "customer": {
@@ -1725,6 +2537,8 @@ def create_razorpay_order():
         },
         "items": order_items,
         "subtotal": subtotal,
+        "discount": discount,
+        "coupon_code": applied_coupon_code,
         "shipping": shipping,
         "total": total,
         "amount_paise": amount_paise
@@ -1732,7 +2546,7 @@ def create_razorpay_order():
     try:
         save_pending_payment(razorpay_order["id"], pending)
     except Exception:
-        app.logger.exception("Could not save pending payment to PostgreSQL")
+        app.logger.exception("Could not save pending payment to database")
         return jsonify({
             "success": False,
             "message": "We couldn't securely save your checkout. Please try again; no payment has been started yet."
@@ -1771,7 +2585,7 @@ def verify_razorpay_payment():
     try:
         pending = load_pending_payment(razorpay_order_id)
     except Exception:
-        app.logger.exception("Could not load pending payment from PostgreSQL")
+        app.logger.exception("Could not load pending payment from database")
         return jsonify({
             "success": False,
             "message": "Order storage is temporarily unavailable. Please contact support before trying to pay again."
@@ -1838,11 +2652,11 @@ def verify_razorpay_payment():
             "message": "We could not verify the payment. If money was deducted, do not pay again yet—please contact support at contact@alzorcouture.in with your payment ID."
         }), 400
 
-    # Prevent accidental duplicate order creation from a repeated verification request.
+    # Prevent accidental duplicate order creation
     try:
         existing = find_order_by_payment_id(razorpay_payment_id)
     except Exception:
-        app.logger.exception("Could not check existing order in PostgreSQL")
+        app.logger.exception("Could not check existing order in database")
         return jsonify({
             "success": False,
             "message": "Order storage is temporarily unavailable. Please contact support before trying to pay again."
@@ -1863,10 +2677,14 @@ def verify_razorpay_payment():
         })
 
     order_number = generate_order_number()
+    coupon_code = pending.get("coupon_code", "")
+    discount = pending.get("discount", 0)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     order = {
         "order_number": order_number,
-        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "Order Placed",
+        "created_at": now_str,
+        "status": "Confirmed",
         "payment_method": "Razorpay",
         "payment_status": "Paid",
         "razorpay_order_id": razorpay_order_id,
@@ -1874,21 +2692,79 @@ def verify_razorpay_payment():
         "customer": pending["customer"],
         "items": pending["items"],
         "subtotal": pending["subtotal"],
+        "discount": discount,
+        "coupon_code": coupon_code,
         "shipping": pending["shipping"],
-        "total": pending["total"]
+        "total": pending["total"],
+        "stock_restored": False,
+        "timeline": [
+            {
+                "status": "Confirmed",
+                "time": now_str,
+                "admin": "System (Payment Verified)",
+                "note": "Payment verified via Razorpay and order confirmed."
+            }
+        ],
+        "admin_notes": []
     }
 
     try:
         saved_order = save_order(order)
     except Exception:
-        app.logger.exception("Could not save confirmed order to PostgreSQL")
+        app.logger.exception("Could not save confirmed order to database")
         return jsonify({
             "success": False,
             "message": "Payment was verified, but order storage is temporarily unavailable. Do not pay again; please contact support with your Razorpay payment ID."
         }), 503
 
     order_number = saved_order["order_number"]
+
+    # 1. Deduct stock for each piece ordered
+    for item in pending.get("items", []):
+        try:
+            deduct_stock(item.get("slug"), item.get("size", "S"), item.get("quantity", 1))
+        except Exception:
+            app.logger.exception(f"Error deducting stock for {item.get('slug')} {item.get('size')}")
+
+    # 2. Record coupon redemption if coupon used
+    if coupon_code and discount > 0:
+        try:
+            record_coupon_redemption(
+                coupon_code,
+                order_number,
+                pending["customer"].get("email", ""),
+                pending["customer"].get("phone", ""),
+                discount
+            )
+        except Exception:
+            app.logger.exception(f"Error recording coupon redemption for {coupon_code}")
+
+    # 3. Create admin notification
+    cust_name = f"{pending['customer'].get('first_name', '')} {pending['customer'].get('last_name', '')}".strip() or "Valued Client"
+    cust_phone = pending["customer"].get("phone", "")
+    items_desc = ", ".join([f"{it.get('name')} ({it.get('size')}x{it.get('quantity')})" for it in pending.get("items", [])])
+    try:
+        create_admin_notification(
+            order_number=order_number,
+            title=f"New Order Confirmed: {order_number}",
+            message=f"Customer {cust_name} ({cust_phone}) placed order of ₹{pending['total']:,} for {items_desc}.",
+            amount=pending["total"],
+            customer_name=cust_name,
+            customer_phone=cust_phone
+        )
+    except Exception:
+        app.logger.exception("Error creating admin notification")
+
+    # 4. Dispatch confirmation emails
+    try:
+        email_html = build_order_confirmation_email_html(order)
+        send_order_email(pending["customer"].get("email"), f"Order Confirmed #{order_number} — Alzor Couture", email_html)
+        send_order_email(ADMIN_EMAIL, f"[NEW ORDER] #{order_number} — ₹{pending['total']:,} by {cust_name}", email_html)
+    except Exception:
+        app.logger.exception("Error sending confirmation emails")
+
     session["cart"] = []
+    session.pop("applied_coupon", None)
     session["last_order_number"] = order_number
     try:
         delete_pending_payment(razorpay_order_id)
@@ -1910,29 +2786,70 @@ def verify_razorpay_payment():
 # ORDER CONFIRMATION
 # =========================================================
 
-@app.route(
-    "/order-confirmation/<order_number>"
-)
+@app.route("/order-confirmation/<order_number>")
 def order_confirmation(order_number):
 
     try:
         selected_order = find_order_by_number(order_number)
     except Exception:
-        app.logger.exception("Could not load order confirmation from PostgreSQL")
+        app.logger.exception("Could not load order confirmation from database")
         return "Order storage is temporarily unavailable. Please try again shortly.", 503
 
     if selected_order is None:
         return "Order not found", 404
 
-    # An order number is an identifier, not proof of ownership.
-    # Only the browser session that completed payment can view its confirmation.
-    if session.get("last_order_number") != order_number:
-        return "Order not found", 404
+    # Allow if this browser completed the checkout, or if admin is signed in
+    if session.get("last_order_number") != order_number and not session.get("alzor_admin_authenticated"):
+        return redirect(url_for("track_order", order_number=order_number))
 
     return render_template(
         "order_confirmation.html",
         order=selected_order
     )
+
+
+# =========================================================
+# PRINTABLE TAX INVOICE
+# =========================================================
+
+@app.route("/order-invoice/<order_number>")
+def order_invoice(order_number):
+    try:
+        order = find_order_by_number(order_number)
+    except Exception:
+        app.logger.exception("Could not retrieve order for invoice")
+        return "Invoice temporarily unavailable.", 503
+
+    if not order:
+        return "Invoice not found.", 404
+
+    # Allow access if admin, or session matches last_order_number, or query param contact matches
+    is_admin = bool(session.get("alzor_admin_authenticated"))
+    is_last_order = session.get("last_order_number") == order_number
+
+    contact_param = request.args.get("contact", "").strip().lower()
+    matches_contact = False
+    if contact_param:
+        cust = order.get("customer", {})
+        cust_email = (cust.get("email") or "").lower()
+        cust_phone = (cust.get("phone") or "").replace(" ", "").replace("-", "").replace("+91", "")
+        clean_param = contact_param.replace(" ", "").replace("-", "").replace("+91", "")
+        matches_contact = bool(contact_param == cust_email or (clean_param and clean_param in cust_phone))
+
+    if not (is_admin or is_last_order or matches_contact):
+        return redirect(url_for("track_order", order_number=order_number))
+
+    return render_template("invoice.html", order=order)
+
+
+@app.route("/admin/order/<order_number>/invoice")
+def admin_order_invoice(order_number):
+    if not session.get("alzor_admin_authenticated"):
+        return redirect(url_for("admin_login"))
+    order = find_order_by_number(order_number)
+    if not order:
+        return "Order not found", 404
+    return render_template("invoice.html", order=order)
 
 
 # =========================================================
@@ -1984,13 +2901,17 @@ def razorpay_webhook():
 
     if event_type in ("payment.captured", "order.paid"):
         pending = load_pending_payment(razorpay_order_id) if razorpay_order_id else None
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if pending:
             order_number = generate_order_number()
+            coupon_code = pending.get("coupon_code", "")
+            discount = pending.get("discount", 0)
+
             order = {
                 "order_number": order_number,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "status": "Order Placed",
+                "created_at": now_str,
+                "status": "Confirmed",
                 "payment_method": "Razorpay (Webhook Verified)",
                 "payment_status": "Paid",
                 "razorpay_order_id": razorpay_order_id,
@@ -1998,19 +2919,68 @@ def razorpay_webhook():
                 "customer": pending["customer"],
                 "items": pending["items"],
                 "subtotal": pending["subtotal"],
+                "discount": discount,
+                "coupon_code": coupon_code,
                 "shipping": pending["shipping"],
-                "total": pending["total"]
+                "total": pending["total"],
+                "stock_restored": False,
+                "timeline": [
+                    {
+                        "status": "Confirmed",
+                        "time": now_str,
+                        "admin": "Razorpay Webhook",
+                        "note": "Payment captured and order verified via Webhook."
+                    }
+                ],
+                "admin_notes": []
             }
             save_order(order)
             delete_pending_payment(razorpay_order_id)
+
+            # Deduct stock
+            for item in pending.get("items", []):
+                try:
+                    deduct_stock(item.get("slug"), item.get("size", "S"), item.get("quantity", 1))
+                except Exception:
+                    pass
+
+            # Coupon redemption
+            if coupon_code and discount > 0:
+                try:
+                    record_coupon_redemption(coupon_code, order_number, pending["customer"].get("email", ""), pending["customer"].get("phone", ""), discount)
+                except Exception:
+                    pass
+
+            # Notification
+            cust_name = f"{pending['customer'].get('first_name', '')} {pending['customer'].get('last_name', '')}".strip() or "Valued Client"
+            try:
+                create_admin_notification(
+                    order_number=order_number,
+                    title=f"New Order Confirmed: {order_number}",
+                    message=f"Customer {cust_name} placed order of ₹{pending['total']:,} via Webhook.",
+                    amount=pending["total"],
+                    customer_name=cust_name,
+                    customer_phone=pending["customer"].get("phone", "")
+                )
+            except Exception:
+                pass
+
+            # Email
+            try:
+                email_html = build_order_confirmation_email_html(order)
+                send_order_email(pending["customer"].get("email"), f"Order Confirmed #{order_number} — Alzor Couture", email_html)
+                send_order_email(ADMIN_EMAIL, f"[NEW ORDER] #{order_number} — ₹{pending['total']:,} by {cust_name}", email_html)
+            except Exception:
+                pass
+
             app.logger.info(f"Order {order_number} created via webhook for payment {razorpay_payment_id}")
         else:
             order_number = generate_order_number()
             amount_rupees = int(payment_entity.get("amount", 0)) // 100
             order = {
                 "order_number": order_number,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "status": "Order Placed",
+                "created_at": now_str,
+                "status": "Confirmed",
                 "payment_method": "Razorpay (Direct Webhook)",
                 "payment_status": "Paid",
                 "razorpay_order_id": razorpay_order_id or "direct",
@@ -2027,10 +2997,33 @@ def razorpay_webhook():
                 },
                 "items": [],
                 "subtotal": amount_rupees,
+                "discount": 0,
+                "coupon_code": "",
                 "shipping": 0,
-                "total": amount_rupees
+                "total": amount_rupees,
+                "stock_restored": False,
+                "timeline": [
+                    {
+                        "status": "Confirmed",
+                        "time": now_str,
+                        "admin": "Razorpay Direct Webhook",
+                        "note": "Payment captured directly without prior pending record."
+                    }
+                ],
+                "admin_notes": []
             }
             save_order(order)
+            try:
+                create_admin_notification(
+                    order_number=order_number,
+                    title=f"Direct Order: {order_number}",
+                    message=f"Direct payment captured: ₹{amount_rupees:,} for payment ID {razorpay_payment_id}",
+                    amount=amount_rupees,
+                    customer_name="Client",
+                    customer_phone=payment_entity.get("contact", "")
+                )
+            except Exception:
+                pass
             app.logger.info(f"Direct order {order_number} created via webhook for payment {razorpay_payment_id}")
 
         return jsonify({"status": "success", "message": "Payment captured and order recorded"}), 200
@@ -2040,6 +3033,53 @@ def razorpay_webhook():
         return jsonify({"status": "recorded", "message": "Payment failure noted"}), 200
 
     return jsonify({"status": "ignored", "event": event_type}), 200
+
+
+# =========================================================
+# CUSTOMER ORDER CANCELLATION API
+# =========================================================
+
+@app.route("/api/order/cancel", methods=["POST"])
+def api_order_cancel():
+    data = request.get_json(silent=True) or request.form
+    order_number = str(data.get("order_number", "")).strip().upper()
+    contact_info = str(data.get("contact_info", "")).strip().lower()
+    reason = str(data.get("reason", "Cancelled by customer request")).strip()
+
+    if not order_number or not contact_info:
+        return jsonify({"success": False, "message": "Order number and contact information are required."}), 400
+
+    order = find_order_by_number(order_number)
+    if not order:
+        return jsonify({"success": False, "message": f"Order '{order_number}' not found."}), 404
+
+    cust = order.get("customer", {})
+    cust_phone = (cust.get("phone") or "").replace(" ", "").replace("-", "").replace("+91", "")
+    cust_email = (cust.get("email") or "").lower()
+    clean_contact = contact_info.replace(" ", "").replace("-", "").replace("+91", "")
+
+    if not (contact_info == cust_email or (clean_contact and clean_contact in cust_phone)):
+        return jsonify({"success": False, "message": "Contact details do not match this order."}), 403
+
+    current_status = order.get("status", "")
+    cancellable_statuses = ["Pending", "Confirmed", "Order Placed", "In Production", "Processing"]
+    if current_status not in cancellable_statuses:
+        return jsonify({
+            "success": False,
+            "message": f"This order is currently '{current_status}' and cannot be automatically cancelled online. Please contact our concierge via WhatsApp at +91 8527144345."
+        }), 400
+
+    updated = update_order_status(order_number, "Cancelled", note=f"Customer cancellation request: {reason}", admin_name="Client Concierge")
+    create_admin_notification(
+        order_number=order_number,
+        title=f"Order Cancelled by Customer: {order_number}",
+        message=f"Customer requested cancellation. Reason: {reason}",
+        amount=order.get("total", 0),
+        customer_name=f"{cust.get('first_name')} {cust.get('last_name')}",
+        customer_phone=cust.get("phone")
+    )
+
+    return jsonify({"success": True, "message": "Your order has been cancelled successfully. Any payment refund will be processed to the original payment source within 5-7 business days."})
 
 
 # =========================================================
@@ -2078,7 +3118,7 @@ def admin_dashboard():
         return redirect(url_for("admin_login"))
 
     try:
-        orders = load_all_orders(limit=150)
+        orders = load_all_orders(limit=250)
     except Exception:
         app.logger.exception("Failed to load orders for admin dashboard")
         orders = []
@@ -2089,19 +3129,59 @@ def admin_dashboard():
         app.logger.exception("Failed to load pending payments for admin dashboard")
         pending = []
 
+    today_str = datetime.now().strftime("%Y-%m-%d")
     total_revenue = 0
+    today_revenue = 0
+    today_orders_count = 0
+    total_discounts = 0
+    status_counts = {}
+
     for o in orders:
-        if isinstance(o, dict) and o.get("payment_status") == "Paid":
-            try:
-                total_revenue += int(o.get("total") or 0)
-            except (TypeError, ValueError):
-                pass
+        if isinstance(o, dict):
+            st = o.get("status", "Confirmed")
+            status_counts[st] = status_counts.get(st, 0) + 1
+            if o.get("payment_status") == "Paid":
+                amt = int(o.get("total") or 0)
+                disc = int(o.get("discount") or 0)
+                total_revenue += amt
+                total_discounts += disc
+                created = str(o.get("created_at") or "")
+                if created.startswith(today_str):
+                    today_revenue += amt
+                    today_orders_count += 1
+
+    try:
+        coupons = get_all_coupons()
+    except Exception:
+        coupons = []
+
+    try:
+        inventory = get_all_inventory()
+    except Exception:
+        inventory = []
+
+    try:
+        notifications = get_admin_notifications(limit=30)
+        unread_notifs = get_unread_notification_count()
+    except Exception:
+        notifications = []
+        unread_notifs = 0
 
     return render_template(
         "admin.html",
         orders=orders,
         pending=pending,
         total_revenue=total_revenue,
+        today_revenue=today_revenue,
+        today_orders_count=today_orders_count,
+        total_discounts=total_discounts,
+        status_counts=status_counts,
+        coupons=coupons,
+        coupons_count=len(coupons),
+        inventory=inventory,
+        inventory_count=len(inventory),
+        notifications=notifications,
+        unread_notifs=unread_notifs,
         orders_count=len(orders),
         pending_count=len(pending),
         is_live=RAZORPAY_IS_LIVE,
@@ -2116,16 +3196,201 @@ def admin_update_order_status(order_number):
 
     data = request.get_json(silent=True) or request.form
     new_status = data.get("status", "").strip()
-    valid_statuses = ["Order Placed", "In Production", "Quality Check", "Dispatched", "Delivered", "Cancelled"]
+    status_note = data.get("note", "").strip()
+    valid_statuses = [
+        "Pending", "Confirmed", "Order Placed", "In Production", "Processing",
+        "Packed", "Shipped", "Out for Delivery", "Delivered",
+        "Cancelled", "Returned", "Refunded"
+    ]
 
     if new_status not in valid_statuses:
-        return jsonify({"success": False, "message": "Invalid status value"}), 400
+        return jsonify({"success": False, "message": f"Invalid status: {new_status}"}), 400
 
-    updated = update_order_status(order_number, new_status)
+    updated = update_order_status(order_number, new_status, note=status_note, admin_name="Atelier Admin")
     if not updated:
         return jsonify({"success": False, "message": "Order not found"}), 404
 
     return jsonify({"success": True, "message": f"Order status updated to {new_status}", "order": updated})
+
+
+@app.route("/admin/order/<order_number>/note", methods=["POST"])
+def admin_add_order_note(order_number):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or request.form
+    note_text = data.get("note", "").strip()
+    if not note_text:
+        return jsonify({"success": False, "message": "Note cannot be empty."}), 400
+    updated = add_order_admin_note(order_number, note_text, admin_name="Atelier Admin")
+    if not updated:
+        return jsonify({"success": False, "message": "Order not found."}), 404
+    return jsonify({"success": True, "message": "Admin note saved.", "admin_notes": updated.get("admin_notes", [])})
+
+
+@app.route("/admin/orders/export-csv")
+def admin_export_orders_csv():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    orders = load_all_orders(limit=1000)
+    output = io.StringIO()
+    output.write("\ufeff")  # UTF-8 BOM
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "Order Number",
+        "Order Date",
+        "Order Status",
+        "Payment Status",
+        "Payment Method",
+        "Razorpay Payment ID",
+        "Razorpay Order ID",
+        "Customer Name",
+        "Customer Phone",
+        "Customer Email",
+        "Address",
+        "City",
+        "State",
+        "Pincode",
+        "Items Summary",
+        "Subtotal (INR)",
+        "Promo Code",
+        "Discount (INR)",
+        "Shipping (INR)",
+        "Total (INR)"
+    ])
+
+    for o in orders:
+        cust = o.get("customer", {})
+        first = cust.get("first_name", "")
+        last = cust.get("last_name", "")
+        full_name = f"{first} {last}".strip()
+        items = o.get("items", [])
+        items_str = "; ".join([f"{it.get('name')} (Size {it.get('size')}, Qty {it.get('quantity')})" for it in items])
+
+        writer.writerow([
+            o.get("order_number", ""),
+            o.get("created_at", ""),
+            o.get("status", ""),
+            o.get("payment_status", ""),
+            o.get("payment_method", ""),
+            o.get("razorpay_payment_id", ""),
+            o.get("razorpay_order_id", ""),
+            full_name,
+            cust.get("phone", ""),
+            cust.get("email", ""),
+            cust.get("address", ""),
+            cust.get("city", ""),
+            cust.get("state", ""),
+            cust.get("pincode", ""),
+            items_str,
+            o.get("subtotal", 0),
+            o.get("coupon_code", ""),
+            o.get("discount", 0),
+            o.get("shipping", 0),
+            o.get("total", 0)
+        ])
+
+    csv_data = output.getvalue()
+    filename = f"alzor_orders_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+
+# =========================================================
+# ADMIN NOTIFICATIONS API
+# =========================================================
+
+@app.route("/admin/api/notifications", methods=["GET"])
+def admin_api_notifications():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    notifs = get_admin_notifications(limit=30)
+    unread = get_unread_notification_count()
+    return jsonify({"success": True, "notifications": notifs, "unread_count": unread})
+
+
+@app.route("/admin/api/notifications/mark-read/<int:notif_id>", methods=["POST"])
+def admin_api_mark_notification_read(notif_id):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    mark_notification_read(notif_id)
+    return jsonify({"success": True, "unread_count": get_unread_notification_count()})
+
+
+@app.route("/admin/api/notifications/mark-all-read", methods=["POST"])
+def admin_api_mark_all_notifications_read():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    mark_all_notifications_read()
+    return jsonify({"success": True, "unread_count": 0})
+
+
+# =========================================================
+# ADMIN COUPONS API
+# =========================================================
+
+@app.route("/admin/api/coupons/create", methods=["POST"])
+def admin_api_create_coupon():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or request.form
+    success, msg = create_coupon(data)
+    if not success:
+        return jsonify({"success": False, "message": msg}), 400
+    return jsonify({"success": True, "message": msg})
+
+
+@app.route("/admin/api/coupons/<code>/toggle", methods=["POST"])
+def admin_api_toggle_coupon(code):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    success, msg = toggle_coupon(code)
+    if not success:
+        return jsonify({"success": False, "message": msg}), 404
+    return jsonify({"success": True, "message": msg})
+
+
+@app.route("/admin/api/coupons/<code>/delete", methods=["POST"])
+def admin_api_delete_coupon(code):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    success, msg = delete_coupon(code)
+    if not success:
+        return jsonify({"success": False, "message": msg}), 404
+    return jsonify({"success": True, "message": msg})
+
+
+@app.route("/admin/api/coupons/<code>/redemptions", methods=["GET"])
+def admin_api_coupon_redemptions(code):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    redemptions = get_coupon_redemptions(code)
+    return jsonify({"success": True, "code": code.upper(), "redemptions": redemptions})
+
+
+# =========================================================
+# ADMIN INVENTORY API
+# =========================================================
+
+@app.route("/admin/api/inventory/update", methods=["POST"])
+def admin_api_update_inventory():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    data = request.get_json(silent=True) or request.form
+    slug = data.get("slug", "").strip()
+    size = data.get("size", "").strip()
+    try:
+        new_stock = int(data.get("stock", 0))
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "message": "Invalid stock value."}), 400
+    if not slug or not size:
+        return jsonify({"success": False, "message": "Product slug and size required."}), 400
+    update_stock(slug, size, new_stock)
+    return jsonify({"success": True, "message": f"Stock updated to {new_stock} units for {slug} ({size})."})
 
 
 # =========================================================

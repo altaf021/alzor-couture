@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -96,7 +96,7 @@
         }
         .track-submit-btn {
             width: 100%;
-            padding: 15px 24px;
+            padding: 14px 24px;
             background: #181818;
             color: #ffffff;
             border: none;
@@ -105,10 +105,11 @@
             text-transform: uppercase;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.25s ease;
+            transition: all 0.25s ease;
         }
         .track-submit-btn:hover {
             background: #ad8a51;
+            color: #ffffff;
         }
         .track-error {
             background: #fdf2f2;
@@ -147,7 +148,7 @@
         }
         .track-info-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
             padding-bottom: 20px;
@@ -296,7 +297,7 @@
                         type="text"
                         id="order_number"
                         name="order_number"
-                        placeholder="e.g. ALZOR-20261106-ABCD"
+                        placeholder="e.g. ALZ-20261106-ABCD"
                         value="{{ order_number or '' }}"
                         required
                         autocomplete="off"
@@ -329,22 +330,65 @@
             <span class="track-status-pill">{{ order.status or 'CONFIRMED' }}</span>
         </div>
 
+        <!-- STATUS STEPPER -->
+        {% set st = (order.status or 'Confirmed') %}
+        {% set is_cancelled = st in ['Cancelled', 'Returned', 'Refunded'] %}
+        {% if is_cancelled %}
+        <div style="background:#fdf2f2;border:1px solid rgba(220,50,40,0.3);color:#c53030;padding:12px 16px;margin-bottom:20px;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;">
+            ⚠ ORDER STATUS: {{ st|upper }}
+        </div>
+        {% else %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:22px 0 28px;position:relative;padding:0 5px;">
+            {% set steps = [
+                ('Confirmed', ['Pending', 'Confirmed', 'Order Placed', 'In Production', 'Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered']),
+                ('Processing', ['In Production', 'Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered']),
+                ('Packed', ['Packed', 'Shipped', 'Out for Delivery', 'Delivered']),
+                ('Shipped', ['Shipped', 'Out for Delivery', 'Delivered']),
+                ('Delivered', ['Delivered'])
+            ] %}
+            {% for step_name, active_for in steps %}
+            <div style="display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;">
+                <div style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-bottom:6px;{% if st in active_for %}background:#ad8a51;color:#ffffff;{% else %}background:#eae6de;color:#9b958c;{% endif %}">
+                    {% if st in active_for %}✓{% else %}{{ loop.index }}{% endif %}
+                </div>
+                <span style="font-size:9.5px;letter-spacing:1px;text-transform:uppercase;font-weight:600;{% if st in active_for %}color:#181818;{% else %}color:#a39d93;{% endif %}">{{ step_name }}</span>
+            </div>
+            {% if not loop.last %}
+            <div style="flex:1;height:2px;margin:0 4px 18px;{% if st in steps[loop.index][1] %}background:#ad8a51;{% else %}background:#eae6de;{% endif %}"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <div class="track-info-row">
             <div class="track-info-cell">
                 <h5>Payment Status</h5>
                 <p style="color:#2b8a3e;">PAID (Verified)</p>
             </div>
             <div class="track-info-cell">
-                <h5>Order Total</h5>
-                <p>₹{{ "{:,}".format(order.total_amount or order.total or 0) }}</p>
+                <h5>Subtotal</h5>
+                <p>₹{{ "{:,}".format(order.subtotal or 0) }}</p>
             </div>
+            {% if order.discount and order.discount > 0 %}
+            <div class="track-info-cell">
+                <h5>Promo Discount</h5>
+                <p style="color:#2b8a3e;">-₹{{ "{:,}".format(order.discount) }}</p>
+            </div>
+            {% endif %}
+            <div class="track-info-cell">
+                <h5>Order Total</h5>
+                <p style="color:#ad8a51;font-size:15px;">₹{{ "{:,}".format(order.total_amount or order.total or 0) }}</p>
+            </div>
+        </div>
+
+        <div class="track-info-row">
             <div class="track-info-cell">
                 <h5>Customer</h5>
                 <p>{{ order.customer_name or ((order.customer.first_name ~ ' ' ~ order.customer.last_name)|trim if order.customer else 'Valued Client') }}</p>
             </div>
-            <div class="track-info-cell">
+            <div class="track-info-cell" style="grid-column: span 2;">
                 <h5>Delivery Destination</h5>
-                <p>{{ (order.customer.city ~ ', ' ~ order.customer.state) if (order.customer and order.customer.city) else ((order.city ~ ', ' ~ order.state) if order.city else 'Dispatched') }}</p>
+                <p>{{ (order.customer.address ~ ', ' ~ order.customer.city ~ ', ' ~ order.customer.state ~ ' — ' ~ order.customer.pincode) if (order.customer and order.customer.city) else 'Dispatched Pan-India' }}</p>
             </div>
         </div>
 
@@ -365,6 +409,17 @@
             {% endfor %}
         </div>
         {% endif %}
+
+        <div style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;">
+            <a href="{{ url_for('order_invoice', order_number=order.order_number) }}?contact={{ contact_info }}" target="_blank" class="track-submit-btn" style="flex:1;text-align:center;text-decoration:none;display:inline-block;padding:12px;">
+                🖨 DOWNLOAD OFFICIAL TAX INVOICE
+            </a>
+            {% if order.status in ['Pending', 'Confirmed', 'Order Placed', 'In Production', 'Processing'] %}
+            <button type="button" onclick="cancelOrderCustomer('{{ order.order_number }}', '{{ contact_info }}')" class="track-submit-btn" style="flex:1;background:#ffffff;color:#c53030;border:1px solid #c53030;padding:12px;">
+                ✕ REQUEST CANCELLATION
+            </button>
+            {% endif %}
+        </div>
     </div>
     {% endif %}
 
@@ -406,5 +461,29 @@
 
 <script src="{{ url_for('static', filename='js/search.js') }}?v=2"></script>
 <script src="{{ url_for('static', filename='js/script.js') }}?v=40"></script>
+<script>
+async function cancelOrderCustomer(orderNumber, contactInfo) {
+    const reason = prompt("Please let us know the reason for cancellation (e.g., ordered wrong size, changed mind):");
+    if (!reason) return;
+    try {
+        const res = await fetch("/api/order/cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                order_number: orderNumber,
+                contact_info: contactInfo,
+                reason: reason
+            })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) {
+            window.location.reload();
+        }
+    } catch (e) {
+        alert("Network error processing cancellation request.");
+    }
+}
+</script>
 </body>
 </html>

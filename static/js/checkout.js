@@ -143,6 +143,86 @@
         return data;
     }
 
+    // PROMO CODE SYSTEM
+    let appliedCoupon = null;
+    const promoInput = document.getElementById("promoCodeInput");
+    const applyPromoBtn = document.getElementById("applyPromoBtn");
+    const removePromoBtn = document.getElementById("removePromoBtn");
+    const promoMessage = document.getElementById("promoMessage");
+    const promoBadge = document.getElementById("promoAppliedBadge");
+    const appliedCodeText = document.getElementById("appliedCodeText");
+    const promoContainer = document.getElementById("promoInputContainer");
+    const discountRow = document.getElementById("discountRow");
+    const discountLabel = document.getElementById("discountLabel");
+    const summaryDiscount = document.getElementById("summaryDiscount");
+    const summaryTotal = document.getElementById("summaryTotal");
+
+    function setPromoMessage(text, isError) {
+        if (!promoMessage) return;
+        promoMessage.textContent = text || "";
+        promoMessage.style.display = text ? "block" : "none";
+        promoMessage.style.color = isError ? "#c53030" : "#248a3d";
+    }
+
+    if (applyPromoBtn && promoInput) {
+        applyPromoBtn.addEventListener("click", async function () {
+            const code = promoInput.value.trim().toUpperCase();
+            if (!code) {
+                setPromoMessage("Please enter a promo code.", true);
+                return;
+            }
+            applyPromoBtn.disabled = true;
+            applyPromoBtn.textContent = "CHECKING…";
+            setPromoMessage("", false);
+
+            try {
+                const email = (getField("email") ? getField("email").value.trim() : "");
+                const phone = (getField("phone") ? getField("phone").value.trim() : "");
+                const res = await postJSON("/api/apply-coupon", { code: code, email: email, phone: phone });
+
+                appliedCoupon = { code: res.code, discount: res.discount };
+                if (discountRow) discountRow.style.display = "flex";
+                if (discountLabel) discountLabel.textContent = res.code;
+                if (summaryDiscount) summaryDiscount.textContent = "-₹" + Number(res.discount).toLocaleString("en-IN");
+                if (summaryTotal) summaryTotal.textContent = "₹" + Number(res.new_total).toLocaleString("en-IN");
+
+                if (promoContainer) promoContainer.style.display = "none";
+                if (promoBadge) promoBadge.style.display = "flex";
+                if (appliedCodeText) appliedCodeText.textContent = res.code;
+                setPromoMessage(res.message || "Promo code applied successfully.", false);
+            } catch (err) {
+                setPromoMessage(err.message || "Invalid promo code.", true);
+            } finally {
+                applyPromoBtn.disabled = false;
+                applyPromoBtn.textContent = "APPLY";
+            }
+        });
+
+        promoInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                applyPromoBtn.click();
+            }
+        });
+    }
+
+    if (removePromoBtn) {
+        removePromoBtn.addEventListener("click", async function () {
+            try {
+                const res = await postJSON("/api/remove-coupon", {});
+                appliedCoupon = null;
+                if (discountRow) discountRow.style.display = "none";
+                if (summaryTotal) summaryTotal.textContent = "₹" + Number(res.total).toLocaleString("en-IN");
+                if (promoContainer) promoContainer.style.display = "flex";
+                if (promoBadge) promoBadge.style.display = "none";
+                if (promoInput) promoInput.value = "";
+                setPromoMessage("Promo code removed.", false);
+            } catch (err) {
+                console.error(err);
+            }
+        });
+    }
+
     form.addEventListener("submit", async function (event) {
         event.preventDefault();
         setMessage("", "");
@@ -201,7 +281,8 @@
             address: getField("address").value.trim(),
             city: getField("city").value.trim(),
             state: getField("state").value.trim(),
-            pincode: getField("pincode").value.trim()
+            pincode: getField("pincode").value.trim(),
+            coupon_code: appliedCoupon ? appliedCoupon.code : ""
         };
 
         setLoading(true, "STARTING PAYMENT…");

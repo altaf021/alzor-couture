@@ -234,17 +234,34 @@
                     <div class="summary-lines">
                         <div>
                             <span>Subtotal</span>
-                            <strong>₹{{ "{:,}".format(subtotal) }}</strong>
+                            <strong id="summarySubtotal">₹{{ "{:,}".format(subtotal) }}</strong>
+                        </div>
+                        <div id="discountRow" style="display:none;color:#ad8a51;">
+                            <span>Discount (<span id="discountLabel"></span>)</span>
+                            <strong id="summaryDiscount">-₹0</strong>
                         </div>
                         <div>
                             <span>Shipping</span>
-                            <strong>FREE</strong>
+                            <strong id="summaryShipping">FREE</strong>
                         </div>
                     </div>
 
                     <div class="summary-total">
                         <span>TOTAL</span>
-                        <strong>₹{{ "{:,}".format(total) }}</strong>
+                        <strong id="summaryTotal">₹{{ "{:,}".format(total) }}</strong>
+                    </div>
+
+                    <!-- PROMO CODE SECTION -->
+                    <div class="checkout-promo-box" style="margin-top:16px;padding-top:16px;border-top:1px dashed rgba(173,138,81,0.35);">
+                        <div id="promoInputContainer" style="display:flex;gap:8px;">
+                            <input type="text" id="promoCodeInput" placeholder="Promo code (e.g. WELCOME10)" style="flex:1;background:#faf8f5;border:1px solid #dcd7ce;padding:10px 12px;font-size:12px;text-transform:uppercase;outline:none;font-weight:600;letter-spacing:1px;color:#181818;" autocomplete="off" autocapitalize="characters">
+                            <button type="button" id="applyPromoBtn" style="background:#181818;color:#ad8a51;border:1px solid #ad8a51;padding:10px 16px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;cursor:pointer;transition:all 0.2s;">APPLY</button>
+                        </div>
+                        <div id="promoMessage" style="font-size:12px;margin-top:6px;display:none;"></div>
+                        <div id="promoAppliedBadge" style="display:none;justify-content:space-between;align-items:center;background:#fbfaf7;border:1px solid rgba(173,138,81,0.4);padding:8px 12px;margin-top:6px;">
+                            <span style="font-size:12px;color:#248a3d;font-weight:600;">✓ Code <strong id="appliedCodeText" style="color:#181818;"></strong> applied</span>
+                            <button type="button" id="removePromoBtn" style="background:transparent;border:none;color:#c53030;font-size:11px;cursor:pointer;text-decoration:underline;">Remove</button>
+                        </div>
                     </div>
 
                     <p class="summary-note">Free standard delivery is included with your order.</p>
@@ -280,6 +297,6 @@
 
 <script src="{{ url_for('static', filename='js/cart-toast.js') }}?v=2"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="{{ url_for('static', filename='js/checkout.js') }}?v=alzor-checkout-4"></script>
+<script src="{{ url_for('static', filename='js/checkout.js') }}?v=alzor-checkout-5"></script>
 </body>
 </html>

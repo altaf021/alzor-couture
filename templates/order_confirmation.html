@@ -268,6 +268,13 @@
                             <strong>₹{{ "{:,}".format(order["subtotal"]) }}</strong>
                         </div>
 
+                        {% if order.get("discount") and order["discount"] > 0 %}
+                        <div>
+                            <span>Promo Discount ({{ order.get("coupon_code", "COUPON") }})</span>
+                            <strong style="color:#22c55e;">-₹{{ "{:,}".format(order["discount"]) }}</strong>
+                        </div>
+                        {% endif %}
+
                         <div>
                             <span>Shipping</span>
                             <strong>FREE</strong>
@@ -290,12 +297,11 @@
                         CONTINUE SHOPPING
                     </a>
 
-                    <button
-                        type="button"
-                        class="confirmation-button secondary"
-                        id="printOrderButton">
-                        PRINT ORDER
-                    </button>
+                    <a href="{{ url_for('order_invoice', order_number=order['order_number']) }}"
+                       target="_blank"
+                       class="confirmation-button secondary">
+                        VIEW / PRINT INVOICE
+                    </a>
 
                 </div>
 
