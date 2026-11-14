@@ -516,6 +516,30 @@ PRODUCTS = [
             "Two-piece co-ord set"
         ],
         "care": "Refer to the garment's care label."
+    },
+        {
+        "name": "Teal Green Lelan Cape Co-ord Set",
+        "slug": "teal-green-lelan-cape-coord-set",
+        "category": "CO-ORD SET",
+        "price": 8399,
+        "images": [
+            "gr-1.jpeg",
+            "gr-2.jpeg",
+            "gr-3.jpeg",
+            "gr-4.jpeg",
+            "gr-5.jpeg"
+        ],
+        "description":
+            "A graceful blend of contemporary elegance and delicate detailing, the Teal Green Lelan Cape Co-ord Set features a flowing lace cape layered over a coordinated inner top, paired with elegant wide-leg trousers. The intricate floral lace, statement cape sleeves and refined waist buckle create a sophisticated silhouette, making this two-piece ensemble a distinctive addition to your wardrobe.",
+        "details": [
+            "Teal-green lace cape overlay",
+            "Coordinated inner top",
+            "Matching wide-leg trousers",
+            "Floral lace detailing",
+            "Statement waist buckle",
+            "Two-piece co-ord set"
+        ],
+        "care": "Refer to the garment's care label."
     }
 
 ]
