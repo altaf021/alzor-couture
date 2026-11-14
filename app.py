@@ -493,6 +493,29 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
+    },
+        {
+        "name": "Denim Éclat Lace Set",
+        "slug": "denim-eclat-lace-set",
+        "category": "CO-ORD SET",
+        "price": 8999,
+        "images": [
+            "dt-1.jpeg",
+            "dt-2.jpeg",
+            "dt-3.jpeg",
+            "dt-4.jpeg",
+            "dt-5.jpeg"
+        ],
+        "description":
+            "A refined expression of contemporary denim, the Denim Éclat Lace Set pairs a structured indigo denim shirt with delicate white crochet detailing and coordinated flared trousers. Intricate lace accents across the sleeves, hemline and trouser panels create a striking contrast, bringing together modern denim styling and artisanal elegance.",
+        "details": [
+            "Indigo denim shirt-style top",
+            "White crochet lace detailing",
+            "Coordinated flared denim trousers",
+            "Statement lace panels on sleeves and trouser hems",
+            "Two-piece co-ord set"
+        ],
+        "care": "Refer to the garment's care label."
     }
 
 ]
