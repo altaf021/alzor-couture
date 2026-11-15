@@ -614,6 +614,49 @@ PRODUCTS = [
 
     "care": "Dry clean recommended."
 },
+    
+{
+    "name": "Ivory Royale Co-ord Set",
+    "slug": "ivory-royale-co-ord-set",
+    "category": "CO-ORD SET",
+    "price": 15999,
+
+    "images": [
+        "1000195297.jpg.jpeg",
+        "1000195294.jpg.jpeg",
+        "1000195298.jpg.jpeg",
+        "1000195300.jpg.jpeg",
+        "1000195278.jpg.jpeg"
+    ],
+
+    "description": (
+        "Introducing the Ivory Royale Co-ord Set by Alzor Couture, "
+        "a statement of refined luxury and contemporary elegance. "
+        "Featuring a sophisticated white cropped jacket adorned "
+        "with exquisite gold metallic detailing across the collar, "
+        "pockets and cuffs, paired with beautifully coordinated "
+        "wide-leg trousers featuring matching gold accents. "
+        "An exclusive ensemble designed for those who appreciate "
+        "exceptional detailing and timeless sophistication."
+    ),
+
+    "details": [
+        "Premium white co-ord ensemble",
+        "Elegant cropped zip-front jacket",
+        "Exquisite gold metallic detailing",
+        "Gold-accented collar and cuffs",
+        "Decorative front pocket detailing",
+        "Coordinated wide-leg trousers",
+        "Matching gold trouser accents",
+        "Luxury occasion and statement wear"
+    ],
+
+    "care": (
+        "Professional dry cleaning recommended. "
+        "Handle metallic detailing with care."
+    )
+},
+
 
 
 
