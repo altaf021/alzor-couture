@@ -578,6 +578,43 @@ PRODUCTS = [
 
     "care": "Dry clean recommended. Store carefully to preserve the embellishments."
 },
+    
+{
+    "name": "Ivory Allure Set",
+    "slug": "ivory-allure-set",
+    "category": "CO-ORD SET",
+    "price": 9699,
+
+    "images": [
+        "1000195309.jpg",
+        "1000195311.jpg",
+        "1000195306.jpg",
+        "1000195310.jpg",
+        "1000195273.jpg"
+    ],
+
+    "description": (
+        "Discover understated luxury with the Ivory Allure Set "
+        "by Alzor Couture. Featuring a beautifully tailored "
+        "champagne-yellow top with delicate embellished detailing, "
+        "paired with elegant ivory trousers. This sophisticated "
+        "ensemble brings together contemporary design and timeless "
+        "elegance, making it perfect for refined occasions and "
+        "special outings."
+    ),
+
+    "details": [
+        "Elegant champagne-yellow top",
+        "Intricate embellished neckline detailing",
+        "Sophisticated tailored silhouette",
+        "Coordinated ivory trousers",
+        "Premium contemporary styling",
+        "Perfect for parties and special occasions"
+    ],
+
+    "care": "Dry clean recommended."
+},
+
 
 
 ]
