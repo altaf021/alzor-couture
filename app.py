@@ -540,7 +540,45 @@ PRODUCTS = [
             "Two-piece co-ord set"
         ],
         "care": "Refer to the garment's care label."
-    }
+    },
+    
+{
+    "name": "Emerald Éclat Co-ord Set",
+    "slug": "emerald-eclat-co-ord-set",
+    "category": "CO-ORD SET",
+    "price": 8999,
+    "original_price": 9999,
+
+    "images": [
+        "1000195263.jpg.jpeg",
+        "1000195260.jpg.jpeg",
+        "1000195264.jpg.jpeg",
+        "1000195262.jpg.jpeg",
+        "1000195261.jpg.jpeg"
+    ],
+
+    "description": (
+        "Make a sophisticated statement with the Emerald Éclat "
+        "Co-ord Set by Alzor Couture. Designed in a rich dark "
+        "emerald green shade, this elegant ensemble features a "
+        "tailored cropped blazer with refined detailing and "
+        "coordinated wide-leg trousers. A perfect blend of "
+        "contemporary elegance and timeless sophistication."
+    ),
+
+    "details": [
+        "Premium dark emerald green co-ord set",
+        "Elegant tailored cropped blazer",
+        "Intricate embellished shoulder detailing",
+        "Coordinated wide-leg trousers",
+        "Scalloped waistband detailing",
+        "Sophisticated contemporary silhouette",
+        "Perfect for parties, occasions and elegant outings"
+    ],
+
+    "care": "Dry clean recommended. Store carefully to preserve the embellishments."
+},
+
 
 ]
 
