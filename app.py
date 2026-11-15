@@ -780,7 +780,46 @@ DRESSES = [
         ],
         "care":
             "Care instructions to be confirmed."
-    }
+    },
+    
+{
+    "name": "Verdant Muse Dress",
+    "slug": "verdant-muse-dress",
+    "category": "DRESS",
+    "price": 11199,
+
+    "images": [
+        "1000195301.jpg.jpeg",
+        "1000195308.jpg.jpeg",
+        "1000195303.jpg.jpeg",
+        "1000195305.jpg.jpeg",
+        "1000195276.jpg.jpeg"
+    ],
+
+    "description": (
+        "Make a statement with the Verdant Muse Dress by "
+        "Alzor Couture. Featuring a sophisticated black "
+        "silhouette enhanced with striking lime-green "
+        "botanical detailing, this elegant dress brings "
+        "together contemporary artistry and timeless style. "
+        "Designed with delicate textured accents and a "
+        "beautifully flowing A-line silhouette, it is a "
+        "distinctive choice for stylish occasions."
+    ),
+
+    "details": [
+        "Elegant black dress",
+        "Lime-green botanical detailing",
+        "Sophisticated A-line silhouette",
+        "Long sleeves",
+        "Distinctive textured embellishments",
+        "Statement contemporary design",
+        "Suitable for parties and special occasions"
+    ],
+
+    "care": "Professional dry cleaning recommended."
+},
+
 ]
 
 
