@@ -1,17 +1,22 @@
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response, send_from_directory
+import base64
 import csv
 import io
 import json
 import logging
 import os
 import random
+import re
+import secrets
 import sqlite3
 import smtplib
+import uuid
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import string
 from contextlib import contextmanager
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 from dotenv import load_dotenv
 import razorpay
@@ -740,6 +745,30 @@ def ensure_database_schema(conn, is_postgres=True):
                 PRIMARY KEY (product_slug, size)
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_custom_products (
+                slug TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'CO-ORD SET',
+                price INTEGER NOT NULL DEFAULT 0,
+                original_price INTEGER NOT NULL DEFAULT 0,
+                images JSONB NOT NULL DEFAULT '[]',
+                description TEXT NOT NULL DEFAULT '',
+                details JSONB NOT NULL DEFAULT '[]',
+                care TEXT NOT NULL DEFAULT 'Dry clean recommended.',
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_uploaded_images (
+                filename TEXT PRIMARY KEY,
+                content_type TEXT NOT NULL,
+                data_base64 TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        """)
     else:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS alzor_orders (
@@ -804,6 +833,30 @@ def ensure_database_schema(conn, is_postgres=True):
                 stock INTEGER NOT NULL DEFAULT 15,
                 updated_at TEXT NOT NULL DEFAULT (datetime('now')),
                 PRIMARY KEY (product_slug, size)
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_custom_products (
+                slug TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL DEFAULT 'CO-ORD SET',
+                price INTEGER NOT NULL DEFAULT 0,
+                original_price INTEGER NOT NULL DEFAULT 0,
+                images TEXT NOT NULL DEFAULT '[]',
+                description TEXT NOT NULL DEFAULT '',
+                details TEXT NOT NULL DEFAULT '[]',
+                care TEXT NOT NULL DEFAULT 'Dry clean recommended.',
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS alzor_uploaded_images (
+                filename TEXT PRIMARY KEY,
+                content_type TEXT NOT NULL,
+                data_base64 TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """)
 
@@ -1428,7 +1481,7 @@ def update_stock(slug, size, new_stock):
 
 
 def get_all_inventory():
-    all_prods = PRODUCTS + DRESSES
+    all_prods = get_all_products()
     prod_map = {p["slug"]: p for p in all_prods if p.get("slug")}
     inv_list = []
     with get_db_cursor() as (cur, is_pg):
@@ -1618,11 +1671,180 @@ def build_order_confirmation_email_html(order):
 
 
 # =========================================================
-# ALL PRODUCTS
+# ALL PRODUCTS & CUSTOM CATALOG
 # =========================================================
 
+def slugify(text):
+    text = (text or "").lower().strip()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_-]+", "-", text)
+    return text.strip("-")
+
+
+def get_custom_products(include_inactive=False):
+    """Fetch custom products from database, ordered newest first."""
+    prods = []
+    try:
+        with get_db_cursor() as (cur, is_pg):
+            cond = "" if include_inactive else ("WHERE is_active = TRUE" if is_pg else "WHERE is_active = 1")
+            cur.execute(
+                f"""SELECT slug, name, category, price, original_price, images, description, details, care, is_active
+                    FROM alzor_custom_products {cond}
+                    ORDER BY created_at DESC"""
+            )
+            rows = cur.fetchall()
+            for r in rows:
+                slug, name, category, price, orig_price, images_raw, desc, details_raw, care, active = r
+                if isinstance(images_raw, str):
+                    try:
+                        images = json.loads(images_raw)
+                    except Exception:
+                        images = [images_raw] if images_raw else []
+                elif isinstance(images_raw, list):
+                    images = images_raw
+                else:
+                    images = []
+
+                if isinstance(details_raw, str):
+                    try:
+                        details = json.loads(details_raw)
+                    except Exception:
+                        details = [d.strip() for d in details_raw.split("\n") if d.strip()]
+                elif isinstance(details_raw, list):
+                    details = details_raw
+                else:
+                    details = []
+
+                prods.append({
+                    "slug": slug,
+                    "name": name,
+                    "category": category or "CO-ORD SET",
+                    "price": int(price or 0),
+                    "original_price": int(orig_price or 0) if orig_price else None,
+                    "images": images if images else ["logo.png"],
+                    "description": desc or "",
+                    "details": details,
+                    "care": care or "Dry clean recommended.",
+                    "is_custom": True,
+                    "is_active": bool(active)
+                })
+    except Exception:
+        app.logger.exception("Failed to load custom products from database")
+    return prods
+
+
+def save_custom_product(product_data, is_edit=False):
+    """Insert or update a custom product in the database and inventory."""
+    name = (product_data.get("name") or "").strip()
+    slug = (product_data.get("slug") or "").strip()
+    if not slug:
+        slug = slugify(name)
+    category = (product_data.get("category") or "CO-ORD SET").strip().upper()
+    try:
+        price = int(product_data.get("price") or 0)
+    except (ValueError, TypeError):
+        price = 0
+
+    orig_price = product_data.get("original_price")
+    try:
+        orig_price = int(orig_price) if orig_price else 0
+    except (ValueError, TypeError):
+        orig_price = 0
+
+    images = product_data.get("images", [])
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except Exception:
+            images = [images] if images else []
+
+    description = (product_data.get("description") or "").strip()
+    details = product_data.get("details", [])
+    if isinstance(details, str):
+        details = [d.strip() for d in details.split("\n") if d.strip()]
+
+    care = (product_data.get("care") or "Dry clean recommended.").strip()
+    is_active = product_data.get("is_active", True)
+
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        img_val = Jsonb(images) if is_pg else json.dumps(images, ensure_ascii=False)
+        det_val = Jsonb(details) if is_pg else json.dumps(details, ensure_ascii=False)
+        act_val = True if is_pg else 1
+        if not is_active:
+            act_val = False if is_pg else 0
+
+        if is_pg:
+            cur.execute(
+                f"""INSERT INTO alzor_custom_products
+                    (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, NOW())
+                    ON CONFLICT (slug) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    category = EXCLUDED.category,
+                    price = EXCLUDED.price,
+                    original_price = EXCLUDED.original_price,
+                    images = EXCLUDED.images,
+                    description = EXCLUDED.description,
+                    details = EXCLUDED.details,
+                    care = EXCLUDED.care,
+                    is_active = EXCLUDED.is_active,
+                    updated_at = NOW()""",
+                (slug, name, category, price, orig_price, img_val, description, det_val, care, act_val)
+            )
+        else:
+            cur.execute(
+                f"""INSERT OR REPLACE INTO alzor_custom_products
+                    (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, datetime('now'))""",
+                (slug, name, category, price, orig_price, img_val, description, det_val, care, act_val)
+            )
+
+        # Update or initialize stock per size
+        stock_map = product_data.get("stock", {})
+        sizes = product_data.get("sizes", AVAILABLE_SIZES)
+        if isinstance(sizes, str):
+            sizes = [s.strip() for s in sizes.split(",") if s.strip()]
+        for sz in sizes:
+            stk = 15
+            if isinstance(stock_map, dict):
+                try:
+                    stk = int(stock_map.get(sz, 15))
+                except (ValueError, TypeError):
+                    stk = 15
+            if is_pg:
+                cur.execute(
+                    """INSERT INTO alzor_inventory (product_slug, size, stock, updated_at)
+                       VALUES (%s, %s, %s, NOW())
+                       ON CONFLICT (product_slug, size) DO UPDATE SET
+                       stock = EXCLUDED.stock,
+                       updated_at = NOW()""",
+                    (slug, sz, stk)
+                )
+            else:
+                cur.execute(
+                    """INSERT OR REPLACE INTO alzor_inventory (product_slug, size, stock, updated_at)
+                       VALUES (?, ?, ?, datetime('now'))""",
+                    (slug, sz, stk)
+                )
+
+    return slug
+
+
+def delete_custom_product(slug):
+    """Delete a custom product and its inventory entries."""
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"DELETE FROM alzor_custom_products WHERE slug = {ph}", (slug,))
+        cur.execute(f"DELETE FROM alzor_inventory WHERE product_slug = {ph}", (slug,))
+
+
 def get_all_products():
-    return PRODUCTS + DRESSES
+    """Return all products: active custom products first, then catalog pieces."""
+    custom = get_custom_products(include_inactive=False)
+    custom_slugs = {p["slug"] for p in custom}
+    catalog_prods = [p for p in (PRODUCTS + DRESSES) if p.get("slug") not in custom_slugs]
+    return custom + catalog_prods
 
 
 # =========================================================
@@ -1712,7 +1934,7 @@ def inject_global_values():
 def home():
     return render_template(
         "index.html",
-        products=PRODUCTS,
+        products=get_all_products(),
         instagram_posts=INSTAGRAM_POSTS
     )
 
@@ -1725,7 +1947,7 @@ def home():
 def new_arrivals():
     return render_template(
         "newarrival.html",
-        products=PRODUCTS + DRESSES
+        products=get_all_products()
     )
 
 
@@ -1735,9 +1957,13 @@ def new_arrivals():
 
 @app.route("/dresses")
 def dresses():
+    dress_prods = [
+        product for product in get_all_products()
+        if product.get("category", "").upper() == "DRESS"
+    ]
     return render_template(
         "dresses.html",
-        dresses=DRESSES
+        dresses=dress_prods
     )
 
 
@@ -1749,8 +1975,8 @@ def dresses():
 def co_ord_sets():
     co_ord_products = [
         product
-        for product in PRODUCTS
-        if product["category"] == "CO-ORD SET"
+        for product in get_all_products()
+        if product.get("category", "").upper() == "CO-ORD SET"
     ]
 
     return render_template(
@@ -3161,6 +3387,14 @@ def admin_dashboard():
         inventory = []
 
     try:
+        all_catalog_products = get_all_products()
+    except Exception:
+        all_catalog_products = []
+
+    products_count = len(all_catalog_products)
+    custom_products_count = len([p for p in all_catalog_products if p.get("is_custom")])
+
+    try:
         notifications = get_admin_notifications(limit=30)
         unread_notifs = get_unread_notification_count()
     except Exception:
@@ -3180,6 +3414,9 @@ def admin_dashboard():
         coupons_count=len(coupons),
         inventory=inventory,
         inventory_count=len(inventory),
+        products=all_catalog_products,
+        products_count=products_count,
+        custom_products_count=custom_products_count,
         notifications=notifications,
         unread_notifs=unread_notifs,
         orders_count=len(orders),
@@ -3391,6 +3628,211 @@ def admin_api_update_inventory():
         return jsonify({"success": False, "message": "Product slug and size required."}), 400
     update_stock(slug, size, new_stock)
     return jsonify({"success": True, "message": f"Stock updated to {new_stock} units for {slug} ({size})."})
+
+
+# =========================================================
+# ADMIN PRODUCT CATALOG API (IMAGE UPLOADS, CREATE, EDIT, DELETE)
+# =========================================================
+
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif", "jfif", "avif", "heic"}
+
+
+@app.route("/admin/api/products", methods=["GET"])
+def admin_api_get_products():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    return jsonify({
+        "success": True,
+        "products": get_all_products()
+    })
+
+
+@app.route("/admin/api/products/<slug>", methods=["GET"])
+def admin_api_get_product(slug):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+    p = find_product(slug)
+    if not p:
+        return jsonify({"success": False, "message": "Product not found"}), 404
+
+    stock_map = {}
+    for sz in AVAILABLE_SIZES:
+        stock_map[sz] = get_product_stock(slug, sz)
+
+    prod_data = dict(p)
+    prod_data["stock"] = stock_map
+    return jsonify({"success": True, "product": prod_data})
+
+
+@app.route("/admin/api/products/upload-images", methods=["POST"])
+def admin_api_upload_images():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    files = request.files.getlist("images") or request.files.getlist("images[]") or request.files.getlist("file")
+    if not files or all(f.filename == "" for f in files):
+        return jsonify({"success": False, "message": "No photos selected. Please pick images from your device."}), 400
+
+    upload_dir = os.path.join(app.root_path, "static", "images")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    saved_filenames = []
+
+    for f in files:
+        if not f or not f.filename:
+            continue
+        original_name = f.filename.lower()
+        ext = original_name.rsplit(".", 1)[-1] if "." in original_name else "jpg"
+        if ext not in ALLOWED_IMAGE_EXTENSIONS:
+            ext = "jpg"
+
+        unique_token = secrets.token_hex(4)
+        timestamp = int(datetime.now().timestamp())
+        filename = f"prod_{timestamp}_{unique_token}.{ext}"
+        filepath = os.path.join(upload_dir, filename)
+
+        try:
+            file_bytes = f.read()
+        except Exception as e:
+            app.logger.warning(f"Error reading file bytes: {e}")
+            continue
+
+        if not file_bytes:
+            continue
+
+        # 1. Write to static/images on disk
+        try:
+            with open(filepath, "wb") as out_f:
+                out_f.write(file_bytes)
+        except Exception as e:
+            app.logger.warning(f"Could not write image to disk ({filepath}): {e}")
+
+        # 2. Persist to database (alzor_uploaded_images) for durable cross-restart recovery
+        try:
+            b64_data = base64.b64encode(file_bytes).decode("utf-8")
+            mime = f"image/{ext}" if ext != "jpg" else "image/jpeg"
+            with get_db_cursor() as (cur, is_pg):
+                ph = "%s" if is_pg else "?"
+                if is_pg:
+                    cur.execute(
+                        f"""INSERT INTO alzor_uploaded_images (filename, content_type, data_base64, created_at)
+                           VALUES ({ph}, {ph}, {ph}, NOW())
+                           ON CONFLICT (filename) DO NOTHING""",
+                        (filename, mime, b64_data)
+                    )
+                else:
+                    cur.execute(
+                        f"""INSERT OR IGNORE INTO alzor_uploaded_images (filename, content_type, data_base64, created_at)
+                           VALUES ({ph}, {ph}, {ph}, datetime('now'))""",
+                        (filename, mime, b64_data)
+                    )
+        except Exception as e:
+            app.logger.exception(f"Failed to persist image in DB: {e}")
+
+        saved_filenames.append(filename)
+
+    if not saved_filenames:
+        return jsonify({"success": False, "message": "Failed to process selected images."}), 500
+
+    return jsonify({
+        "success": True,
+        "filenames": saved_filenames,
+        "urls": [f"/static/images/{fn}" for fn in saved_filenames]
+    })
+
+
+@app.route("/admin/api/products/save", methods=["POST"])
+def admin_api_save_product():
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or request.form
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"success": False, "message": "Product name is required."}), 400
+
+    raw_slug = (data.get("slug") or "").strip()
+    slug = slugify(raw_slug) if raw_slug else slugify(name)
+    if not slug:
+        slug = f"prod-{secrets.token_hex(4)}"
+
+    try:
+        price = int(data.get("price") or 0)
+    except (ValueError, TypeError):
+        return jsonify({"success": False, "message": "Invalid price value."}), 400
+
+    if price <= 0:
+        return jsonify({"success": False, "message": "Price must be greater than ₹0."}), 400
+
+    orig_price = data.get("original_price")
+    try:
+        orig_price = int(orig_price) if orig_price else 0
+    except (ValueError, TypeError):
+        orig_price = 0
+
+    images = data.get("images", [])
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except Exception:
+            images = [images] if images else []
+
+    if not images:
+        images = ["logo.png"]
+
+    category = (data.get("category") or "CO-ORD SET").strip().upper()
+    description = (data.get("description") or "").strip()
+    details = data.get("details", [])
+    if isinstance(details, str):
+        details = [d.strip() for d in details.split("\n") if d.strip()]
+    care = (data.get("care") or "Dry clean recommended.").strip()
+    is_active = bool(data.get("is_active", True))
+
+    sizes = data.get("sizes", AVAILABLE_SIZES)
+    if isinstance(sizes, str):
+        sizes = [s.strip() for s in sizes.split(",") if s.strip()]
+
+    stock = data.get("stock", {})
+    if isinstance(stock, str):
+        try:
+            stock = json.loads(stock)
+        except Exception:
+            stock = {}
+
+    is_edit = bool(data.get("is_edit", False))
+
+    saved_slug = save_custom_product({
+        "name": name,
+        "slug": slug,
+        "category": category,
+        "price": price,
+        "original_price": orig_price,
+        "images": images,
+        "description": description,
+        "details": details,
+        "care": care,
+        "is_active": is_active,
+        "sizes": sizes,
+        "stock": stock
+    }, is_edit=is_edit)
+
+    return jsonify({
+        "success": True,
+        "slug": saved_slug,
+        "message": f"Product '{name}' successfully {'updated' if is_edit else 'published'} to atelier!"
+    })
+
+
+@app.route("/admin/api/products/<slug>/delete", methods=["POST"])
+def admin_api_delete_product(slug):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    delete_custom_product(slug)
+    return jsonify({
+        "success": True,
+        "message": f"Product '{slug}' successfully removed from custom catalog."
+    })
 
 
 # =========================================================
@@ -3737,6 +4179,19 @@ def sitemap_xml():
     return Response("\n".join(lines), mimetype="application/xml")
 
 
+@app.route("/healthz")
+@app.route("/ping")
+def healthz():
+    """Keep-alive ping endpoint to prevent Render sleep and verify server health."""
+    return jsonify({
+        "status": "ok",
+        "app": "alzor-couture",
+        "mode": "live" if RAZORPAY_IS_LIVE else "test",
+        "database": "postgresql" if USE_POSTGRES else "sqlite",
+        "timestamp": datetime.now().isoformat()
+    }), 200
+
+
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(
@@ -3748,6 +4203,31 @@ def favicon():
 
 @app.errorhandler(404)
 def page_not_found(e):
+    # Dynamic fallback: if a custom-uploaded image is missing from local disk, serve it from DB
+    if request.path.startswith("/static/images/"):
+        filename = os.path.basename(request.path)
+        try:
+            with get_db_cursor() as (cur, is_pg):
+                ph = "%s" if is_pg else "?"
+                cur.execute(f"SELECT content_type, data_base64 FROM alzor_uploaded_images WHERE filename = {ph}", (filename,))
+                row = cur.fetchone()
+                if row:
+                    mime, b64_data = row[0], row[1]
+                    raw_bytes = base64.b64decode(b64_data)
+                    # Cache to local static folder if writable
+                    try:
+                        upload_dir = os.path.join(app.root_path, "static", "images")
+                        os.makedirs(upload_dir, exist_ok=True)
+                        with open(os.path.join(upload_dir, filename), "wb") as out_f:
+                            out_f.write(raw_bytes)
+                    except Exception:
+                        pass
+                    resp = Response(raw_bytes, mimetype=mime)
+                    resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    return resp
+        except Exception:
+            pass
+
     return render_template(
         "404.html",
         site_url=SITE_URL

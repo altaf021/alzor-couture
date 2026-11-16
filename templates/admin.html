@@ -730,6 +730,109 @@
             color: #ffffff;
             margin-bottom: 8px;
         }
+        /* PRODUCT DROPZONE & PREVIEWS */
+        .product-dropzone {
+            border: 2px dashed rgba(173, 138, 81, 0.45);
+            background: rgba(173, 138, 81, 0.04);
+            padding: 24px 18px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .product-dropzone:hover, .product-dropzone.dragover {
+            border-color: var(--gold);
+            background: rgba(173, 138, 81, 0.1);
+        }
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+        .image-preview-card {
+            position: relative;
+            background: #110f0d;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            aspect-ratio: 3/4;
+        }
+        .image-preview-card.is-cover {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(173, 138, 81, 0.35);
+        }
+        .image-preview-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .image-preview-cover-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--gold);
+            color: #141210;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 2px 5px;
+            border-radius: 2px;
+            text-transform: uppercase;
+        }
+        .image-preview-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 15, 13, 0.88);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 6px;
+        }
+        .image-preview-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 2px 4px;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+        .image-preview-btn:hover {
+            color: var(--gold);
+        }
+        .image-preview-btn.delete:hover {
+            color: #ef4444;
+        }
+        .size-stock-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .size-stock-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            border-radius: 3px;
+        }
+        .badge-custom {
+            background: rgba(173, 138, 81, 0.2);
+            color: var(--gold-light);
+            border: 1px solid rgba(173, 138, 81, 0.35);
+        }
+        .badge-catalog {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
     </style>
 </head>
 <body>
@@ -820,6 +923,11 @@
                 <strong>{{ pending_count }}</strong>
                 <div class="kpi-sub">Customer bag sessions</div>
             </div>
+            <div class="kpi-card">
+                <span>Atelier Catalog</span>
+                <strong style="color:var(--gold);">{{ products_count }}</strong>
+                <div class="kpi-sub">{{ custom_products_count }} custom additions</div>
+            </div>
         </section>
 
         <!-- MAIN TABS -->
@@ -827,6 +935,9 @@
             <div class="tab-buttons">
                 <button type="button" class="tab-btn active" id="tabBtn-orders" onclick="switchMainTab('orders')">
                     Confirmed Orders <span class="tab-count">{{ orders_count }}</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabBtn-products" onclick="switchMainTab('products')">
+                    Products &amp; Catalog <span class="tab-count">{{ products_count }}</span>
                 </button>
                 <button type="button" class="tab-btn" id="tabBtn-coupons" onclick="switchMainTab('coupons')">
                     Promo Codes &amp; Coupons <span class="tab-count">{{ coupons_count }}</span>
@@ -962,6 +1073,112 @@
                 <div class="empty-state">
                     <h3>No Confirmed Orders Found</h3>
                     <p>New online purchases verified via Razorpay will immediately display here.</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- TAB: PRODUCTS & CATALOG -->
+        <!-- ========================================================= -->
+        <div id="tabContent-products" class="tab-pane" style="display:none;">
+            <div class="toolbar">
+                <div>
+                    <h3 style="font-family:Georgia,serif;font-size:17px;font-weight:400;color:#ffffff;">Atelier Product Catalog &amp; Direct Photo Upload</h3>
+                    <p style="font-size:12px;color:var(--muted);margin-top:2px;">Upload new designs directly from your mobile gallery or laptop. Edits sync live to the storefront.</p>
+                </div>
+                <button type="button" class="btn-action-primary" onclick="openProductModal()">
+                    + Add New Product
+                </button>
+            </div>
+
+            <!-- FILTERS TOOLBAR -->
+            <div class="toolbar" style="margin-bottom:14px; background:#110f0d;">
+                <div class="filters-group" style="width:100%;">
+                    <div class="search-box">
+                        <input type="text" id="productSearchInput" placeholder="Search by product name or slug..." oninput="filterProductCatalog()">
+                    </div>
+                    <select id="productCategoryFilter" class="filter-select" onchange="filterProductCatalog()">
+                        <option value="ALL">All Categories</option>
+                        <option value="CO-ORD SET">CO-ORD SET</option>
+                        <option value="DRESS">DRESS</option>
+                        <option value="NEW ARRIVAL">NEW ARRIVAL</option>
+                        <option value="EVENING WEAR">EVENING WEAR</option>
+                        <option value="COUTURE">COUTURE</option>
+                    </select>
+                    <select id="productOriginFilter" class="filter-select" onchange="filterProductCatalog()">
+                        <option value="ALL">All Pieces ({{ products_count }})</option>
+                        <option value="CUSTOM">Custom Additions ({{ custom_products_count }})</option>
+                        <option value="CORE">Core Collection ({{ products_count - custom_products_count }})</option>
+                    </select>
+                </div>
+            </div>
+
+            <section class="table-wrap">
+                {% if products %}
+                <table id="productsCatalogTable">
+                    <thead>
+                        <tr>
+                            <th style="width:70px;">Cover</th>
+                            <th>Product Name &amp; URL Slug</th>
+                            <th>Category</th>
+                            <th>Selling Price</th>
+                            <th>Compare Price</th>
+                            <th>Collection Type</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr class="product-catalog-row" data-name="{{ p.name|lower }}" data-slug="{{ p.slug|lower }}" data-category="{{ p.category|upper }}" data-origin="{{ 'CUSTOM' if p.is_custom else 'CORE' }}">
+                            <td>
+                                <img src="{{ url_for('static', filename='images/' ~ (p.images[0] if p.images else 'logo.png')) }}" alt="{{ p.name }}" style="width:48px; height:62px; object-fit:cover; border-radius:2px; border:1px solid var(--border); display:block;" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/logo.png') }}';">
+                            </td>
+                            <td>
+                                <div style="font-weight:700; color:#ffffff; font-size:13.5px; margin-bottom:2px;">{{ p.name }}</div>
+                                <div style="font-family:Consolas,monospace; font-size:11px; color:var(--muted);">/product/{{ p.slug }}</div>
+                            </td>
+                            <td>
+                                <span class="item-pill" style="letter-spacing:1px; font-weight:600; text-transform:uppercase;">{{ p.category }}</span>
+                            </td>
+                            <td>
+                                <strong style="color:var(--gold); font-size:13.5px;">₹{{ "{:,}".format(p.price) }}</strong>
+                            </td>
+                            <td>
+                                {% if p.original_price and p.original_price > p.price %}
+                                <span style="text-decoration:line-through; color:var(--muted); font-size:12px;">₹{{ "{:,}".format(p.original_price) }}</span>
+                                {% else %}
+                                <span style="color:var(--muted); font-size:12px;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.is_custom %}
+                                <span class="status-badge-inline badge-custom">Custom Addition</span>
+                                {% else %}
+                                <span class="status-badge-inline badge-catalog">Core Collection</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:right; white-space:nowrap;">
+                                <button type="button" class="btn-action-primary" style="padding:5px 12px; font-size:10px; margin-right:4px;" onclick="openProductModal('{{ p.slug }}')">
+                                    Edit
+                                </button>
+                                <a href="{{ url_for('product', slug=p.slug) }}" target="_blank" class="btn-action-secondary" style="padding:5px 10px; font-size:10px; margin-right:4px;">
+                                    View
+                                </a>
+                                {% if p.is_custom %}
+                                <button type="button" class="btn-action-secondary" style="padding:5px 10px; font-size:10px; color:#ef4444; border-color:rgba(239,68,68,0.35);" onclick="deleteProduct('{{ p.slug }}', '{{ p.name|e }}')">
+                                    Delete
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <h3>No Products Found in Atelier</h3>
+                    <p>Click '+ Add New Product' above to upload photos and publish your first garment.</p>
                 </div>
                 {% endif %}
             </section>
@@ -1280,6 +1497,145 @@
         </div>
     </div>
 
+    <!-- ========================================================= -->
+    <!-- ADD / EDIT PRODUCT MODAL -->
+    <!-- ========================================================= -->
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 760px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="productModalTitle" style="font-family: Georgia, serif; font-size: 18px; color: #ffffff;">Add New Product to Atelier</h3>
+                    <div id="productModalSub" style="font-size: 11px; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px;">
+                        Direct Mobile &amp; Laptop Photo Upload
+                    </div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeProductModal()">&times;</button>
+            </div>
+
+            <form id="productForm" onsubmit="submitProductForm(event)">
+                <input type="hidden" id="pm_is_edit" value="0">
+                <input type="hidden" id="pm_original_slug" value="">
+
+                <!-- STEP 1: PHOTO UPLOAD -->
+                <div style="margin-bottom: 22px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                        <label style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 0;">
+                            1. Product Photos (Mobile Gallery or PC Folders) *
+                        </label>
+                        <span style="font-size: 11px; color: var(--muted);" id="pm_photo_count_badge">0 photos selected</span>
+                    </div>
+
+                    <!-- DROPZONE -->
+                    <div class="product-dropzone" id="productDropzone" onclick="document.getElementById('productFileInput').click()">
+                        <div style="font-size: 32px; margin-bottom: 6px;">📸</div>
+                        <div style="font-size: 13.5px; color: #ffffff; font-weight: 600; margin-bottom: 4px;">
+                            Tap to Pick Photos from Phone Gallery or Browse Laptop Files
+                        </div>
+                        <div style="font-size: 11.5px; color: var(--muted); margin-bottom: 12px;">
+                            Supports JPG, PNG, WEBP, HEIC. You can select multiple photos at once.
+                        </div>
+                        <button type="button" class="btn-action-primary" style="pointer-events: none;">
+                            Select Photos from Device
+                        </button>
+                    </div>
+                    <input type="file" id="productFileInput" multiple accept="image/*" style="display:none;" onchange="handleProductFilesSelected(this.files)">
+
+                    <!-- LIVE PREVIEWS CONTAINER -->
+                    <div id="productImagesPreviewContainer" class="image-preview-grid" style="display:none; margin-top: 14px;">
+                        <!-- Dynamically filled with image cards -->
+                    </div>
+                    <p style="font-size: 11px; color: var(--muted); margin-top: 8px; margin-bottom: 0;">
+                        Tip: Use <strong>◀</strong> and <strong>▶</strong> buttons on each photo to change order. The first photo with the gold badge is your main storefront cover photo.
+                    </p>
+                </div>
+
+                <!-- STEP 2: GARMENT INFORMATION -->
+                <div style="margin-bottom: 22px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 16px;">
+                    <label style="display:block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 12px;">
+                        2. Garment Details &amp; Pricing
+                    </label>
+                    <div class="form-grid">
+                        <div class="form-field full">
+                            <label>Product Name *</label>
+                            <input type="text" id="pm_name" required placeholder="e.g. Scarlet Royale Silk Set" oninput="autoGenerateSlug(this.value)">
+                        </div>
+                        <div class="form-field">
+                            <label>Product URL Slug *</label>
+                            <input type="text" id="pm_slug" required placeholder="e.g. scarlet-royale-silk-set">
+                        </div>
+                        <div class="form-field">
+                            <label>Category *</label>
+                            <select id="pm_category" required>
+                                <option value="CO-ORD SET">CO-ORD SET</option>
+                                <option value="DRESS">DRESS</option>
+                                <option value="NEW ARRIVAL">NEW ARRIVAL</option>
+                                <option value="EVENING WEAR">EVENING WEAR</option>
+                                <option value="COUTURE">COUTURE</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Selling Price (₹ INR) *</label>
+                            <input type="number" id="pm_price" required min="1" step="1" placeholder="e.g. 6999">
+                        </div>
+                        <div class="form-field">
+                            <label>Original / Compare-at Price (₹ INR)</label>
+                            <input type="number" id="pm_orig_price" min="0" step="1" placeholder="e.g. 8499 (optional strike-through)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: DESCRIPTION, DETAILS & CARE -->
+                <div style="margin-bottom: 22px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 16px;">
+                    <label style="display:block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 12px;">
+                        3. Atelier Description &amp; Care
+                    </label>
+                    <div class="form-field full" style="margin-bottom: 12px;">
+                        <label>Description (Displayed on product page)</label>
+                        <textarea id="pm_description" rows="3" placeholder="A brief luxury description of the silhouette, textile character, and aesthetic..."></textarea>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label>Bullet Points / Craftsmanship (One line each)</label>
+                            <textarea id="pm_details" rows="3" placeholder="Premium mulberry silk&#10;Two-piece coordinated silhouette&#10;Handcrafted embellishments"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label>Care Instructions</label>
+                            <input type="text" id="pm_care" value="Dry clean recommended." placeholder="e.g. Dry clean recommended.">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: SIZES & STOCK -->
+                <div style="margin-bottom: 22px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-light); padding: 16px;">
+                    <label style="display:block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 10px;">
+                        4. Available Sizes &amp; Initial Stock
+                    </label>
+                    <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">
+                        Check each size you wish to make available and set its initial inventory stock:
+                    </p>
+                    <div class="size-stock-row" id="pm_sizes_container">
+                        {% for sz in available_sizes %}
+                        <div class="size-stock-chip">
+                            <label style="margin:0; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                                <input type="checkbox" class="pm-size-chk" value="{{ sz }}" checked onchange="toggleSizeStockInput(this, '{{ sz }}')">
+                                <span style="font-weight:700; color:#fff;">{{ sz }}</span>
+                            </label>
+                            <input type="number" id="pm_stock_{{ sz }}" min="0" value="15" title="Stock for size {{ sz }}" style="width:65px; padding:4px 8px; font-size:12px; background:var(--card-bg); border:1px solid var(--border); color:#fff; text-align:center;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 24px; display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn-action-secondary" onclick="closeProductModal()">Cancel</button>
+                    <button type="submit" id="pm_submit_btn" class="btn-action-primary" style="padding: 10px 24px;">
+                        <span id="pm_btn_text">Publish Product to Storefront</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // CLIENT-SIDE ORDERS DATA CACHE FOR INSTANT MODAL OPEN
@@ -1418,16 +1774,384 @@
 
         // MAIN TABS
         function switchMainTab(tab) {
-            const tabs = ["orders", "coupons", "inventory", "pending"];
+            const tabs = ["orders", "products", "coupons", "inventory", "pending"];
             tabs.forEach(t => {
                 const pane = document.getElementById(`tabContent-${t}`);
                 const btn = document.getElementById(`tabBtn-${t}`);
-                if (t === tab) {
-                    pane.style.display = "block";
-                    btn.classList.add("active");
+                if (pane && btn) {
+                    if (t === tab) {
+                        pane.style.display = "block";
+                        btn.classList.add("active");
+                    } else {
+                        pane.style.display = "none";
+                        btn.classList.remove("active");
+                    }
+                }
+            });
+        }
+
+        // =========================================================
+        // PRODUCT CATALOG & DIRECT UPLOADER JAVASCRIPT
+        // =========================================================
+
+        let currentProductImages = []; // Array of { type: 'file'|'server', file?: File, previewUrl: string, filename?: string }
+
+        function handleProductFilesSelected(files) {
+            if (!files || !files.length) return;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.type.startsWith("image/")) continue;
+                const blobUrl = URL.createObjectURL(file);
+                currentProductImages.push({
+                    type: "file",
+                    file: file,
+                    previewUrl: blobUrl,
+                    name: file.name
+                });
+            }
+            renderProductImagePreviews();
+            const inp = document.getElementById("productFileInput");
+            if (inp) inp.value = "";
+        }
+
+        // Drag & Drop support on dropzone
+        window.addEventListener("DOMContentLoaded", () => {
+            const dropzone = document.getElementById("productDropzone");
+            if (dropzone) {
+                ["dragenter", "dragover"].forEach(evt => {
+                    dropzone.addEventListener(evt, e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.classList.add("dragover");
+                    });
+                });
+                ["dragleave", "drop"].forEach(evt => {
+                    dropzone.addEventListener(evt, e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.classList.remove("dragover");
+                    });
+                });
+                dropzone.addEventListener("drop", e => {
+                    const dt = e.dataTransfer;
+                    if (dt && dt.files) {
+                        handleProductFilesSelected(dt.files);
+                    }
+                });
+            }
+        });
+
+        function renderProductImagePreviews() {
+            const container = document.getElementById("productImagesPreviewContainer");
+            const badge = document.getElementById("pm_photo_count_badge");
+            if (!container) return;
+
+            if (currentProductImages.length === 0) {
+                container.style.display = "none";
+                container.innerHTML = "";
+                if (badge) badge.textContent = "0 photos selected";
+                return;
+            }
+
+            container.style.display = "grid";
+            if (badge) {
+                badge.textContent = `${currentProductImages.length} photo${currentProductImages.length > 1 ? 's' : ''} ready`;
+            }
+
+            container.innerHTML = currentProductImages.map((item, index) => {
+                const isCover = index === 0;
+                return `
+                    <div class="image-preview-card ${isCover ? 'is-cover' : ''}">
+                        <img src="${item.previewUrl}" alt="Photo ${index + 1}">
+                        ${isCover ? '<div class="image-preview-cover-badge">★ Cover Photo</div>' : ''}
+                        <div class="image-preview-actions">
+                            <button type="button" class="image-preview-btn" title="Move earlier in order" ${index === 0 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''} onclick="moveProductImage(${index}, -1)">◀</button>
+                            <button type="button" class="image-preview-btn delete" title="Remove photo" onclick="removeProductImage(${index})">✕</button>
+                            <button type="button" class="image-preview-btn" title="Move later in order" ${index === currentProductImages.length - 1 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''} onclick="moveProductImage(${index}, 1)">▶</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function moveProductImage(index, dir) {
+            const targetIndex = index + dir;
+            if (targetIndex < 0 || targetIndex >= currentProductImages.length) return;
+            const temp = currentProductImages[index];
+            currentProductImages[index] = currentProductImages[targetIndex];
+            currentProductImages[targetIndex] = temp;
+            renderProductImagePreviews();
+        }
+
+        function removeProductImage(index) {
+            currentProductImages.splice(index, 1);
+            renderProductImagePreviews();
+        }
+
+        function autoGenerateSlug(name) {
+            const isEdit = document.getElementById("pm_is_edit").value === "1";
+            if (isEdit) return;
+            const slugInput = document.getElementById("pm_slug");
+            if (!slugInput) return;
+            slugInput.value = name
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, "")
+                .replace(/[\s_-]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+        }
+
+        function toggleSizeStockInput(chk, sz) {
+            const stockInput = document.getElementById(`pm_stock_${sz}`);
+            if (!stockInput) return;
+            if (chk.checked) {
+                stockInput.disabled = false;
+                stockInput.style.opacity = "1";
+            } else {
+                stockInput.disabled = true;
+                stockInput.style.opacity = "0.3";
+            }
+        }
+
+        function openProductModal(slug = null) {
+            const modal = document.getElementById("productModal");
+            const form = document.getElementById("productForm");
+            const title = document.getElementById("productModalTitle");
+            const sub = document.getElementById("productModalSub");
+            const btnText = document.getElementById("pm_btn_text");
+            const isEditInput = document.getElementById("pm_is_edit");
+            const origSlugInput = document.getElementById("pm_original_slug");
+
+            form.reset();
+            currentProductImages = [];
+            renderProductImagePreviews();
+
+            // Default all size checkboxes to checked and stock 15
+            document.querySelectorAll(".pm-size-chk").forEach(chk => {
+                chk.checked = true;
+                toggleSizeStockInput(chk, chk.value);
+                const sInp = document.getElementById(`pm_stock_${chk.value}`);
+                if (sInp) sInp.value = 15;
+            });
+
+            if (!slug) {
+                // ADD NEW PRODUCT MODE
+                isEditInput.value = "0";
+                origSlugInput.value = "";
+                title.textContent = "Add New Product to Atelier";
+                sub.textContent = "Direct mobile & laptop photo upload";
+                btnText.textContent = "Publish Product to Storefront";
+                document.getElementById("pm_care").value = "Dry clean recommended.";
+                modal.classList.add("open");
+            } else {
+                // EDIT EXISTING PRODUCT MODE
+                isEditInput.value = "1";
+                origSlugInput.value = slug;
+                title.textContent = "Edit Product: " + slug;
+                sub.textContent = "Update images, details, and inventory";
+                btnText.textContent = "Update Product";
+
+                modal.classList.add("open");
+
+                // Fetch current details from API
+                fetch(`/admin/api/products/${slug}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success || !data.product) {
+                            alert("Could not load product details: " + (data.message || "Unknown error"));
+                            return;
+                        }
+                        const p = data.product;
+                        document.getElementById("pm_name").value = p.name || "";
+                        document.getElementById("pm_slug").value = p.slug || "";
+                        document.getElementById("pm_category").value = p.category || "CO-ORD SET";
+                        document.getElementById("pm_price").value = p.price || "";
+                        document.getElementById("pm_orig_price").value = p.original_price || "";
+                        document.getElementById("pm_description").value = p.description || "";
+                        document.getElementById("pm_details").value = Array.isArray(p.details) ? p.details.join("\n") : (p.details || "");
+                        document.getElementById("pm_care").value = p.care || "Dry clean recommended.";
+
+                        // Pre-fill existing images
+                        currentProductImages = (p.images || []).map(img => ({
+                            type: "server",
+                            filename: img,
+                            previewUrl: `/static/images/${img}`
+                        }));
+                        renderProductImagePreviews();
+
+                        // Pre-fill stock
+                        const stockMap = p.stock || {};
+                        document.querySelectorAll(".pm-size-chk").forEach(chk => {
+                            const sz = chk.value;
+                            if (sz in stockMap) {
+                                chk.checked = true;
+                                toggleSizeStockInput(chk, sz);
+                                const sInp = document.getElementById(`pm_stock_${sz}`);
+                                if (sInp) sInp.value = stockMap[sz];
+                            } else {
+                                chk.checked = false;
+                                toggleSizeStockInput(chk, sz);
+                            }
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Error fetching product:", err);
+                        alert("Error loading product: " + err);
+                    });
+            }
+        }
+
+        function closeProductModal() {
+            document.getElementById("productModal").classList.remove("open");
+        }
+
+        async function submitProductForm(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById("pm_submit_btn");
+            const btnText = document.getElementById("pm_btn_text");
+            const isEdit = document.getElementById("pm_is_edit").value === "1";
+
+            if (currentProductImages.length === 0) {
+                alert("Please select at least 1 product photo from your mobile gallery or computer.");
+                return;
+            }
+
+            const name = document.getElementById("pm_name").value.trim();
+            const slug = document.getElementById("pm_slug").value.trim();
+            const category = document.getElementById("pm_category").value.trim();
+            const price = parseInt(document.getElementById("pm_price").value, 10);
+            const origPrice = parseInt(document.getElementById("pm_orig_price").value, 10) || 0;
+            const desc = document.getElementById("pm_description").value.trim();
+            const detailsText = document.getElementById("pm_details").value.trim();
+            const care = document.getElementById("pm_care").value.trim();
+
+            if (!name || !slug || !price) {
+                alert("Please fill in the Product Name, URL Slug, and Selling Price.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            btnText.textContent = "Uploading photos & publishing...";
+
+            try {
+                // 1. Upload newly added files
+                const filesToUpload = currentProductImages.filter(item => item.type === "file");
+                if (filesToUpload.length > 0) {
+                    const formData = new FormData();
+                    filesToUpload.forEach(item => {
+                        formData.append("images", item.file);
+                    });
+
+                    const uploadRes = await fetch("/admin/api/products/upload-images", {
+                        method: "POST",
+                        body: formData
+                    });
+                    const uploadData = await uploadRes.json();
+                    if (!uploadData.success) {
+                        throw new Error(uploadData.message || "Failed to upload photos.");
+                    }
+
+                    // Map returned filenames in order
+                    let upIdx = 0;
+                    currentProductImages.forEach(item => {
+                        if (item.type === "file") {
+                            item.filename = uploadData.filenames[upIdx++];
+                            item.type = "server";
+                        }
+                    });
+                }
+
+                // 2. Gather ordered filenames
+                const finalImages = currentProductImages.map(item => item.filename);
+
+                // 3. Gather sizes & stock
+                const selectedSizes = [];
+                const stockMap = {};
+                document.querySelectorAll(".pm-size-chk").forEach(chk => {
+                    if (chk.checked) {
+                        const sz = chk.value;
+                        selectedSizes.push(sz);
+                        const sInp = document.getElementById(`pm_stock_${sz}`);
+                        stockMap[sz] = sInp ? parseInt(sInp.value, 10) || 0 : 15;
+                    }
+                });
+
+                // 4. Save product
+                const savePayload = {
+                    name: name,
+                    slug: slug,
+                    category: category,
+                    price: price,
+                    original_price: origPrice,
+                    images: finalImages,
+                    description: desc,
+                    details: detailsText ? detailsText.split("\n").filter(s => s.trim()) : [],
+                    care: care,
+                    sizes: selectedSizes,
+                    stock: stockMap,
+                    is_edit: isEdit
+                };
+
+                const saveRes = await fetch("/admin/api/products/save", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(savePayload)
+                });
+                const saveData = await saveRes.json();
+                if (!saveData.success) {
+                    throw new Error(saveData.message || "Failed to save product.");
+                }
+
+                alert(saveData.message || "Product published successfully!");
+                closeProductModal();
+                window.location.reload();
+            } catch (err) {
+                console.error("Product submit error:", err);
+                alert("Error: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                btnText.textContent = isEdit ? "Update Product" : "Publish Product to Storefront";
+            }
+        }
+
+        async function deleteProduct(slug, name) {
+            if (!confirm(`Are you sure you want to permanently delete '${name}' (${slug}) from your storefront?`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/admin/api/products/${slug}/delete`, { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    alert(data.message || "Product deleted.");
+                    window.location.reload();
                 } else {
-                    pane.style.display = "none";
-                    btn.classList.remove("active");
+                    alert("Could not delete product: " + (data.message || "Unknown error"));
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+                alert("Error deleting product: " + err);
+            }
+        }
+
+        function filterProductCatalog() {
+            const search = (document.getElementById("productSearchInput").value || "").toLowerCase().trim();
+            const cat = document.getElementById("productCategoryFilter").value;
+            const origin = document.getElementById("productOriginFilter").value;
+
+            document.querySelectorAll(".product-catalog-row").forEach(row => {
+                const rName = row.dataset.name || "";
+                const rSlug = row.dataset.slug || "";
+                const rCat = row.dataset.category || "";
+                const rOrigin = row.dataset.origin || "";
+
+                const matchSearch = !search || rName.includes(search) || rSlug.includes(search);
+                const matchCat = cat === "ALL" || rCat === cat;
+                const matchOrigin = origin === "ALL" || rOrigin === origin;
+
+                if (matchSearch && matchCat && matchOrigin) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
                 }
             });
         }

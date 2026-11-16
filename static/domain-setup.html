@@ -200,22 +200,83 @@
         </div>
 
         <div class="section">
-            <h2 class="section-title">Why does alzorcouture.in show an error in Chrome?</h2>
-            <p style="font-size: 14px; color: #555049;">
-                The domain <strong>alzorcouture.in</strong> was purchased, but its DNS records have not yet been linked to the hosting server. A domain name needs two simple DNS records to route visitors to your live website.
+            <h2 class="section-title">Why does Render's page open instead of your actual storefront?</h2>
+            <p style="font-size: 14px; color: #555049; margin-bottom: 12px;">
+                There are two common causes when entering <strong>alzorcouture.in</strong>:
             </p>
+            <ul style="padding-left: 20px; font-size: 13.5px; color: #555049; line-height: 1.8;">
+                <li>
+                    <strong>Cause 1 &mdash; Render Free Tier Inactivity Spin-Down:</strong> Render's free tier automatically spins down after 15 minutes of inactivity. When a customer opens the link, Render shows a full-screen message: <em>"Spinning up service... Please wait while your service spins up"</em>.
+                </li>
+                <li>
+                    <strong>Cause 2 &mdash; GoDaddy DNS routing:</strong> If GoDaddy DNS points to Render, visitors hit Render's server. If you deploy your storefront to <strong>Vercel</strong> (which is pre-configured with <code>vercel.json</code>), Vercel serverless runs 24/7 with <strong>zero cold-start loading screens</strong>!
+                </li>
+            </ul>
         </div>
 
         <div class="section">
-            <h2 class="section-title">Quick 3-Minute Fix to Connect alzorcouture.in</h2>
+            <h2 class="section-title">PERMANENT SOLUTION 1 (RECOMMENDED): Point Domain to Vercel (0 Cold Starts)</h2>
+            <p style="font-size: 13.5px; color: #555049; margin-bottom: 12px;">
+                Vercel never sleeps and never displays any Render loading screen. Customers immediately see your luxury store homepage in Chrome:
+            </p>
             <ol class="steps">
                 <li>
-                    <strong>Add the custom domain in Render:</strong><br>
-                    Log in to <a href="https://dashboard.render.com" target="_blank" style="color:var(--gold);font-weight:600;">dashboard.render.com</a> &rarr; Select <strong>alzor-couture</strong> &rarr; <strong>Settings</strong> &rarr; scroll to <strong>Custom Domains</strong> &rarr; Add <span class="code-tag">alzorcouture.in</span> and <span class="code-tag">www.alzorcouture.in</span>.
+                    <strong>In Vercel Dashboard:</strong><br>
+                    Open your <strong>alzor-couture</strong> project &rarr; <strong>Settings</strong> &rarr; <strong>Domains</strong> &rarr; Add <span class="code-tag">alzorcouture.in</span> and <span class="code-tag">www.alzorcouture.in</span>.
                 </li>
                 <li>
-                    <strong>Add DNS records in your Domain Registrar (GoDaddy, Hostinger, Namecheap, etc.):</strong><br>
-                    Open your domain DNS Manager and add these 2 records:
+                    <strong>In GoDaddy DNS Manager:</strong><br>
+                    Delete any existing A records pointing to Render (<code>216.24.57.1</code>) or GoDaddy parking, and add these 2 records:
+                    <table class="dns-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Name / Host</th>
+                                <th>Value / Points to</th>
+                                <th>TTL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>A</strong></td>
+                                <td><span class="code-tag">@</span></td>
+                                <td><span class="code-tag">76.76.21.21</span></td>
+                                <td>1/2 Hour or Default</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CNAME</strong></td>
+                                <td><span class="code-tag">www</span></td>
+                                <td><span class="code-tag">cname.vercel-dns.com</span></td>
+                                <td>1/2 Hour or Default</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </li>
+                <li>
+                    <strong>Verification:</strong> Within minutes, Vercel verifies SSL and your clothing store opens directly at <strong>https://alzorcouture.in</strong> with zero delay!
+                </li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">PERMANENT SOLUTION 2: Keep Running on Render with 24/7 Keep-Alive</h2>
+            <p style="font-size: 13.5px; color: #555049; margin-bottom: 12px;">
+                If you prefer hosting directly on Render without paying $7/month:
+            </p>
+            <ol class="steps">
+                <li>
+                    <strong>Keep Render Awake with Free Automated Ping:</strong><br>
+                    Create a free account on <a href="https://cron-job.org" target="_blank" style="color:var(--gold);font-weight:600;">cron-job.org</a> or <a href="https://uptimerobot.com" target="_blank" style="color:var(--gold);font-weight:600;">UptimeRobot</a>.<br>
+                    Add a monitor pinging your new health endpoint every 10 minutes:<br>
+                    <span class="code-tag">https://alzor-couture.onrender.com/healthz</span><br>
+                    Because Render receives a ping every 10 minutes, it <strong>never spins down</strong> and visitors never see the Render spin-up screen!
+                </li>
+                <li>
+                    <strong>Verify Custom Domain in Render:</strong><br>
+                    Render Dashboard &rarr; <strong>alzor-couture</strong> &rarr; <strong>Settings</strong> &rarr; <strong>Custom Domains</strong> &rarr; Ensure <span class="code-tag">alzorcouture.in</span> and <span class="code-tag">www.alzorcouture.in</span> show "Verified".
+                </li>
+                <li>
+                    <strong>GoDaddy DNS for Render:</strong>
                     <table class="dns-table">
                         <thead>
                             <tr>
@@ -228,22 +289,18 @@
                         <tbody>
                             <tr>
                                 <td><strong>A</strong></td>
-                                <td><span class="code-tag">@</span> (or blank)</td>
+                                <td><span class="code-tag">@</span></td>
                                 <td><span class="code-tag">216.24.57.1</span></td>
-                                <td>Automatic</td>
+                                <td>Automatic / 600s</td>
                             </tr>
                             <tr>
                                 <td><strong>CNAME</strong></td>
                                 <td><span class="code-tag">www</span></td>
                                 <td><span class="code-tag">alzor-couture.onrender.com</span></td>
-                                <td>Automatic</td>
+                                <td>Automatic / 600s</td>
                             </tr>
                         </tbody>
                     </table>
-                </li>
-                <li>
-                    <strong>Automatic SSL Activation:</strong><br>
-                    Within 5 to 15 minutes of DNS propagation, Render will automatically issue a free Let's Encrypt SSL certificate and <strong>https://alzorcouture.in</strong> will open securely in Chrome.
                 </li>
             </ol>
         </div>
