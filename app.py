@@ -2036,19 +2036,37 @@ def save_custom_product(product_data, is_edit=False):
 
 
 def delete_custom_product(slug):
-    """Delete a custom product and its inventory entries."""
+    """Delete a custom product or deactivate a catalog product."""
     with get_db_cursor() as (cur, is_pg):
         ph = "%s" if is_pg else "?"
-        cur.execute(f"DELETE FROM alzor_custom_products WHERE slug = {ph}", (slug,))
+        base_slugs = {p.get("slug") for p in (PRODUCTS + DRESSES) if p.get("slug")}
+        if slug in base_slugs:
+            act_val = False if is_pg else 0
+            if is_pg:
+                cur.execute(
+                    """INSERT INTO alzor_custom_products (slug, name, is_active, updated_at)
+                       VALUES (%s, %s, %s, NOW())
+                       ON CONFLICT (slug) DO UPDATE SET is_active = FALSE, updated_at = NOW()""",
+                    (slug, slug, act_val)
+                )
+            else:
+                cur.execute(
+                    """INSERT OR REPLACE INTO alzor_custom_products (slug, name, is_active, updated_at)
+                       VALUES (?, ?, ?, datetime('now'))""",
+                    (slug, slug, act_val)
+                )
+        else:
+            cur.execute(f"DELETE FROM alzor_custom_products WHERE slug = {ph}", (slug,))
         cur.execute(f"DELETE FROM alzor_inventory WHERE product_slug = {ph}", (slug,))
 
 
 def get_all_products():
-    """Return all products: active custom products first, then catalog pieces."""
-    custom = get_custom_products(include_inactive=False)
-    custom_slugs = {p["slug"] for p in custom}
-    catalog_prods = [p for p in (PRODUCTS + DRESSES) if p.get("slug") not in custom_slugs]
-    return custom + catalog_prods
+    """Return all products: active custom products first, then non-hidden catalog pieces."""
+    all_custom = get_custom_products(include_inactive=True)
+    custom_map = {p["slug"]: p for p in all_custom}
+    active_custom = [p for p in all_custom if p.get("is_active")]
+    base = [p for p in (PRODUCTS + DRESSES) if p.get("slug") not in custom_map]
+    return active_custom + base
 
 
 # =========================================================
@@ -3543,9 +3561,12 @@ def admin_logout():
 
 @app.route("/admin")
 @app.route("/admin/orders")
+@app.route("/admin/products")
 def admin_dashboard():
     if not session.get("alzor_admin_authenticated"):
         return redirect(url_for("admin_login"))
+
+    active_tab = "products" if "products" in request.path else "orders"
 
     try:
         orders = load_all_orders(limit=250)
@@ -3625,6 +3646,7 @@ def admin_dashboard():
         unread_notifs=unread_notifs,
         orders_count=len(orders),
         pending_count=len(pending),
+        active_tab=active_tab,
         is_live=RAZORPAY_IS_LIVE,
         razorpay_key_preview=RAZORPAY_KEY_ID[:12] if RAZORPAY_KEY_ID else "NOT_CONFIGURED"
     )
