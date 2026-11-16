@@ -116,32 +116,7 @@ def send_order_email(to_email, subject, html_content):
 # CO-ORD SET PRODUCTS
 # =========================================================
 
-PRODUCTS = [
-
-    {
-        "name": "Denim Éclat Set",
-        "slug": "denim-eclat-set",
-        "category": "CO-ORD SET",
-        "price": 6999,
-        "original_price": 8399,
-        "images": [
-            "denim-1.JPG",
-            "denim-2.JPG",
-            "denim-3.JPG",
-            "denim-4.JPG",
-            "denim-5.JPG"
-        ],
-        "description":
-            "A refined denim two-piece where relaxed structure meets couture detail, creating an effortless silhouette with a distinctly polished, contemporary character.",
-        "details": [
-            "Premium denim fabric",
-            "Relaxed yet structured silhouette",
-            "Two-piece co-ord set",
-            "Designed for elevated everyday dressing"
-        ],
-        "care":
-            "Dry clean recommended."
-    },
+PRODUCTS =  [
 
     {
         "name": "Scarlet MUSE Set (Black)",
