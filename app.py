@@ -498,7 +498,172 @@ PRODUCTS = [
         ],
         "care":
             "Care instructions to be confirmed."
-    }
+    },
+        {
+        "name": "Denim Éclat Lace Set",
+        "slug": "denim-eclat-lace-set",
+        "category": "CO-ORD SET",
+        "price": 8999,
+        "images": [
+            "dt-1.jpeg",
+            "dt-2.jpeg",
+            "dt-3.jpeg",
+            "dt-4.jpeg",
+            "dt-5.jpeg"
+        ],
+        "description":
+            "A refined expression of contemporary denim, the Denim Éclat Lace Set pairs a structured indigo denim shirt with delicate white crochet detailing and coordinated flared trousers. Intricate lace accents across the sleeves, hemline and trouser panels create a striking contrast, bringing together modern denim styling and artisanal elegance.",
+        "details": [
+            "Indigo denim shirt-style top",
+            "White crochet lace detailing",
+            "Coordinated flared denim trousers",
+            "Statement lace panels on sleeves and trouser hems",
+            "Two-piece co-ord set"
+        ],
+        "care": "Refer to the garment's care label."
+    },
+        {
+        "name": "Teal Green Lelan Cape Co-ord Set",
+        "slug": "teal-green-lelan-cape-coord-set",
+        "category": "CO-ORD SET",
+        "price": 8399,
+        "images": [
+            "gr-1.jpeg",
+            "gr-2.jpeg",
+            "gr-3.jpeg",
+            "gr-4.jpeg",
+            "gr-5.jpeg"
+        ],
+        "description":
+            "A graceful blend of contemporary elegance and delicate detailing, the Teal Green Lelan Cape Co-ord Set features a flowing lace cape layered over a coordinated inner top, paired with elegant wide-leg trousers. The intricate floral lace, statement cape sleeves and refined waist buckle create a sophisticated silhouette, making this two-piece ensemble a distinctive addition to your wardrobe.",
+        "details": [
+            "Teal-green lace cape overlay",
+            "Coordinated inner top",
+            "Matching wide-leg trousers",
+            "Floral lace detailing",
+            "Statement waist buckle",
+            "Two-piece co-ord set"
+        ],
+        "care": "Refer to the garment's care label."
+    },
+    
+{
+    "name": "Emerald Éclat Co-ord Set",
+    "slug": "emerald-eclat-co-ord-set",
+    "category": "CO-ORD SET",
+    "price": 8999,
+    "original_price": 9999,
+
+    "images": [
+        "1000195263.jpg.jpeg",
+        "1000195260.jpg.jpeg",
+        "1000195264.jpg.jpeg",
+        "1000195262.jpg.jpeg",
+        "1000195261.jpg.jpeg"
+    ],
+
+    "description": (
+        "Make a sophisticated statement with the Emerald Éclat "
+        "Co-ord Set by Alzor Couture. Designed in a rich dark "
+        "emerald green shade, this elegant ensemble features a "
+        "tailored cropped blazer with refined detailing and "
+        "coordinated wide-leg trousers. A perfect blend of "
+        "contemporary elegance and timeless sophistication."
+    ),
+
+    "details": [
+        "Premium dark emerald green co-ord set",
+        "Elegant tailored cropped blazer",
+        "Intricate embellished shoulder detailing",
+        "Coordinated wide-leg trousers",
+        "Scalloped waistband detailing",
+        "Sophisticated contemporary silhouette",
+        "Perfect for parties, occasions and elegant outings"
+    ],
+
+    "care": "Dry clean recommended. Store carefully to preserve the embellishments."
+},
+    
+{
+    "name": "Ivory Allure Set",
+    "slug": "ivory-allure-set",
+    "category": "CO-ORD SET",
+    "price": 9699,
+
+    "images": [
+        "1000195309.jpg.jpeg",
+        "1000195311.jpg.jpeg",
+        "1000195306.jpg.jpeg",
+        "1000195310.jpg.jpeg",
+        "1000195273.jpg.jpeg"
+    ],
+
+    "description": (
+        "Discover understated luxury with the Ivory Allure Set "
+        "by Alzor Couture. Featuring a beautifully tailored "
+        "champagne-yellow top with delicate embellished detailing, "
+        "paired with elegant ivory trousers. This sophisticated "
+        "ensemble brings together contemporary design and timeless "
+        "elegance, making it perfect for refined occasions and "
+        "special outings."
+    ),
+
+    "details": [
+        "Elegant champagne-yellow top",
+        "Intricate embellished neckline detailing",
+        "Sophisticated tailored silhouette",
+        "Coordinated ivory trousers",
+        "Premium contemporary styling",
+        "Perfect for parties and special occasions"
+    ],
+
+    "care": "Dry clean recommended."
+},
+    
+{
+    "name": "Ivory Royale Co-ord Set",
+    "slug": "ivory-royale-co-ord-set",
+    "category": "CO-ORD SET",
+    "price": 15999,
+
+    "images": [
+        "1000195297.jpg.jpeg",
+        "1000195294.jpg.jpeg",
+        "1000195298.jpg.jpeg",
+        "1000195300.jpg.jpeg",
+        "1000195278.jpg.jpeg"
+    ],
+
+    "description": (
+        "Introducing the Ivory Royale Co-ord Set by Alzor Couture, "
+        "a statement of refined luxury and contemporary elegance. "
+        "Featuring a sophisticated white cropped jacket adorned "
+        "with exquisite gold metallic detailing across the collar, "
+        "pockets and cuffs, paired with beautifully coordinated "
+        "wide-leg trousers featuring matching gold accents. "
+        "An exclusive ensemble designed for those who appreciate "
+        "exceptional detailing and timeless sophistication."
+    ),
+
+    "details": [
+        "Premium white co-ord ensemble",
+        "Elegant cropped zip-front jacket",
+        "Exquisite gold metallic detailing",
+        "Gold-accented collar and cuffs",
+        "Decorative front pocket detailing",
+        "Coordinated wide-leg trousers",
+        "Matching gold trouser accents",
+        "Luxury occasion and statement wear"
+    ],
+
+    "care": (
+        "Professional dry cleaning recommended. "
+        "Handle metallic detailing with care."
+    )
+},
+
+
+
 
 ]
 
@@ -620,7 +785,46 @@ DRESSES = [
         ],
         "care":
             "Care instructions to be confirmed."
-    }
+    },
+    
+{
+    "name": "Verdant Muse Dress",
+    "slug": "verdant-muse-dress",
+    "category": "DRESS",
+    "price": 11199,
+
+    "images": [
+        "1000195301.jpg.jpeg",
+        "1000195308.jpg.jpeg",
+        "1000195303.jpg.jpeg",
+        "1000195305.jpg.jpeg",
+        "1000195276.jpg.jpeg"
+    ],
+
+    "description": (
+        "Make a statement with the Verdant Muse Dress by "
+        "Alzor Couture. Featuring a sophisticated black "
+        "silhouette enhanced with striking lime-green "
+        "botanical detailing, this elegant dress brings "
+        "together contemporary artistry and timeless style. "
+        "Designed with delicate textured accents and a "
+        "beautifully flowing A-line silhouette, it is a "
+        "distinctive choice for stylish occasions."
+    ),
+
+    "details": [
+        "Elegant black dress",
+        "Lime-green botanical detailing",
+        "Sophisticated A-line silhouette",
+        "Long sleeves",
+        "Distinctive textured embellishments",
+        "Statement contemporary design",
+        "Suitable for parties and special occasions"
+    ],
+
+    "care": "Professional dry cleaning recommended."
+},
+
 ]
 
 
