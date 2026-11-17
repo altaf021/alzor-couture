@@ -721,8 +721,8 @@ DRESSES = [
         ]
     },
         {
-        "name": "Ivory Blossom Gown",
-        "slug": "ivory-blossom-gown",
+        "name": "Ivory Blossom Dress",
+        "slug": "ivory-blossom-Dress",
         "category": "DRESS",
         "price": 15999,
         "images": [
@@ -733,7 +733,7 @@ DRESSES = [
             "IBG-5.jpeg"
         ],
         "description":
-            "A celebration of understated elegance, the Ivory Blossom Gown features delicate three-dimensional floral appliqués complemented by intricate embellished vine detailing. Designed with a graceful full-length silhouette and refined long sleeves, this statement piece brings timeless sophistication to special occasions and elegant evenings.",
+            "A celebration of understated elegance, the Ivory Blossom Dress features delicate three-dimensional floral appliqués complemented by intricate embellished vine detailing. Designed with a graceful full-length silhouette and refined long sleeves, this statement piece brings timeless sophistication to special occasions and elegant evenings.",
         "details": [
             "Three-dimensional floral appliqués",
             "Delicate embellished vine detailing",
