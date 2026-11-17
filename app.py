@@ -636,6 +636,31 @@ PRODUCTS =  [
         "Handle metallic detailing with care."
     )
 },
+        {
+        "name": "Cocoa Royale Dress",
+        "slug": "cocoa-royale-dress",
+        "category": "CO-ORD SET",
+        "price": 10999,
+        "original_price": 12999,
+        "images": [
+            "IMG-20261117-WA0002.jpg.jpeg",
+            "IMG-20261117-WA0015.jpg.jpeg",
+            "IMG-20261117-WA0014.jpg.jpeg",
+            "IMG-20261117-WA0013.jpg.jpeg",
+            "IMG-20261117-WA0001.jpg.jpeg"
+        ],
+        "description":
+            "A refined two-piece ensemble designed to bring effortless elegance to contemporary dressing. Cocoa Royale combines a coordinated silhouette with a polished finish, creating a versatile statement for occasions that call for understated sophistication.",
+        "details": [
+            "Two-piece co-ord set",
+            "Coordinated design",
+            "Elegant contemporary silhouette",
+            "Versatile occasion wear"
+        ],
+        "care":
+            "Please refer to the garment care label."
+    },
+    
 
 
 
