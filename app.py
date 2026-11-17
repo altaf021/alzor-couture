@@ -724,7 +724,7 @@ DRESSES = [
         "name": "Ivory Blossom Dress",
         "slug": "ivory-blossom-Dress",
         "category": "DRESS",
-        "price": 15999,
+        "price": 16999,
         "images": [
             "IBG-1.jpeg",
             "IBG-2.jpeg",
