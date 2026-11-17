@@ -799,6 +799,28 @@ DRESSES = [
 
     "care": "Professional dry cleaning recommended."
 },
+        {
+        "name": "Blush Étoile Dress",
+        "slug": "blush-etoile-dress",
+        "category": "DRESS",
+        "price": 9999,
+        "original_price": 11999,
+        "images": [
+            "IMG-20261117-WA0000.jpg.jpeg",
+            "IMG-20261117-WA0016.jpg.jpeg",
+            "IMG-20261117-WA0017.jpg.jpeg",
+            "IMG-20261117-WA0018.jpg.jpeg",
+            "IMG-20261117-WA0019.jpg.jpeg"
+        ],
+        "description":
+            "Discover understated elegance with the Blush Étoile Dress. Thoughtfully presented with a refined, contemporary appeal, this statement piece brings a touch of sophistication to your wardrobe. Designed for occasions when effortless elegance matters.",
+        "details": [
+            "Elegant contemporary design",
+            "Refined statement styling",
+            "A versatile occasion-wear piece"
+        ],
+        "care": "Refer to the garment's care label."
+    }
 
 ]
 
