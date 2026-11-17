@@ -845,7 +845,31 @@ DRESSES = [
             "A versatile occasion-wear piece"
         ],
         "care": "Refer to the garment's care label."
-    }
+    },
+        {
+        "name": "Lunar Élan Dress",
+        "slug": "lunar-elan-dress",
+        "category": "DRESS",
+        "price": 6799,
+        "original_price": 8199,
+        "images": [
+            "grey-1.jpeg",
+            "grey-2.jpeg",
+            "grey-3.jpeg",
+            "grey-4.jpeg",
+            "grey-5.jpeg"
+        ],
+        "description":
+            "A graceful expression of understated elegance, Lunar Élan features a soft silver-grey palette, delicate embroidery and a beautifully layered asymmetric silhouette. Its refined detailing and flowing design create a sophisticated look for special occasions and elegant daytime outings.",
+        "details": [
+            "Soft silver-grey finish",
+            "Delicate embroidered detailing",
+            "Asymmetric layered silhouette",
+            "Elegant occasion wear"
+        ],
+        "care":
+            "Please refer to the garment care label."
+    },
 
 ]
 
