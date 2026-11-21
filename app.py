@@ -128,32 +128,7 @@ def send_order_email(to_email, subject, html_content):
 # CO-ORD SET PRODUCTS
 # =========================================================
 
-PRODUCTS = [
-
-    {
-        "name": "Denim Éclat Set",
-        "slug": "denim-eclat-set",
-        "category": "CO-ORD SET",
-        "price": 6999,
-        "original_price": 8399,
-        "images": [
-            "denim-1.JPG",
-            "denim-2.JPG",
-            "denim-3.JPG",
-            "denim-4.JPG",
-            "denim-5.JPG"
-        ],
-        "description":
-            "A refined denim two-piece where relaxed structure meets couture detail, creating an effortless silhouette with a distinctly polished, contemporary character.",
-        "details": [
-            "Premium denim fabric",
-            "Relaxed yet structured silhouette",
-            "Two-piece co-ord set",
-            "Designed for elevated everyday dressing"
-        ],
-        "care":
-            "Dry clean recommended."
-    },
+PRODUCTS =  [
 
     {
         "name": "Scarlet MUSE Set (Black)",
@@ -671,6 +646,31 @@ PRODUCTS = [
         "Handle metallic detailing with care."
     )
 },
+        {
+        "name": "Cocoa Royale Dress",
+        "slug": "cocoa-royale-dress",
+        "category": "CO-ORD SET",
+        "price": 10999,
+        "original_price": 12999,
+        "images": [
+            "IMG-20261117-WA0002.jpg.jpeg",
+            "IMG-20261117-WA0015.jpg.jpeg",
+            "IMG-20261117-WA0014.jpg.jpeg",
+            "IMG-20261117-WA0013.jpg.jpeg",
+            "IMG-20261117-WA0001.jpg.jpeg"
+        ],
+        "description":
+            "A refined two-piece ensemble designed to bring effortless elegance to contemporary dressing. Cocoa Royale combines a coordinated silhouette with a polished finish, creating a versatile statement for occasions that call for understated sophistication.",
+        "details": [
+            "Two-piece co-ord set",
+            "Coordinated design",
+            "Elegant contemporary silhouette",
+            "Versatile occasion wear"
+        ],
+        "care":
+            "Please refer to the garment care label."
+    },
+    
 
 
 
@@ -731,10 +731,10 @@ DRESSES = [
         ]
     },
         {
-        "name": "Ivory Blossom Gown",
-        "slug": "ivory-blossom-gown",
+        "name": "Ivory Blossom Dress",
+        "slug": "ivory-blossom-Dress",
         "category": "DRESS",
-        "price": 15999,
+        "price": 16999,
         "images": [
             "IBG-1.jpeg",
             "IBG-2.jpeg",
@@ -743,7 +743,7 @@ DRESSES = [
             "IBG-5.jpeg"
         ],
         "description":
-            "A celebration of understated elegance, the Ivory Blossom Gown features delicate three-dimensional floral appliqués complemented by intricate embellished vine detailing. Designed with a graceful full-length silhouette and refined long sleeves, this statement piece brings timeless sophistication to special occasions and elegant evenings.",
+            "A celebration of understated elegance, the Ivory Blossom Dress features delicate three-dimensional floral appliqués complemented by intricate embellished vine detailing. Designed with a graceful full-length silhouette and refined long sleeves, this statement piece brings timeless sophistication to special occasions and elegant evenings.",
         "details": [
             "Three-dimensional floral appliqués",
             "Delicate embellished vine detailing",
@@ -834,6 +834,52 @@ DRESSES = [
 
     "care": "Professional dry cleaning recommended."
 },
+        {
+        "name": "Blush Étoile Dress",
+        "slug": "blush-etoile-dress",
+        "category": "DRESS",
+        "price": 9999,
+        "original_price": 11999,
+        "images": [
+            "IMG-20261117-WA0000.jpg.jpeg",
+            "IMG-20261117-WA0016.jpg.jpeg",
+            "IMG-20261117-WA0017.jpg.jpeg",
+            "IMG-20261117-WA0018.jpg.jpeg",
+            "IMG-20261117-WA0019.jpg.jpeg"
+        ],
+        "description":
+            "Discover understated elegance with the Blush Étoile Dress. Thoughtfully presented with a refined, contemporary appeal, this statement piece brings a touch of sophistication to your wardrobe. Designed for occasions when effortless elegance matters.",
+        "details": [
+            "Elegant contemporary design",
+            "Refined statement styling",
+            "A versatile occasion-wear piece"
+        ],
+        "care": "Refer to the garment's care label."
+    },
+        {
+        "name": "Lunar Élan Dress",
+        "slug": "lunar-elan-dress",
+        "category": "DRESS",
+        "price": 6799,
+        "original_price": 8199,
+        "images": [
+            "grey-1.jpeg",
+            "grey-2.jpeg",
+            "grey-3.jpeg",
+            "grey-4.jpeg",
+            "grey-5.jpeg"
+        ],
+        "description":
+            "A graceful expression of understated elegance, Lunar Élan features a soft silver-grey palette, delicate embroidery and a beautifully layered asymmetric silhouette. Its refined detailing and flowing design create a sophisticated look for special occasions and elegant daytime outings.",
+        "details": [
+            "Soft silver-grey finish",
+            "Delicate embroidered detailing",
+            "Asymmetric layered silhouette",
+            "Elegant occasion wear"
+        ],
+        "care":
+            "Please refer to the garment care label."
+    },
 
 ]
 
