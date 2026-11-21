@@ -38,7 +38,19 @@ load_dotenv()
 AVAILABLE_SIZES = ["S", "M", "L", "XL", "XXL"]
 SITE_URL = os.getenv("SITE_URL", "https://alzorcouture.in").strip().rstrip("/")
 
-app = Flask(__name__)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+if os.path.basename(BASE_DIR) == "api":
+    BASE_DIR = os.path.dirname(BASE_DIR)
+
+STATIC_DIR = os.path.abspath(os.path.join(BASE_DIR, "static"))
+TEMPLATES_DIR = os.path.abspath(os.path.join(BASE_DIR, "templates"))
+
+app = Flask(
+    __name__,
+    static_folder=STATIC_DIR,
+    static_url_path="/static",
+    template_folder=TEMPLATES_DIR
+)
 
 # Production must always use a strong secret configured in the environment.
 _configured_secret = os.getenv("FLASK_SECRET_KEY", "").strip()
@@ -528,11 +540,10 @@ PRODUCTS = [
         "category": "CO-ORD SET",
         "price": 8399,
         "images": [
-            "gr-1.jpeg",
-            "gr-2.jpeg",
-            "gr-3.jpeg",
-            "gr-4.jpeg",
-            "gr-5.jpeg"
+            "teal-cape-1.jpeg",
+            "teal-cape-2.jpeg",
+            "teal-cape-3.jpeg",
+            "teal-cape-4.jpeg"
         ],
         "description":
             "A graceful blend of contemporary elegance and delicate detailing, the Teal Green Lelan Cape Co-ord Set features a flowing lace cape layered over a coordinated inner top, paired with elegant wide-leg trousers. The intricate floral lace, statement cape sleeves and refined waist buckle create a sophisticated silhouette, making this two-piece ensemble a distinctive addition to your wardrobe.",
@@ -593,7 +604,6 @@ PRODUCTS = [
     "images": [
         "1000195309.jpg.jpeg",
         "1000195311.jpg.jpeg",
-        "1000195306.jpg.jpeg",
         "1000195310.jpg.jpeg",
         "1000195273.jpg.jpeg"
     ],
@@ -4472,7 +4482,7 @@ def server_error(e):
 
 @app.route("/domain-setup")
 def domain_setup():
-    return send_from_directory("static", "domain-setup.html")
+    return send_from_directory(app.static_folder, "domain-setup.html")
 
 
 # =========================================================
