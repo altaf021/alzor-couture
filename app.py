@@ -537,8 +537,8 @@ PRODUCTS =  [
     "name": "Emerald Éclat Co-ord Set",
     "slug": "emerald-eclat-co-ord-set",
     "category": "CO-ORD SET",
-    "price": 8999,
-    "original_price": 9999,
+    "price": 5999,
+    "original_price": 7499,
 
     "images": [
         "1000195263.jpg.jpeg",
@@ -609,7 +609,8 @@ PRODUCTS =  [
     "name": "Ivory Royale Co-ord Set",
     "slug": "ivory-royale-co-ord-set",
     "category": "CO-ORD SET",
-    "price": 15999,
+    "price": 7599,
+      "original_price": 10999,
 
     "images": [
         "1000195297.jpg.jpeg",
