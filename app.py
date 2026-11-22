@@ -380,7 +380,8 @@ PRODUCTS =  [
         "name": "Denim Élan Co-ord Set",
         "slug": "denim-elan-co-ord-set",
         "category": "CO-ORD SET",
-        "price": 6599,
+        "price": 6999
+            "original_price": 8739,
         "images": [
             "denim elan 1.jpeg",
             "denim elan 2.jpeg",
@@ -403,7 +404,8 @@ PRODUCTS =  [
         "name": "Denim Élan Fringe Short Set",
         "slug": "denim-elan-fringe-short-set",
         "category": "CO-ORD SET",
-        "price": 5999,
+        "price": 6599,
+        "original_price": 8229,
         "images": [
             "denim elan 1 s.jpeg",
             "denim elan 2 s.jpeg",
