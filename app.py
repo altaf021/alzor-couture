@@ -160,7 +160,7 @@ PRODUCTS =  [
         "slug": "monochrome-fleur-set",
         "category": "CO-ORD SET",
         "price": 4999,
-        "original_price": 5999,
+        "original_price": 6399,
         "images": [
             "MFS.jpg",
             "MFS-2.jpg",
@@ -210,8 +210,8 @@ PRODUCTS =  [
         "name": "Alzor Golden Veil Set",
         "slug": "alzor-golden-veil-set",
         "category": "CO-ORD SET",
-        "price": 5999,
-        "original_price": 7199,
+        "price": 6999,
+        "original_price": 8299,
         "images": [
             "AGVS.png",
             "AGVS-2.png",
@@ -235,8 +235,8 @@ PRODUCTS =  [
         "name": "Alzor Eclipse Ensemble",
         "slug": "alzor-eclipse-ensemble",
         "category": "CO-ORD SET",
-        "price": 7499,
-        "original_price": 8999,
+        "price": 7999,
+        "original_price": 9959,
         "images": [
             "AEE-1.png",
             "AEE-2.png",
@@ -446,6 +446,7 @@ PRODUCTS =  [
         "slug": "midnight-muse-set",
         "category": "CO-ORD SET",
         "price": 5599,
+                "original_price": 7099,
         "images": [
             "MS-1.jpeg",
             "MS-2.jpeg",
@@ -468,7 +469,8 @@ PRODUCTS =  [
         "name": "Crimson Muse Set",
         "slug": "crimson-muse-set",
         "category": "CO-ORD SET",
-        "price": 5999,
+        "price": 4999,
+                            "original_price": 7099,
         "images": [
             "cm-1.jpeg",
             "cm-2.jpeg",
@@ -651,8 +653,8 @@ PRODUCTS =  [
         "name": "Cocoa Royale Dress",
         "slug": "cocoa-royale-dress",
         "category": "CO-ORD SET",
-        "price": 10999,
-        "original_price": 12999,
+        "price": 7999,
+        "original_price": 9499,
         "images": [
             "IMG-20261117-WA0002.jpg.jpeg",
             "IMG-20261117-WA0015.jpg.jpeg",
@@ -735,7 +737,8 @@ DRESSES = [
         "name": "Ivory Blossom Dress",
         "slug": "ivory-blossom-Dress",
         "category": "DRESS",
-        "price": 16999,
+        "price": 16299,
+                    "original_price": 20299,
         "images": [
             "IBG-1.jpeg",
             "IBG-2.jpeg",
@@ -757,6 +760,7 @@ DRESSES = [
         "slug": "classic-dottie",
         "category": "DRESS",
         "price": 4599,
+            "original_price": 5899,
         "images": [
             "CD-1.jpeg",
             "CD-2.jpeg",
@@ -776,7 +780,8 @@ DRESSES = [
         "name": "Alzor Lime Élan",
         "slug": "alzor-lime-elan",
         "category": "DRESS",
-        "price": 5299,
+        "price": 7559,
+            "original_price": 9499,
         "images": [
             "GR-1.jpeg",
             "GR-2.jpeg",
@@ -802,7 +807,8 @@ DRESSES = [
     "name": "Verdant Muse Dress",
     "slug": "verdant-muse-dress",
     "category": "DRESS",
-    "price": 11199,
+    "price": 8999,
+    "original_price": 10999,
 
     "images": [
         "1000195301.jpg.jpeg",
@@ -839,8 +845,8 @@ DRESSES = [
         "name": "Blush Étoile Dress",
         "slug": "blush-etoile-dress",
         "category": "DRESS",
-        "price": 9999,
-        "original_price": 11999,
+        "price": 6599,
+        "original_price": 7799,
         "images": [
             "IMG-20261117-WA0000.jpg.jpeg",
             "IMG-20261117-WA0016.jpg.jpeg",
