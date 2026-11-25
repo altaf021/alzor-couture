@@ -2233,6 +2233,8 @@ def get_cart_count():
     total_quantity = 0
 
     for item in cart:
+        if find_product(item.get("slug")) is None:
+            continue
         try:
             total_quantity += int(item.get("quantity", 1))
         except (TypeError, ValueError):
@@ -2908,23 +2910,26 @@ def checkout():
 # GENERATE ORDER NUMBER
 # =========================================================
 
-def generate_order_number():
-
-    date_part = datetime.now().strftime(
-        "%Y%m%d"
-    )
-
-    random_part = "".join(
-        random.choices(
-            string.ascii_uppercase
-            + string.digits,
-            k=4
+def generate_order_number(retries=8):
+    """Generate a unique order number (e.g. ALZ-20261126-A1B2C3); retries on collision."""
+    date_part = datetime.now().strftime("%Y%m%d")
+    for _ in range(retries):
+        random_part = "".join(
+            random.choices(
+                string.ascii_uppercase + string.digits,
+                k=6
+            )
         )
-    )
-
-    return (
-        f"ALZ-{date_part}-{random_part}"
-    )
+        candidate = f"ALZ-{date_part}-{random_part}"
+        try:
+            with get_db_cursor() as (cur, is_pg):
+                ph = "%s" if is_pg else "?"
+                cur.execute(f"SELECT 1 FROM alzor_orders WHERE order_number = {ph}", (candidate,))
+                if cur.fetchone() is None:
+                    return candidate
+        except Exception:
+            return candidate
+    return f"ALZ-{date_part}-{datetime.now().strftime('%f')[:6]}"
 
 
 # =========================================================
@@ -3005,6 +3010,20 @@ def create_razorpay_order():
                 "success": False,
                 "message": f"Please enter your {field.replace('_', ' ')}."
             }), 400
+
+    phone_val = str(data.get("phone", "")).strip()
+    if not re.fullmatch(r"[\d\s\+\-\(\)]{7,15}", phone_val):
+        return jsonify({
+            "success": False,
+            "message": "Please enter a valid phone number (10 digits)."
+        }), 400
+
+    pincode_val = str(data.get("pincode", "")).strip()
+    if not re.fullmatch(r"\d{6}", pincode_val):
+        return jsonify({
+            "success": False,
+            "message": "Please enter a valid 6-digit Indian delivery pincode."
+        }), 400
 
     client = get_razorpay_client()
     if client is None:
