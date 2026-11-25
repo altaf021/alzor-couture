@@ -2229,6 +2229,7 @@ def find_product(slug, include_inactive=False):
 # =========================================================
 
 def get_cart_count():
+    """Count only items whose product slug is still valid."""
     cart = session.get("cart", [])
     total_quantity = 0
 
