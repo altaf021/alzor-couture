@@ -1103,6 +1103,11 @@
                     <div class="search-box">
                         <input type="text" id="productSearchInput" placeholder="Search by product name or slug..." oninput="filterProductCatalog()">
                     </div>
+                    <select id="productStatusFilter" class="filter-select" onchange="filterProductCatalog()">
+                        <option value="ALL">All Statuses ({{ products_count }})</option>
+                        <option value="PUBLISHED">Published ({{ published_products_count }})</option>
+                        <option value="DRAFT">Drafts / Hidden ({{ drafts_count }})</option>
+                    </select>
                     <select id="productCategoryFilter" class="filter-select" onchange="filterProductCatalog()">
                         <option value="ALL">All Categories</option>
                         <option value="CO-ORD SET">CO-ORD SET</option>
@@ -1130,12 +1135,13 @@
                             <th>Selling Price</th>
                             <th>Compare Price</th>
                             <th>Collection Type</th>
+                            <th style="width:120px;">Storefront Status</th>
                             <th style="text-align:right;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for p in products %}
-                        <tr class="product-catalog-row" data-name="{{ p.name|lower }}" data-slug="{{ p.slug|lower }}" data-category="{{ p.category|upper }}" data-origin="{{ 'CUSTOM' if p.is_custom else 'CORE' }}">
+                        <tr class="product-catalog-row" id="product-row-{{ p.slug }}" data-name="{{ p.name|lower }}" data-slug="{{ p.slug|lower }}" data-category="{{ p.category|upper }}" data-origin="{{ 'CUSTOM' if p.is_custom else 'CORE' }}" data-status="{{ 'PUBLISHED' if p.is_active else 'DRAFT' }}">
                             <td>
                                 <img src="{{ url_for('static', filename='images/' ~ (p.images[0] if p.images else 'logo.png')) }}" alt="{{ p.name }}" style="width:48px; height:62px; object-fit:cover; border-radius:2px; border:1px solid var(--border); display:block;" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/logo.png') }}';">
                             </td>
@@ -1163,11 +1169,21 @@
                                 <span class="status-badge-inline badge-catalog">Core Collection</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                {% if p.is_active %}
+                                <span class="status-badge-inline status-delivered" id="status-badge-{{ p.slug }}">PUBLISHED</span>
+                                {% else %}
+                                <span class="status-badge-inline status-cancelled" id="status-badge-{{ p.slug }}" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">DRAFT / HIDDEN</span>
+                                {% endif %}
+                            </td>
                             <td style="text-align:right; white-space:nowrap;">
                                 <button type="button" class="btn-action-primary" style="padding:5px 12px; font-size:10px; margin-right:4px;" onclick="openProductModal('{{ p.slug }}')">
                                     Edit
                                 </button>
-                                <a href="{{ url_for('product', slug=p.slug) }}" target="_blank" class="btn-action-secondary" style="padding:5px 10px; font-size:10px; margin-right:4px;">
+                                <button type="button" class="btn-action-secondary" id="toggle-btn-{{ p.slug }}" style="padding:5px 10px; font-size:10px; margin-right:4px;" onclick="toggleProductActive('{{ p.slug }}')">
+                                    {{ 'Unpublish' if p.is_active else 'Publish' }}
+                                </button>
+                                <a href="{{ url_for('product', slug=p.slug) }}" target="_blank" class="btn-action-secondary" id="view-btn-{{ p.slug }}" style="padding:5px 10px; font-size:10px; margin-right:4px; {% if not p.is_active %}display:none;{% endif %}">
                                     View
                                 </a>
                                 <button type="button" class="btn-action-secondary" style="padding:5px 10px; font-size:10px; color:#ef4444; border-color:rgba(239,68,68,0.35);" onclick="deleteProduct('{{ p.slug }}', '{{ p.name|e }}')">
@@ -1530,7 +1546,7 @@
 
                     <!-- DROPZONE WITH FULL TRANSPARENT OVERLAY (NATIVE MOBILE & LAPTOP SUPPORT) -->
                     <div class="product-dropzone" id="productDropzone" style="position:relative; overflow:hidden; cursor:pointer; min-height:140px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                        <input type="file" id="productFileInput" multiple accept="image/*" 
+                        <input type="file" id="productFileInput" multiple accept="image/png,image/jpeg,image/webp,image/gif,image/heic,image/*" 
                                style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:30;" 
                                onchange="handleProductFilesSelected(this.files)">
                         <div style="font-size: 36px; margin-bottom: 6px; pointer-events:none;">📸</div>
@@ -1841,8 +1857,13 @@
                         ctx.drawImage(img, 0, 0, width, height);
                         canvas.toBlob((blob) => {
                             if (blob && blob.size < file.size) {
-                                const newFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
-                                resolve(newFile);
+                                try {
+                                    const newFile = new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
+                                    resolve(newFile);
+                                } catch (e) {
+                                    blob.name = file.name.replace(/\.[^.]+$/, ".jpg");
+                                    resolve(blob);
+                                }
                             } else {
                                 resolve(file);
                             }
@@ -2134,7 +2155,9 @@
                 if (filesToUpload.length > 0) {
                     const formData = new FormData();
                     filesToUpload.forEach(item => {
-                        formData.append("images", item.file);
+                        const f = item.file;
+                        const fname = (f && f.name) || item.name || "photo.jpg";
+                        formData.append("images", f, fname);
                     });
 
                     const uploadRes = await fetch("/admin/api/products/upload-images", {
@@ -2230,22 +2253,62 @@
             }
         }
 
+        async function toggleProductActive(slug) {
+            try {
+                const res = await fetch(`/admin/api/products/${slug}/toggle-active`, { method: "POST" });
+                const data = await res.json();
+                if (!data.success) {
+                    alert(data.message || "Failed to update product status.");
+                    return;
+                }
+                const row = document.getElementById(`product-row-${slug}`);
+                const badge = document.getElementById(`status-badge-${slug}`);
+                const btn = document.getElementById(`toggle-btn-${slug}`);
+                const viewBtn = document.getElementById(`view-btn-${slug}`);
+                if (data.is_active) {
+                    if (row) row.dataset.status = "PUBLISHED";
+                    if (badge) {
+                        badge.className = "status-badge-inline status-delivered";
+                        badge.style = "";
+                        badge.textContent = "PUBLISHED";
+                    }
+                    if (btn) btn.textContent = "Unpublish";
+                    if (viewBtn) viewBtn.style.display = "inline-block";
+                } else {
+                    if (row) row.dataset.status = "DRAFT";
+                    if (badge) {
+                        badge.className = "status-badge-inline status-cancelled";
+                        badge.style = "background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);";
+                        badge.textContent = "DRAFT / HIDDEN";
+                    }
+                    if (btn) btn.textContent = "Publish";
+                    if (viewBtn) viewBtn.style.display = "none";
+                }
+            } catch (err) {
+                console.error("Toggle error:", err);
+                alert("Error updating product status: " + err);
+            }
+        }
+
         function filterProductCatalog() {
             const search = (document.getElementById("productSearchInput").value || "").toLowerCase().trim();
             const cat = document.getElementById("productCategoryFilter").value;
             const origin = document.getElementById("productOriginFilter").value;
+            const statusFilter = document.getElementById("productStatusFilter") ? document.getElementById("productStatusFilter").value : "ALL";
 
             document.querySelectorAll(".product-catalog-row").forEach(row => {
                 const rName = row.dataset.name || "";
                 const rSlug = row.dataset.slug || "";
                 const rCat = row.dataset.category || "";
                 const rOrigin = row.dataset.origin || "";
+                const rStatus = row.dataset.status || "PUBLISHED";
 
                 const matchSearch = !search || rName.includes(search) || rSlug.includes(search);
                 const matchCat = cat === "ALL" || rCat === cat;
                 const matchOrigin = origin === "ALL" || rOrigin === origin;
+                const matchStatus = statusFilter === "ALL" || rStatus === statusFilter;
 
-                if (matchSearch && matchCat && matchOrigin) {
+                if (matchSearch && matchCat && matchOrigin && matchStatus) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";

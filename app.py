@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, session, jsonify, redirect, url_for, Response, send_from_directory
 import base64
 import csv
+import hashlib
 import io
 import json
 import logging
@@ -10,6 +11,7 @@ import re
 import secrets
 import sqlite3
 import smtplib
+import tempfile
 import uuid
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -2097,43 +2099,116 @@ def delete_custom_product(slug):
         ph = "%s" if is_pg else "?"
         base_slugs = {p.get("slug") for p in (PRODUCTS + DRESSES) if p.get("slug")}
         if slug in base_slugs:
-            act_val = False if is_pg else 0
-            if is_pg:
-                cur.execute(
-                    """INSERT INTO alzor_custom_products (slug, name, is_active, updated_at)
-                       VALUES (%s, %s, %s, NOW())
-                       ON CONFLICT (slug) DO UPDATE SET is_active = FALSE, updated_at = NOW()""",
-                    (slug, slug, act_val)
-                )
-            else:
-                cur.execute(
-                    """INSERT OR REPLACE INTO alzor_custom_products (slug, name, is_active, updated_at)
-                       VALUES (?, ?, ?, datetime('now'))""",
-                    (slug, slug, act_val)
-                )
+            base_prod = next((p for p in (PRODUCTS + DRESSES) if p.get("slug") == slug), None)
+            if base_prod:
+                name = base_prod.get("name", slug)
+                category = base_prod.get("category", "CO-ORD SET")
+                price = int(base_prod.get("price", 0))
+                orig_price = int(base_prod.get("original_price", 0)) if base_prod.get("original_price") else 0
+                images = base_prod.get("images", ["logo.png"])
+                desc = base_prod.get("description", "")
+                details = base_prod.get("details", [])
+                care = base_prod.get("care", "Dry clean recommended.")
+                img_val = Jsonb(images) if is_pg else json.dumps(images, ensure_ascii=False)
+                det_val = Jsonb(details) if is_pg else json.dumps(details, ensure_ascii=False)
+                act_val = False if is_pg else 0
+                if is_pg:
+                    cur.execute(
+                        f"""INSERT INTO alzor_custom_products
+                            (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                            VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, NOW())
+                            ON CONFLICT (slug) DO UPDATE SET is_active = FALSE, updated_at = NOW()""",
+                        (slug, name, category, price, orig_price, img_val, desc, det_val, care, act_val)
+                    )
+                else:
+                    cur.execute(
+                        f"""INSERT OR REPLACE INTO alzor_custom_products
+                            (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                            VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, datetime('now'))""",
+                        (slug, name, category, price, orig_price, img_val, desc, det_val, care, act_val)
+                    )
         else:
             cur.execute(f"DELETE FROM alzor_custom_products WHERE slug = {ph}", (slug,))
         cur.execute(f"DELETE FROM alzor_inventory WHERE product_slug = {ph}", (slug,))
 
 
-def get_all_products():
-    """Return all products: active custom products first, then non-hidden catalog pieces."""
+def toggle_product_active(slug):
+    """Toggle is_active state for any product (custom or core catalog). Returns the new is_active boolean."""
+    with get_db_cursor() as (cur, is_pg):
+        ph = "%s" if is_pg else "?"
+        cur.execute(f"SELECT is_active FROM alzor_custom_products WHERE slug = {ph}", (slug,))
+        row = cur.fetchone()
+        if row is not None:
+            current_active = bool(row[0])
+            new_active = not current_active
+            act_val = new_active if is_pg else (1 if new_active else 0)
+            now_expr = "NOW()" if is_pg else "datetime('now')"
+            update_sql = f"UPDATE alzor_custom_products SET is_active = {ph}, updated_at = {now_expr} WHERE slug = {ph}"
+            cur.execute(update_sql, (act_val, slug))
+            return new_active
+        else:
+            base_prod = next((p for p in (PRODUCTS + DRESSES) if p.get("slug") == slug), None)
+            if not base_prod:
+                return False
+            new_active = False
+            name = base_prod.get("name", slug)
+            category = base_prod.get("category", "CO-ORD SET")
+            price = int(base_prod.get("price", 0))
+            orig_price = int(base_prod.get("original_price", 0)) if base_prod.get("original_price") else 0
+            images = base_prod.get("images", ["logo.png"])
+            desc = base_prod.get("description", "")
+            details = base_prod.get("details", [])
+            care = base_prod.get("care", "Dry clean recommended.")
+            img_val = Jsonb(images) if is_pg else json.dumps(images, ensure_ascii=False)
+            det_val = Jsonb(details) if is_pg else json.dumps(details, ensure_ascii=False)
+            act_val = False if is_pg else 0
+            if is_pg:
+                cur.execute(
+                    f"""INSERT INTO alzor_custom_products
+                        (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                        VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, NOW())""",
+                    (slug, name, category, price, orig_price, img_val, desc, det_val, care, act_val)
+                )
+            else:
+                cur.execute(
+                    f"""INSERT INTO alzor_custom_products
+                        (slug, name, category, price, original_price, images, description, details, care, is_active, updated_at)
+                        VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, datetime('now'))""",
+                    (slug, name, category, price, orig_price, img_val, desc, det_val, care, act_val)
+                )
+            return new_active
+
+
+def get_all_products(include_inactive=False):
+    """Return all products: custom products first, then non-overridden catalog pieces."""
     all_custom = get_custom_products(include_inactive=True)
     custom_map = {p["slug"]: p for p in all_custom}
-    active_custom = [p for p in all_custom if p.get("is_active")]
-    base = [p for p in (PRODUCTS + DRESSES) if p.get("slug") not in custom_map]
-    return active_custom + base
+
+    base = []
+    for p in (PRODUCTS + DRESSES):
+        slug = p.get("slug")
+        if slug and slug not in custom_map:
+            bp = dict(p)
+            bp["is_active"] = True
+            bp["is_custom"] = False
+            base.append(bp)
+
+    if include_inactive:
+        return all_custom + base
+    else:
+        active_custom = [p for p in all_custom if p.get("is_active")]
+        return active_custom + base
 
 
 # =========================================================
 # FIND PRODUCT
 # =========================================================
 
-def find_product(slug):
+def find_product(slug, include_inactive=False):
     return next(
         (
             product
-            for product in get_all_products()
+            for product in get_all_products(include_inactive=include_inactive)
             if product["slug"] == slug
         ),
         None
@@ -3668,11 +3743,13 @@ def admin_dashboard():
         inventory = []
 
     try:
-        all_catalog_products = get_all_products()
+        all_catalog_products = get_all_products(include_inactive=True)
     except Exception:
         all_catalog_products = []
 
     products_count = len(all_catalog_products)
+    published_products_count = len([p for p in all_catalog_products if p.get("is_active")])
+    drafts_count = len([p for p in all_catalog_products if not p.get("is_active")])
     custom_products_count = len([p for p in all_catalog_products if p.get("is_custom")])
 
     try:
@@ -3697,6 +3774,8 @@ def admin_dashboard():
         inventory_count=len(inventory),
         products=all_catalog_products,
         products_count=products_count,
+        published_products_count=published_products_count,
+        drafts_count=drafts_count,
         custom_products_count=custom_products_count,
         notifications=notifications,
         unread_notifs=unread_notifs,
@@ -3919,13 +3998,46 @@ def admin_api_update_inventory():
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif", "jfif", "avif", "heic"}
 
 
+def validate_and_hash_image(file_bytes, original_filename=""):
+    """
+    Validate image magic bytes, extension, and return (is_valid, mime, ext, sha_token).
+    Supports JPG, JPEG, PNG, WEBP, GIF, HEIC. Enforces 15MB limit.
+    """
+    if not file_bytes or len(file_bytes) < 8:
+        return False, "File is empty or corrupted.", None, None
+    if len(file_bytes) > 15 * 1024 * 1024:
+        return False, "Image exceeds the 15MB upload limit. Please select a smaller photo.", None, None
+
+    # Magic byte check
+    mime = None
+    ext = "jpg"
+    if file_bytes[:3] == b"\xff\xd8\xff":
+        mime, ext = "image/jpeg", "jpg"
+    elif file_bytes[:8] == b"\x89PNG\r\n\x1a\n":
+        mime, ext = "image/png", "png"
+    elif file_bytes[:4] == b"RIFF" and len(file_bytes) >= 12 and file_bytes[8:12] == b"WEBP":
+        mime, ext = "image/webp", "webp"
+    elif file_bytes[:6] in (b"GIF87a", b"GIF89a"):
+        mime, ext = "image/gif", "gif"
+    else:
+        orig_ext = original_filename.lower().rsplit(".", 1)[-1] if "." in original_filename else ""
+        if orig_ext in ALLOWED_IMAGE_EXTENSIONS:
+            ext = "jpg" if orig_ext in ("jpeg", "jfif") else orig_ext
+            mime = f"image/{ext}" if ext != "jpg" else "image/jpeg"
+        else:
+            return False, "Unsupported file format. Please upload JPG, PNG, WEBP, or HEIC images.", None, None
+
+    sha_token = hashlib.sha256(file_bytes).hexdigest()[:16]
+    return True, mime, ext, sha_token
+
+
 @app.route("/admin/api/products", methods=["GET"])
 def admin_api_get_products():
     if not session.get("alzor_admin_authenticated"):
         return jsonify({"success": False, "message": "Unauthorized"}), 401
     return jsonify({
         "success": True,
-        "products": get_all_products()
+        "products": get_all_products(include_inactive=True)
     })
 
 
@@ -3933,7 +4045,7 @@ def admin_api_get_products():
 def admin_api_get_product(slug):
     if not session.get("alzor_admin_authenticated"):
         return jsonify({"success": False, "message": "Unauthorized"}), 401
-    p = find_product(slug)
+    p = find_product(slug, include_inactive=True)
     if not p:
         return jsonify({"success": False, "message": "Product not found"}), 404
 
@@ -3955,23 +4067,16 @@ def admin_api_upload_images():
     if not files or all(f.filename == "" for f in files):
         return jsonify({"success": False, "message": "No photos selected. Please pick images from your device."}), 400
 
-    upload_dir = os.path.join(app.root_path, "static", "images")
+    upload_dir = os.path.join(STATIC_DIR, "images")
     os.makedirs(upload_dir, exist_ok=True)
+    temp_dir = os.path.join(tempfile.gettempdir(), "alzor_uploads")
+    os.makedirs(temp_dir, exist_ok=True)
 
     saved_filenames = []
 
     for f in files:
         if not f or not f.filename:
             continue
-        original_name = f.filename.lower()
-        ext = original_name.rsplit(".", 1)[-1] if "." in original_name else "jpg"
-        if ext not in ALLOWED_IMAGE_EXTENSIONS:
-            ext = "jpg"
-
-        unique_token = secrets.token_hex(4)
-        timestamp = int(datetime.now().timestamp())
-        filename = f"prod_{timestamp}_{unique_token}.{ext}"
-        filepath = os.path.join(upload_dir, filename)
 
         try:
             file_bytes = f.read()
@@ -3982,17 +4087,31 @@ def admin_api_upload_images():
         if not file_bytes:
             continue
 
-        # 1. Write to static/images on disk
+        is_valid, mime_or_err, ext, sha_token = validate_and_hash_image(file_bytes, f.filename)
+        if not is_valid:
+            return jsonify({"success": False, "message": mime_or_err}), 400
+
+        filename = f"prod_{sha_token}.{ext}"
+        filepath = os.path.join(upload_dir, filename)
+        temp_filepath = os.path.join(temp_dir, filename)
+
+        # 1. Write to static/images on disk if writable
         try:
             with open(filepath, "wb") as out_f:
                 out_f.write(file_bytes)
         except Exception as e:
-            app.logger.warning(f"Could not write image to disk ({filepath}): {e}")
+            app.logger.debug(f"Could not write image to static disk: {e}")
+
+        # Cache to temp dir
+        try:
+            with open(temp_filepath, "wb") as out_f:
+                out_f.write(file_bytes)
+        except Exception:
+            pass
 
         # 2. Persist to database (alzor_uploaded_images) for durable cross-restart recovery
         try:
             b64_data = base64.b64encode(file_bytes).decode("utf-8")
-            mime = f"image/{ext}" if ext != "jpg" else "image/jpeg"
             with get_db_cursor() as (cur, is_pg):
                 ph = "%s" if is_pg else "?"
                 if is_pg:
@@ -4000,13 +4119,13 @@ def admin_api_upload_images():
                         f"""INSERT INTO alzor_uploaded_images (filename, content_type, data_base64, created_at)
                            VALUES ({ph}, {ph}, {ph}, NOW())
                            ON CONFLICT (filename) DO NOTHING""",
-                        (filename, mime, b64_data)
+                        (filename, mime_or_err, b64_data)
                     )
                 else:
                     cur.execute(
                         f"""INSERT OR IGNORE INTO alzor_uploaded_images (filename, content_type, data_base64, created_at)
                            VALUES ({ph}, {ph}, {ph}, datetime('now'))""",
-                        (filename, mime, b64_data)
+                        (filename, mime_or_err, b64_data)
                     )
         except Exception as e:
             app.logger.exception(f"Failed to persist image in DB: {e}")
@@ -4115,6 +4234,84 @@ def admin_api_delete_product(slug):
         "success": True,
         "message": f"Product '{slug}' successfully removed from custom catalog."
     })
+
+
+@app.route("/admin/api/products/<slug>/toggle-active", methods=["POST"])
+def admin_api_toggle_product_active(slug):
+    if not session.get("alzor_admin_authenticated"):
+        return jsonify({"success": False, "message": "Unauthorized"}), 401
+
+    try:
+        new_status = toggle_product_active(slug)
+        status_label = "published" if new_status else "saved as draft / hidden"
+        return jsonify({
+            "success": True,
+            "is_active": new_status,
+            "message": f"Product '{slug}' is now {status_label}."
+        })
+    except Exception as e:
+        app.logger.exception(f"Error toggling active state for {slug}: {e}")
+        return jsonify({"success": False, "message": "Failed to update product status."}), 500
+
+
+@app.route("/static/images/prod_<path:rest>")
+@app.route("/uploads/<path:filename>")
+def serve_uploaded_image(rest=None, filename=None):
+    """
+    Serve dynamically uploaded images across serverless container restarts.
+    1. Checks static/images on disk.
+    2. Checks temp directory cache.
+    3. Retrieves from alzor_uploaded_images table in PostgreSQL or SQLite.
+    """
+    if rest is not None:
+        target_name = f"prod_{rest}"
+    elif filename is not None:
+        target_name = filename
+    else:
+        target_name = os.path.basename(request.path)
+
+    target_name = secure_filename(target_name)
+    if not target_name:
+        return Response(b"", status=404)
+
+    # 1. Check local static/images
+    local_path = os.path.join(STATIC_DIR, "images", target_name)
+    if os.path.isfile(local_path):
+        return send_from_directory(os.path.join(STATIC_DIR, "images"), target_name)
+
+    # 2. Check temp cache
+    temp_dir = os.path.join(tempfile.gettempdir(), "alzor_uploads")
+    temp_path = os.path.join(temp_dir, target_name)
+    if os.path.isfile(temp_path):
+        return send_from_directory(temp_dir, target_name)
+
+    # 3. Retrieve from database
+    try:
+        with get_db_cursor() as (cur, is_pg):
+            ph = "%s" if is_pg else "?"
+            cur.execute(f"SELECT content_type, data_base64 FROM alzor_uploaded_images WHERE filename = {ph}", (target_name,))
+            row = cur.fetchone()
+            if row:
+                mime_type, b64_data = row
+                img_bytes = base64.b64decode(b64_data)
+                try:
+                    os.makedirs(temp_dir, exist_ok=True)
+                    with open(temp_path, "wb") as f:
+                        f.write(img_bytes)
+                except Exception:
+                    pass
+                resp = Response(img_bytes, mimetype=mime_type or "image/jpeg")
+                resp.headers["Cache-Control"] = "public, max-age=2592000"
+                return resp
+    except Exception as e:
+        app.logger.warning(f"Error retrieving image {target_name} from database: {e}")
+
+    # Fallback placeholder to prevent broken UI
+    logo_path = os.path.join(STATIC_DIR, "images", "logo.png")
+    if os.path.isfile(logo_path):
+        return send_from_directory(os.path.join(STATIC_DIR, "images"), "logo.png"), 404
+
+    return Response(b"", status=404)
 
 
 # =========================================================
