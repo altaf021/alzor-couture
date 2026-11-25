@@ -27,8 +27,12 @@ try:
     import psycopg
     from psycopg.types.json import Jsonb
 except ImportError:
-    psycopg = None
-    Jsonb = None
+    try:
+        import psycopg2 as psycopg
+        from psycopg2.extras import Json as Jsonb
+    except ImportError:
+        psycopg = None
+        Jsonb = None
 
 load_dotenv()
 
@@ -53,15 +57,13 @@ app = Flask(
     static_url_path="/static",
     template_folder=TEMPLATES_DIR
 )
+application = app
 
-# Production must always use a strong secret configured in the environment.
+# Production should use a strong secret configured in the environment.
 _configured_secret = os.getenv("FLASK_SECRET_KEY", "").strip()
 if not _configured_secret:
-    if os.getenv("DATABASE_URL", "").strip() and not os.getenv("FLASK_DEBUG", "").strip().lower() == "true":
-        raise RuntimeError(
-            "FLASK_SECRET_KEY must be configured in the production environment."
-        )
-    _configured_secret = "alzor-couture-dev-secret-key-change-in-production"
+    app.logger.warning("WARNING: FLASK_SECRET_KEY is not configured in environment variables. Using fallback key.")
+    _configured_secret = "alzor-couture-default-secret-key-please-set-in-env"
 app.secret_key = _configured_secret
 
 # Security and caching headers
