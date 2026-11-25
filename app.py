@@ -382,8 +382,8 @@ PRODUCTS =  [
         "name": "Denim Élan Co-ord Set",
         "slug": "denim-elan-co-ord-set",
         "category": "CO-ORD SET",
-        "price": 6999
-            "original_price": 8739,
+        "price": 6999,
+        "original_price": 8739,
         "images": [
             "denim elan 1.jpeg",
             "denim elan 2.jpeg",

@@ -1040,7 +1040,7 @@
                                 <div class="cust-sub" style="margin-top:3px;color:#ad8a51;">📍 {{ cust.city or '' }}{% if cust.state %}, {{ cust.state }}{% endif %}</div>
                             </td>
                             <td>
-                                {% for item in (o.items or []) %}
+                                {% for item in (o['items'] or []) %}
                                 <div class="item-pill">
                                     <strong>{{ item.name or '' }}</strong> &bull; Size: <strong>{{ item.size or 'S' }}</strong> &bull; Qty: {{ item.quantity or 1 }}
                                 </div>
@@ -1399,7 +1399,7 @@
                             </td>
                             <td>{{ pcust.city }}{% if pcust.state %}, {{ pcust.state }}{% endif %}</td>
                             <td>
-                                {% for it in (p.items or []) %}
+                                {% for it in (p['items'] or []) %}
                                 <span class="item-pill">{{ it.name }} ({{ it.size }}x{{ it.quantity }})</span>
                                 {% endfor %}
                             </td>

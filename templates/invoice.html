@@ -301,7 +301,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in (order.items or []) %}
+                {% for item in (order['items'] or []) %}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>

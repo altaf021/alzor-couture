@@ -392,10 +392,10 @@
             </div>
         </div>
 
-        {% if order.items %}
+        {% if order['items'] %}
         <h4 style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#555049;margin:0 0 8px;">ORDERED PIECES</h4>
         <div class="track-items-list">
-            {% for item in order.items %}
+            {% for item in order['items'] %}
             <div class="track-item-row">
                 {% if item.image %}
                 <img src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.name }}" class="track-item-img">
