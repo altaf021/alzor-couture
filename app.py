@@ -2311,6 +2311,9 @@ def home():
 # =========================================================
 
 @app.route("/new-arrivals")
+@app.route("/newarrivals")
+@app.route("/new-arrival")
+@app.route("/newarrival")
 def new_arrivals():
     return render_template(
         "newarrival.html",
@@ -2339,6 +2342,8 @@ def dresses():
 # =========================================================
 
 @app.route("/co-ord-sets")
+@app.route("/coordsets")
+@app.route("/coord-sets")
 def co_ord_sets():
     co_ord_products = [
         product
